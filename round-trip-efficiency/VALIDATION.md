@@ -4,14 +4,14 @@
 
 Reviewed against the supplied full Node-RED export, which declares `node-red-contrib-home-assistant-websocket` 0.80.3. That export contains the daily charge/discharge reads and HA output sensor but not the trigger or SOC acquisition writer.
 
-The replacement adds paired measurement cycles and uses a versioned interval ledger. It intentionally starts new accounting rather than silently converting the older daily ring-buffer history.
+The replacement adds paired measurement cycles and uses a versioned interval ledger. It imports the older version-2 kWh ring and live day/snapshot once, retaining a full backup and explicit legacy provenance. New intervals use the revised accounting.
 
 ## Automated checks performed
 
 - Runtime: Node.js v24.19.0.
 - Timezone: Europe/Berlin.
 - Command: `TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs` from the repository root.
-- Result: **33 tests passed; 0 failed**.
+- Result: **41 tests passed; 0 failed**.
 
 The tests execute the actual Function bodies with simulated Node-RED context, status/error handlers and a controlled clock. They cover:
 
@@ -30,9 +30,11 @@ The tests execute the actual Function bodies with simulated Node-RED context, st
 - Missing stores, preparation snapshot and watchdog behavior.
 - Exported JSON references, two-output wiring, exact Function/source/text equality and preparation/calculation execution together.
 
+Additional migration tests cover first-cycle history reuse, snapshot fallback, live-record precedence, restart idempotence, unknown SOC boundaries, all-slot backup, date-window expiration, invalid legacy data, recovery of a disjoint prefix in an existing v3 ledger, and explicit overlapping-date conflicts.
+
 ## Review conclusions
 
-Invalid input does not overwrite accepted energy history. Paired current counters establish the baseline for subsequent differences. Every accumulated SOC difference is associated with the same accepted interval as its energy counters. No interval spanning an unresolvable reset, long gap or confirmed SOC discontinuity is silently included.
+Invalid input does not overwrite accepted energy history. Paired current counters establish the baseline for subsequent differences. Every accumulated SOC difference is associated with the same accepted interval as its energy counters. No new interval spanning an unresolvable reset, long gap or confirmed SOC discontinuity is silently included.
 
 Persistent totals and the matching baseline are stored as one object. Restart tests model in-memory context loss and an older persisted checkpoint; they do not test a real filesystem, disk durability or a real abrupt shutdown.
 

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed
+
+- Preserve existing efficiency history through one-time v2 ring/live-day/snapshot migration, a full original-data backup, and duplicate/overlap protection.
+- Extend the regression suite to 41 passing tests, including restart-safe migration.
+
 ### Added
 
 - Version 3 of the SOC-adjusted efficiency monitoring utility: paired measurements, interval-based energy/SOC accounting, automatic persistent state, conservative reset/gap handling, and explicit invalid results.

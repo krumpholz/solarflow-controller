@@ -5,6 +5,11 @@ const path = require('node:path');
 const vm = require('node:vm');
 const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'battery-efficiency.js'), 'utf8');
+function legacy(h, slots) {
+    h.stores.file.batt_eff_ring_7d = {version: 2, unit: 'kWh', size: 7, head: slots.length - 1,
+        slots: slots.concat(Array.from({length: 7-slots.length}, () => ({date:null, chargeKWh:0, dischargeKWh:0, socStart:null, socEnd:null})))};
+}
+const oldDay = (date, c=5, d=4, start=50, end=50) => ({date, chargeKWh:c, dischargeKWh:d, socStart:start, socEnd:end});
 function harness(options = {}) {
     let time = new Date(2026, 8, 20, 12).getTime();
     const stores = {file: {}, memoryOnly: {}};
@@ -180,8 +185,8 @@ test('corrupt persisted data rejected without destructive overwrite', () => {
     h.advance(5000); assert.equal(h.pair(5, 4)[0].result.reason, 'invalid_persisted_state_requires_review');
     assert.equal(h.stores.file.batt_eff_state_v3.last.soc, null);
 });
-test('legacy v2 history is untouched and not silently mixed with v3', () => {
-    const h = harness(); h.stores.file.batt_eff_ring_7d = {version: 2, sentinel: 'keep'};
+test('empty legacy ring remains untouched during migration', () => {
+    const h = harness(); h.stores.file.batt_eff_ring_7d = {version: 2, unit: 'kWh', head: -1, slots: Array.from({length:7},()=>({date:null})), sentinel: 'keep'};
     seed(h); assert.equal(h.stores.file.batt_eff_ring_7d.sentinel, 'keep');
     assert.equal(h.stores.file.batt_eff_state_v3.days[0].charge, 0);
 });
@@ -255,4 +260,72 @@ test('maximum seven calendar day buckets; eighth day removes the oldest', () => 
     const days = h.stores.file.batt_eff_state_v3.days;
     assert.equal(days.length, 7); assert.equal(days[0].date, '2026-09-21');
     assert.ok(Math.abs(days.reduce((s,d)=>s+d.charge,0) - .84) < 1e-10);
+});
+test('legacy history and live day are used on first output and originals retained', () => {
+    const h = harness(); legacy(h, [oldDay('2026-09-18'),oldDay('2026-09-19')]);
+    h.stores.memoryOnly.batt_eff_today_live = oldDay('2026-09-20', 1, .8);
+    const original = JSON.stringify(h.stores.file.batt_eff_ring_7d);
+    const out = h.pair(1, .8)[0];
+    assert.equal(out.payload,80); assert.equal(out.result.sum_charge_kwh_7d,11);
+    assert.equal(out.result.days_used,3); assert.equal(out.result.legacy_days_in_window,3);
+    assert.equal(out.result.covered_hours,0);
+    assert.equal(JSON.stringify(h.stores.file.batt_eff_ring_7d),original);
+    assert.equal(h.stores.file.batt_eff_legacy_backup_v3.live.chargeKWh,1);
+    h.advance(60000); const next=h.pair(1.04,.832)[0];
+    assert.equal(next.result.sum_charge_kwh_7d,11.04); assert.equal(next.payload,80);
+});
+test('snapshot fallback survives restart; live source takes precedence without double counting', () => {
+    const h=harness();legacy(h,[]);
+    h.stores.file.batt_eff_today_live_snapshot=oldDay('2026-09-20',1,.8);
+    h.stores.memoryOnly.batt_eff_today_live=oldDay('2026-09-20',2,1.6);
+    assert.equal(h.pair(2,1.6)[0].result.sum_charge_kwh_7d,2);
+    h.restart();h.advance(60000);
+    assert.equal(h.pair(2.04,1.632)[0].result.sum_charge_kwh_7d,2.04);
+    const other=harness();legacy(other,[]);other.stores.file.batt_eff_today_live_snapshot=oldDay('2026-09-20',1,.8);
+    assert.equal(other.pair(2,1.6)[0].result.sum_charge_kwh_7d,1);
+});
+test('legacy null SOC preserves energy but never invents efficiency', () => {
+    const h=harness();legacy(h,[oldDay('2026-09-19',5,4,null,50)]);
+    const out=h.pair(0,0)[0];assert.equal(out.payload,null);
+    assert.equal(out.result.sum_charge_kwh_7d,5);assert.equal(out.result.eta_raw_pct,null);
+    assert.equal(out.result.reason,'legacy_soc_boundaries_missing');
+    h.setTime(new Date(2026,8,26,12).getTime());
+    assert.equal(h.pair(0,0)[0].result.legacy_soc_boundaries_missing,false);
+});
+test('all original slots backed up; only active calendar days included', () => {
+    const h=harness();legacy(h,[oldDay('2026-09-13'),oldDay('2026-09-14'),oldDay('2026-09-19')]);
+    const out=h.pair(0,0)[0];assert.equal(out.result.sum_charge_kwh_7d,10);
+    assert.equal(h.stores.file.batt_eff_legacy_backup_v3.ring.slots[0].date,'2026-09-13');
+});
+test('malformed legacy energy and unsupported units stop rather than erase history', () => {
+    for(const bad of ['energy','unit']) {
+        const h=harness();legacy(h,[oldDay('2026-09-19')]);
+        if(bad==='energy')h.stores.file.batt_eff_ring_7d.slots[0].chargeKWh='unknown';
+        else h.stores.file.batt_eff_ring_7d.unit='Wh';
+        assert.equal(h.pair(0,0)[0].payload,null);
+        assert.equal(h.stores.file.batt_eff_state_v3,undefined);
+        assert.ok(h.stores.file.batt_eff_legacy_backup_v3);
+    }
+});
+test('upgrade of already-running v3 restores disjoint legacy prefix exactly once', () => {
+    const h=harness();seed(h);grow(h);
+    delete h.stores.file.batt_eff_state_v3.legacyMigration; // previously published v3 schema
+    legacy(h,[oldDay('2026-09-19')]);h.stores.memoryOnly.batt_eff_today_live=oldDay('2026-09-20',5,4);
+    h.advance(60000);const out=h.pair(5.16,4.128)[0];
+    assert.equal(out.result.sum_charge_kwh_7d,10.16);assert.equal(out.payload,80);
+    h.restart();h.advance(60000);assert.equal(h.pair(5.20,4.16)[0].result.sum_charge_kwh_7d,10.20);
+});
+test('unprovable overlapping legacy day archived and flagged, never added twice', () => {
+    const h=harness();seed(h);grow(h);delete h.stores.file.batt_eff_state_v3.legacyMigration;
+    legacy(h,[]);h.stores.memoryOnly.batt_eff_today_live=oldDay('2026-09-20',5.1,4.08);
+    h.advance(60000);const out=h.pair(5.16,4.128)[0];
+    assert.equal(out.result.sum_charge_kwh_7d,.16);
+    assert.deepEqual(Array.from(out.result.legacy_migration.overlappingDates),['2026-09-20']);
+    assert.equal(h.stores.file.batt_eff_legacy_backup_v3.live.chargeKWh,5.1);
+});
+test('completed ring day beats stale snapshot; previous-day live record retained', () => {
+    const h=harness();legacy(h,[oldDay('2026-09-18',5,4)]);
+    h.stores.file.batt_eff_today_live_snapshot=oldDay('2026-09-18',2,1.6);
+    h.stores.memoryOnly.batt_eff_today_live=oldDay('2026-09-19',3,2.4);
+    assert.equal(h.pair(0,0)[0].result.sum_charge_kwh_7d,8);
 });

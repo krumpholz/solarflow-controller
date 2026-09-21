@@ -23,7 +23,7 @@ The original export included two independent Current State nodes, the calculatio
 
 - Both energy readings now belong to one numbered request cycle. Incomplete, duplicate and delayed responses cannot silently mix different cycles.
 - Unknown, unavailable, blank, boolean, non-finite and negative energy values are rejected. Null SOC is never converted to zero.
-- The first paired measurement establishes a baseline. Earlier daily energy is excluded because its matching start SOC is unknown.
+- Existing version-2 kWh history is imported once, including the live day or snapshot. The first paired measurement establishes the baseline for NEW intervals; existing history is retained separately in the same ledger.
 - Energy differences and SOC differences use the same accepted interval endpoints. The delayed ten-minute median has been removed.
 - Totals and their matching baseline are kept together in one automatically persisted state object.
 - A gap or reset starts a new segment. Its unmeasured energy and SOC change are both excluded.
@@ -32,15 +32,15 @@ The original export included two independent Current State nodes, the calculatio
 
 ## Installation and upgrade
 
-1. Back up your existing flow and persistent context. Disable the old efficiency calculation before enabling this replacement.
-2. Configure the context stores below and restart Node-RED if the settings changed.
+1. Back up your existing flow and persistent context. Disable the old efficiency calculation before enabling this replacement. Keep the original flow tab and its context: migration reads the history from that tab.
+2. Check the context stores below. If they already exist, do not restart before migration: the latest legacy live day is in memoryOnly. If a restart is necessary, first save the live day with the old snapshot switch and let the file store flush; otherwise only an existing snapshot and completed ring days can be recovered.
 3. Import `flow.json` **onto the existing flow tab that supplies `flow.batt_level`**. A new tab has a different flow context. Select your existing Home Assistant server in both Current State nodes and the entity configuration; avoid leaving duplicate old and new estimators connected to the same sensor.
 4. Review `CFG.capacityKWh`: the supplied **8.640 kWh** is the original installation's value, not a universal default. Review `maxPowerKW` and counter resolution as well.
 5. Check both energy entity IDs in the Current State nodes and in `CFG`. They must be daily cumulative energy counters in **kWh**, resetting at local midnight. The calculation also checks the entity's `unit_of_measurement` attribute. Current State nodes use string state type so invalid source states remain distinguishable.
 6. Ensure the external SOC writer supplies a finite percentage from 0 to 100 to `batt_level` in `memoryOnly`. Do not divide this percentage by ten unless the upstream value is actually in tenths of a percent.
 7. Prefer adding `batt_level_ts` as described below and enabling `requireSocTimestamp`. It is optional by default to accommodate the supplied flow's existing interface.
 8. Set the Node-RED runtime timezone to the same timezone used for the daily sensor resets, for example `Europe/Berlin` when appropriate. Restart after changing the runtime timezone.
-9. Deploy and check the diagnostic output. The included Inject node runs every five seconds. The first complete measurement intentionally produces Unknown; accumulation starts with the next accepted interval.
+9. Deploy and check the diagnostic output. The included Inject node runs every five seconds. On a fresh installation, the first complete measurement produces Unknown. With valid imported history, it can display the inherited estimate immediately. New interval accumulation starts with the next accepted interval.
 10. Verify the HA sensor name/entity and any dashboards that used the previous sensor. The exported friendly name is now `Battery Efficiency Estimate`; preserve your existing entity mapping if required.
 
 The supplied export declares `node-red-contrib-home-assistant-websocket` **0.80.3**. The HA Sensor node also requires the companion Node-RED integration in Home Assistant. This package version is the source export's dependency, not a claim of a completed runtime compatibility test.
@@ -77,7 +77,7 @@ Current State returns HA's last known entity state, not a guaranteed fresh devic
 
 ## Calculation and interpretation
 
-For each accepted interval:
+For each accepted NEW interval:
 
 ```text
 charge energy       = current daily charge counter - previous counter
@@ -85,7 +85,7 @@ discharge energy    = current daily discharge counter - previous counter
 stored energy delta = capacity_kWh * (current SOC - previous SOC) / 100
 ```
 
-Within today and the previous six **local calendar days**, the flow sums only accepted intervals:
+Within today and the previous six **local calendar days**, the flow sums accepted new intervals plus explicitly marked imported legacy records:
 
 ```text
 estimated efficiency (%) = 100 * (sum(discharge) + sum(stored energy delta)) / sum(charge)
@@ -102,7 +102,7 @@ SOC is quantized and may be recalibrated by the BMS. At 8.640 kWh, one percentag
 
 | Situation | Behavior |
 | --- | --- |
-| Initial deployment, or no v3 history | Start from current paired counters and SOC; do not include energy from earlier today. |
+| No v3 history | Import the existing v2 kWh ring and live day/snapshot once, if present; then establish the baseline for new intervals. Without legacy data, start from current counters and SOC. |
 | Restart on the same day, latest persisted sample at most 120 seconds old | Continue from the stored matching baseline, including increments since that sample. |
 | Longer gap | Preserve previous measured totals; exclude the gap's energy and SOC change; establish a new baseline. |
 | Local midnight | Preserve prior measured intervals; exclude the interval spanning the daily reset; begin at a new paired baseline. |
@@ -129,15 +129,30 @@ The documented HA Sensor behavior maps a null state to Unknown. Confirm this wit
 | Context key | Store | Meaning |
 | --- | --- | --- |
 | `batt_eff_state_v3` | `file` | Versioned daily interval totals and matching last sample |
+| `batt_eff_legacy_backup_v3` | `file` | Original ring, live day and snapshot retained before migration, including older dates |
 | `batt_eff_previous_state_v3` | `file` | Most recent state archived after a configuration change |
-| `sum_batt_la_7d` | `file` | Sum of included charging intervals, kWh |
-| `sum_batt_ela_7d` | `file` | Sum of included discharging intervals, kWh |
+| `sum_batt_la_7d` | `file` | Imported charging history plus included new intervals, kWh |
+| `sum_batt_ela_7d` | `file` | Imported discharging history plus included new intervals, kWh |
 | `la_ela_es` | `file` | Current plausible estimate or null |
 | `batt_eff_last_completed_v3` | `memoryOnly` | Watchdog completion timestamp |
 
-The two compatibility energy sums now represent **included interval energy**, not unconditional daily-counter totals. Existing consumers must account for that change. On an input failure, the energy sums retain their last accepted values while the efficiency is invalidated.
+The two compatibility energy sums represent **imported history plus included new interval energy**, not unconditional current daily-counter totals. Existing consumers must account for that change. On an input failure, the energy sums retain their last accepted values while the efficiency is invalidated.
 
-Old `batt_eff_ring_7d`, `batt_eff_today_live` and `batt_eff_today_live_snapshot` data are not deleted or automatically migrated: their original measurement boundaries cannot be verified. The new estimator starts fresh. Multiple instances on one flow tab require distinct context keys.
+### Automatic migration of the existing buffer
+
+On the first valid paired cycle, the function reads the original `batt_eff_ring_7d` from `file`, `batt_eff_today_live` from `memoryOnly`, and `batt_eff_today_live_snapshot` from `file`. It stores a separate backup in `batt_eff_legacy_backup_v3` before converting anything. **The original keys are never changed or deleted.** All original slots remain in that backup; the active calculation includes today and the preceding six calendar days, exactly the original date window.
+
+For a duplicated date, live memory takes precedence. A completed ring record takes precedence over an older snapshot. Migration copies recorded charge/discharge totals, and calculates each legacy record's SOC correction from its stored start/end SOC using the configured capacity. It cannot retrospectively repair quantization, previously filtered SOC, or null values that the old code already turned into numeric zero. Use the same capacity as the old installation.
+
+A stored legacy day has no reliable measurement timestamps. Its duration is not counted in `covered_hours`. The handover gap between its stored counters and the first new paired baseline is not silently estimated. Thus a stale snapshot preserves the recorded history but cannot recover the unrecorded tail. If today's memory record and snapshot are both absent, completed ring days are still imported, but today's earlier SOC baseline cannot be recreated.
+
+The new estimator sums each legacy day's SOC correction independently. The old estimator used the first and last SOC across the whole window. These are equal only when adjacent recorded SOC boundaries agree. **Energy history is preserved; the efficiency percentage is not guaranteed to remain numerically identical.** Legacy uncertainties remain marked by `legacy_days_in_window` and `legacy_migration`; the displayed quantity remains an estimate.
+
+Missing/invalid SOC boundaries retain the day's energy but produce Unknown efficiency (`legacy_soc_boundaries_missing`) while that day remains in the active window. Malformed energy values, unsupported units, or invalid dates stop migration rather than replacing history with zero. Inspect the error and original data before correcting them.
+
+An already-running v3 installation can also import legacy days not yet represented. For today's overlapping date, a frozen legacy prefix is added only if the gap-free v3 ledger proves both energy directions are disjoint. Otherwise, the original record is retained in the backup and the date is reported in `legacy_migration.overlappingDates`; it is not added twice. Such a conflict needs review if its historical contribution must be reconstructed.
+
+Migration is marked in the same persisted state as the imported totals, preventing repeated imports after restart. No reimport occurs after a configuration reset, because changing capacity/timezone/entity mapping may invalidate old assumptions. Normal seven-day expiration continues. Multiple instances on one flow tab require distinct context keys.
 
 ## License and project independence
 
