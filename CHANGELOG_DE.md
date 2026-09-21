@@ -11,6 +11,8 @@
 
 ### Hinzugefügt
 
+- Separate deutsche Flow-Alternative mit ursprünglichen Knotennamen, deutschen Status-/Fehlermeldungen und reproduzierbarer Erzeugung aus dem englischen Rechenkern; 85 erfolgreiche Testausführungen über beide Sprachen und zusätzliche Sprachprüfungen.
+
 - Vollständige deutsche Zweitfassungen der Projektbeschreibung, Einbau- und Migrationsanleitung, des Prüfberichts und der übrigen Projektdokumentation, jeweils mit gegenseitigen Sprachverweisen.
 - Version 3 der SOC-korrigierten Wirkungsgrad-Auswertung: zusammengehörige Messpaare, intervallbasierte Energie-/SOC-Bilanz, automatische persistente Speicherung, vorsichtiger Umgang mit Rücksetzungen und Lücken sowie ausdrücklich als ungültig markierte Ergebnisse.
 - Importierbarer englischer Node-RED-Auswertungsflow, Einbauanleitung und Regressionstests mit simuliertem Kontext.

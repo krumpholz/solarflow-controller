@@ -51,3 +51,7 @@ Persistent totals and the matching baseline are stored as one object. Restart te
 
 This is a tested implementation in a simulated execution environment, not a hardware acceptance test or proof of measurement accuracy. Commission the complete flow using the README and observe diagnostics before relying on the displayed estimate.
 
+
+## German alternative validation
+
+The same 41 regression tests pass for both English and German (82 executions). For German: `EFFICIENCY_LANGUAGE=de TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs`. Three additional checks pass with `node --test round-trip-efficiency/tests/localization.test.cjs`: identical executable core, German diagnostic/status text with stable technical codes, and matching graph/entity references. Total: 85 passing test executions. Live validation remains outstanding.

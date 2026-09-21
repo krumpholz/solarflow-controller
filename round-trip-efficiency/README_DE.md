@@ -6,11 +6,25 @@ Dieser Node-RED-Auswertungsflow schätzt den energetischen Batteriewirkungsgrad 
 
 **Stand:** geprüfte Implementierung mit automatisierten Tests in einer simulierten Umgebung. Noch nicht in einer laufenden Home-Assistant-/Node-RED-Anlage validiert. Das Ergebnis ist eine Schätzung und keine zertifizierte Messung des vollständigen Lade-/Entladewirkungsgrads (Round-Trip Efficiency).
 
+## Sprachversion des Flows wählen
+
+- **Deutsch:** [flow_DE.json](flow_DE.json) – deutsche Knotennamen, Code-Erläuterungen, Status- und Fehlermeldungen.
+- **Englisch:** [flow.json](flow.json) – weiterhin separat verfügbar.
+
+Für deine bisherige Anlage übernimmt die deutsche Alternative die ursprünglichen Namen „Batterie Lade Energie Täglich“, „Batterie Entlade Energie Täglich“, „Batterie Wirkungsgrad“ und „Lade Entlade Effizenz“. Auch der bisherige Anzeigename der Sensor-Konfiguration bleibt erhalten. Eine bestehende HA-Entitäts-ID muss beim Import trotzdem kontrolliert werden.
+
+**Nur eine Sprachversion betreiben.** Beide verwenden dieselben Knotenreferenzen und Kontextschlüssel. Die Sprache ändert weder Berechnung noch Pufferübernahme. Maschinenlesbare Felder und Codes bleiben kompatibel; `grund`, `intervallstatus` und `pufferuebernahme` ergänzen deutsche Texte. Im HA-Sensor zeigt das zusätzliche Attribut `diagnose` den deutschen Grund an.
+
+Die deutschen Quelldateien werden mit `python round-trip-efficiency/build-german-flow.py` aus dem englischen Rechenkern erzeugt. Der Generator übersetzt die Oberfläche und ergänzt deutsche Erläuterungen, ohne den ausführbaren Rechenkern zu ändern.
+
 ## Dateien
 
 | Datei | Inhalt |
 | --- | --- |
-| [flow.json](flow.json) | Importierbarer Flow mit Auslöser, zusammengehörigen Abfragen, Berechnung, Diagnose und HA-Sensor |
+| [flow_DE.json](flow_DE.json) | Vollständige deutsche Alternative zum Import |
+| [battery-efficiency_DE.js](battery-efficiency_DE.js) | Deutsche Berechnungsfunktion |
+| [prepare-cycle_DE.js](prepare-cycle_DE.js) | Deutscher Vorbereitungsknoten |
+| [flow.json](flow.json) | Importierbarer englischer Flow mit Auslöser, zusammengehörigen Abfragen, Berechnung, Diagnose und HA-Sensor |
 | [battery-efficiency.js](battery-efficiency.js) | Code der Berechnungsfunktion; zwei Ausgänge |
 | [prepare-cycle.js](prepare-cycle.js) | SOC-Momentaufnahme, Zyklus-ID und Überwachung fehlender Antworten; zwei Ausgänge |
 | [function node - Round-Trip Efficiency.txt](function%20node%20-%20Round-Trip%20Efficiency.txt) | Identische Kopie der Berechnungsfunktion unter dem bisherigen Downloadpfad |
@@ -30,20 +44,20 @@ Der ursprüngliche Export enthielt zwei unabhängige Current-State-Knoten, die B
 - Summen und zugehöriger Ausgangspunkt werden gemeinsam in einem automatisch dauerhaft gespeicherten Zustandsobjekt abgelegt.
 - Nach einer Lücke oder Rücksetzung beginnt ein neuer Abschnitt. Nicht erfasste Energie und zugehörige SOC-Änderung werden beide ausgeschlossen.
 - Schätzwerte außerhalb des gültigen Bereichs erscheinen in der Diagnose. Der HA-Sensor wird auf Unknown beziehungsweise Unbekannt gesetzt, statt auf 0 % oder 100 % begrenzt zu werden.
-- Codekommentare, Knotennamen und Statusmeldungen sind englisch. Die Dokumentation ist deutsch und englisch verfügbar. Bestehende deutsche Entitäts-IDs und kompatible Kontextschlüssel bleiben erhalten, damit ihre Verweise weiter funktionieren.
+- Die englische Fassung verwendet englische Kommentare, Knotennamen und Statusmeldungen; die deutsche Alternative hat eine deutsche Oberfläche und deutsche Code-Erläuterungen. Die Dokumentation ist deutsch und englisch verfügbar. Bestehende deutsche Entitäts-IDs und kompatible Kontextschlüssel bleiben erhalten, damit ihre Verweise weiter funktionieren.
 
 ## Einbau und Aktualisierung
 
 1. Sichere den bestehenden Flow und seinen persistenten Kontext. Deaktiviere die alte Wirkungsgradberechnung, bevor du die neue aktivierst. Behalte den ursprünglichen Flow-Tab und seinen Kontext: Daraus wird die Historie übernommen.
 2. Prüfe die unten beschriebenen Kontextspeicher. Sind sie bereits vorhanden, **vor der Migration nicht neu starten**: Der aktuelle Live-Tagesstand liegt in `memoryOnly`. Ist ein Neustart erforderlich, sichere den heutigen Stand zuerst mit dem bisherigen Snapshot-Schalter und warte, bis der Dateispeicher geschrieben wurde. Andernfalls lassen sich nur ein vorhandener Snapshot und abgeschlossene Tage aus dem Ringpuffer wiederherstellen.
-3. Importiere `flow.json` **auf den bestehenden Flow-Tab, auf dem `flow.batt_level` bereitgestellt wird**. Ein neuer Tab besitzt einen anderen Flow-Kontext. Wähle in beiden Current-State-Knoten und in der Entitätskonfiguration deinen vorhandenen Home-Assistant-Server. Alte und neue Berechnung dürfen nicht gleichzeitig denselben Sensor beschreiben.
+3. Importiere `flow_DE.json` (deutsch) oder `flow.json` (englisch) **auf den bestehenden Flow-Tab, auf dem `flow.batt_level` bereitgestellt wird**. Ein neuer Tab besitzt einen anderen Flow-Kontext. Wähle in beiden Current-State-Knoten und in der Entitätskonfiguration deinen vorhandenen Home-Assistant-Server. Alte und neue Berechnung dürfen nicht gleichzeitig denselben Sensor beschreiben.
 4. Prüfe `CFG.capacityKWh`: Die eingetragenen **8,640 kWh** stammen aus der ursprünglichen Anlage und sind kein allgemeingültiger Standardwert. Im JavaScript-Code steht dafür `8.640` mit Dezimalpunkt. Prüfe auch `maxPowerKW` und die Auflösung der Energiezähler.
 5. Prüfe beide Energie-Entitäts-IDs in den Current-State-Knoten und in `CFG`. Erforderlich sind täglich aufsummierte Energiezähler in **kWh**, die um lokale Mitternacht zurückgesetzt werden. Die Berechnung prüft zusätzlich das Attribut `unit_of_measurement`. Die Current-State-Knoten verwenden den Zustandstyp String, damit ungültige Ausgangswerte erkennbar bleiben.
 6. Der externe SOC-Knoten muss `batt_level` im Speicher `memoryOnly` mit einer endlichen Prozentzahl zwischen 0 und 100 versorgen. Teile diesen Wert nur dann durch zehn, wenn der ursprüngliche Messwert tatsächlich in Zehntelprozent vorliegt.
 7. Ergänze möglichst `batt_level_ts` wie unten beschrieben und aktiviere `requireSocTimestamp`. Standardmäßig bleibt der Zeitstempel optional, damit die bisherige Schnittstelle weiter verwendet werden kann.
 8. Die Zeitzone der Node-RED-Laufzeit muss zur Zeitzone der täglichen Zählerrücksetzung passen, beispielsweise `Europe/Berlin`. Eine Änderung der Laufzeit-Zeitzone erfordert einen Neustart. Beachte davor die Sicherung des Live-Tagesstands aus Schritt 2.
 9. Übernimm die Änderungen mit Deploy und prüfe die Diagnoseausgabe. Der enthaltene Inject-Knoten löst alle fünf Sekunden aus. Ohne Vorgeschichte liefert die erste vollständige Messung Unknown. Mit gültiger übernommener Historie kann sofort deren Schätzwert angezeigt werden. Neue Intervalle werden ab der nächsten akzeptierten Messung ergänzt.
-10. Prüfe den Namen und die Entität des HA-Sensors sowie vorhandene Dashboards. Der exportierte Anzeigename lautet jetzt `Battery Efficiency Estimate`. Behalte bei Bedarf die bisherige Entitätszuordnung bei.
+10. Prüfe den Namen und die Entität des HA-Sensors sowie vorhandene Dashboards. Der Anzeigename lautet in der deutschen Fassung wie ursprünglich `Lade Entlade Effizenz`, in der englischen Fassung `Battery Efficiency Estimate`. Behalte bei Bedarf die bisherige Entitätszuordnung bei.
 
 Der bereitgestellte Export nennt `node-red-contrib-home-assistant-websocket` **0.80.3**. Der HA-Sensor-Knoten benötigt außerdem die zugehörige Node-RED-Integration in Home Assistant. Die Versionsangabe stammt aus dem Ausgangsexport; sie bedeutet nicht, dass bereits ein vollständiger Kompatibilitätstest in dieser Laufzeit durchgeführt wurde.
 

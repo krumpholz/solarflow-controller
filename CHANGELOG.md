@@ -11,6 +11,8 @@
 
 ### Added
 
+- Separate German flow alternative with original node names, translated status/error messages and reproducible generation from the English core; 85 passing test executions across both languages and localization checks.
+
 - Full German translations of the project overview, setup and migration guide, validation report, and supporting project documentation, with reciprocal language links.
 
 - Version 3 of the SOC-adjusted efficiency monitoring utility: paired measurements, interval-based energy/SOC accounting, automatic persistent state, conservative reset/gap handling, and explicit invalid results.

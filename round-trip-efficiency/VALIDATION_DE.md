@@ -50,3 +50,7 @@ Persistente Summen und ihr zugehöriger Ausgangspunkt werden als ein Objekt gesp
 - Genauigkeit der Kapazität, SOC-Auflösung, BMS-Neukalibrierung und resultierende Messunsicherheit.
 
 Die Implementierung wurde in einer simulierten Ausführungsumgebung geprüft. Das ist weder eine Hardwareabnahme noch ein Nachweis der Messgenauigkeit. Nimm den vollständigen Flow anhand der [Anleitung](README_DE.md) in Betrieb und beobachte die Diagnose, bevor du dich auf den angezeigten Schätzwert verlässt.
+
+## Prüfung der deutschen Alternative
+
+Dieselben 41 Regressionstests bestehen sowohl für die englische als auch für die deutsche Fassung (82 Testausführungen). Für Deutsch: `EFFICIENCY_LANGUAGE=de TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs`. Zusätzlich bestehen drei Sprachversionsprüfungen mit `node --test round-trip-efficiency/tests/localization.test.cjs`: identischer ausführbarer Rechenkern, deutsche Diagnose-/Statusmeldung bei unverändertem technischem Code sowie gleiche Verbindungen und Entitätsreferenzen. Insgesamt 85 bestandene Testausführungen. Die Live-Prüfung steht weiterhin aus.

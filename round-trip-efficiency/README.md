@@ -6,10 +6,19 @@ A Node-RED monitoring flow that estimates battery energy efficiency from daily c
 
 **Status:** reviewed implementation with automated simulated-context tests. Not yet validated in a live Home Assistant/Node-RED installation. This is an estimate, not a certified round-trip efficiency measurement.
 
+## Choose the flow language
+
+Use [flow.json](flow.json) for English or [flow_DE.json](flow_DE.json) for German node names, status/error messages and code explanations. The German alternative restores the original node/sensor labels, including `Batterie Wirkungsgrad` and `Lade Entlade Effizenz`. **Run only one version**: both share the same graph references and context keys. Verify the existing HA entity mapping after import.
+
+Calculation and migration behavior are identical. Technical diagnostic keys and codes stay compatible; German messages add `grund`, `intervallstatus` and `pufferuebernahme`, plus the HA attribute `diagnose`. Generate the alternative with `python round-trip-efficiency/build-german-flow.py`. Its executable core is taken unchanged from the English sources.
+
 ## Files
 
 | File | Purpose |
 | --- | --- |
+| [flow_DE.json](flow_DE.json) | Complete German flow alternative |
+| [battery-efficiency_DE.js](battery-efficiency_DE.js) | German calculation Function |
+| [prepare-cycle_DE.js](prepare-cycle_DE.js) | German preparation Function |
 | [flow.json](flow.json) | Importable flow, including trigger, paired requests, calculation, diagnostics and HA sensor |
 | [battery-efficiency.js](battery-efficiency.js) | Calculation Function body; two outputs |
 | [prepare-cycle.js](prepare-cycle.js) | SOC snapshot, cycle ID and missing-response watchdog; two outputs |
@@ -30,20 +39,20 @@ The original export included two independent Current State nodes, the calculatio
 - Totals and their matching baseline are kept together in one automatically persisted state object.
 - A gap or reset starts a new segment. Its unmeasured energy and SOC change are both excluded.
 - Out-of-range estimates are reported as diagnostics; the HA sensor becomes Unknown instead of showing a clipped 0% or 100%.
-- Comments, node names and status messages are in English; documentation is available in English and German. Existing German entity IDs and compatibility context keys remain unchanged so their references still work.
+- The default flow uses English comments, names and status messages; the German alternative provides a German interface and code explanations; documentation is available in English and German. Existing German entity IDs and compatibility context keys remain unchanged so their references still work.
 
 ## Installation and upgrade
 
 1. Back up your existing flow and persistent context. Disable the old efficiency calculation before enabling this replacement. Keep the original flow tab and its context: migration reads the history from that tab.
 2. Check the context stores below. If they already exist, do not restart before migration: the latest legacy live day is in memoryOnly. If a restart is necessary, first save the live day with the old snapshot switch and let the file store flush; otherwise only an existing snapshot and completed ring days can be recovered.
-3. Import `flow.json` **onto the existing flow tab that supplies `flow.batt_level`**. A new tab has a different flow context. Select your existing Home Assistant server in both Current State nodes and the entity configuration; avoid leaving duplicate old and new estimators connected to the same sensor.
+3. Import `flow.json` (English) or `flow_DE.json` (German) **onto the existing flow tab that supplies `flow.batt_level`**. A new tab has a different flow context. Select your existing Home Assistant server in both Current State nodes and the entity configuration; avoid leaving duplicate old and new estimators connected to the same sensor.
 4. Review `CFG.capacityKWh`: the supplied **8.640 kWh** is the original installation's value, not a universal default. Review `maxPowerKW` and counter resolution as well.
 5. Check both energy entity IDs in the Current State nodes and in `CFG`. They must be daily cumulative energy counters in **kWh**, resetting at local midnight. The calculation also checks the entity's `unit_of_measurement` attribute. Current State nodes use string state type so invalid source states remain distinguishable.
 6. Ensure the external SOC writer supplies a finite percentage from 0 to 100 to `batt_level` in `memoryOnly`. Do not divide this percentage by ten unless the upstream value is actually in tenths of a percent.
 7. Prefer adding `batt_level_ts` as described below and enabling `requireSocTimestamp`. It is optional by default to accommodate the supplied flow's existing interface.
 8. Set the Node-RED runtime timezone to the same timezone used for the daily sensor resets, for example `Europe/Berlin` when appropriate. Restart after changing the runtime timezone.
 9. Deploy and check the diagnostic output. The included Inject node runs every five seconds. On a fresh installation, the first complete measurement produces Unknown. With valid imported history, it can display the inherited estimate immediately. New interval accumulation starts with the next accepted interval.
-10. Verify the HA sensor name/entity and any dashboards that used the previous sensor. The exported friendly name is now `Battery Efficiency Estimate`; preserve your existing entity mapping if required.
+10. Verify the HA sensor name/entity and any dashboards that used the previous sensor. The exported friendly name is `Battery Efficiency Estimate` in English and the original `Lade Entlade Effizenz` in German; preserve your existing entity mapping if required.
 
 The supplied export declares `node-red-contrib-home-assistant-websocket` **0.80.3**. The HA Sensor node also requires the companion Node-RED integration in Home Assistant. This package version is the source export's dependency, not a claim of a completed runtime compatibility test.
 

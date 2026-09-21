@@ -4,7 +4,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.join(__dirname, '..');
-const source = fs.readFileSync(path.join(root, 'battery-efficiency.js'), 'utf8');
+const german = process.env.EFFICIENCY_LANGUAGE === 'de';
+const localized = file => german ? file.replace(/(\.[^.]+)$/, '_DE$1') : file;
+const source = fs.readFileSync(path.join(root, localized('battery-efficiency.js')), 'utf8');
 function legacy(h, slots) {
     h.stores.file.batt_eff_ring_7d = {version: 2, unit: 'kWh', size: 7, head: slots.length - 1,
         slots: slots.concat(Array.from({length: 7-slots.length}, () => ({date:null, chargeKWh:0, dischargeKWh:0, socStart:null, socEnd:null})))};
@@ -215,7 +217,7 @@ test('missing context store produces an unknown state, not a numeric result', ()
 });
 test('prepare function snapshots SOC once and watchdog clears stale result', () => {
     const h = harness(); h.stores.memoryOnly.batt_level = 51;
-    const prepare = new vm.Script('(function(msg){' + fs.readFileSync(path.join(root, 'prepare-cycle.js'), 'utf8') + '})').runInContext(h.sandbox);
+    const prepare = new vm.Script('(function(msg){' + fs.readFileSync(path.join(root, localized('prepare-cycle.js')), 'utf8') + '})').runInContext(h.sandbox);
     const a = prepare({}); assert.equal(a[0]._eff.soc, 51); assert.equal(a[1], null);
     h.advance(16000); assert.equal(prepare({})[1].result.reason, 'measurement_timeout');
     assert.equal(h.stores.file.la_ela_es, null);
@@ -228,7 +230,7 @@ test('DST calendar rollover excludes boundary without a 24-hour assumption', () 
     assert.equal(h.pair(0, 0)[0].result.reason, 'new_day_boundary_excluded');
 });
 test('export contains synchronized functions and resolved wiring/config references', () => {
-    const nodes = JSON.parse(fs.readFileSync(path.join(root, 'flow.json'), 'utf8'));
+    const nodes = JSON.parse(fs.readFileSync(path.join(root, localized('flow.json')), 'utf8'));
     const ids = new Set(nodes.map(n => n.id)); assert.equal(ids.size, nodes.length);
     for (const n of nodes) {
         for (const wires of n.wires || []) for (const id of wires) assert.ok(ids.has(id), id);
@@ -237,14 +239,18 @@ test('export contains synchronized functions and resolved wiring/config referenc
         if (n.type === 'function') assert.equal(n.outputs, 2);
     }
     assert.equal(nodes.find(n => n.id === 'e46be25028e13f5d').func, source);
-    assert.equal(nodes.find(n => n.id === 'effprepare000003').func, fs.readFileSync(path.join(root, 'prepare-cycle.js'), 'utf8'));
-    assert.equal(fs.readFileSync(path.join(root, 'function node - Round-Trip Efficiency.txt'), 'utf8'), source);
+    assert.equal(nodes.find(n => n.id === 'effprepare000003').func, fs.readFileSync(path.join(root, localized('prepare-cycle.js')), 'utf8'));
+    if (!german) assert.equal(fs.readFileSync(path.join(root, 'function node - Round-Trip Efficiency.txt'), 'utf8'), source);
+    if (german) {
+        assert.equal(nodes.find(n => n.id === 'e46be25028e13f5d').name, 'Batterie Wirkungsgrad');
+        assert.equal(nodes.find(n => n.id === '0e16d9dcd078a8e9').name, 'Lade Entlade Effizenz');
+    }
     for (const n of nodes.filter(n => n.type === 'api-current-state')) {
         assert.equal(n.state_type, 'str'); assert.equal(n.blockInputOverrides, true);
     }
 });
 test('exported preparation and calculation execute together with paired HA responses', () => {
-    const h = harness(); const nodes = JSON.parse(fs.readFileSync(path.join(root, 'flow.json'), 'utf8'));
+    const h = harness(); const nodes = JSON.parse(fs.readFileSync(path.join(root, localized('flow.json')), 'utf8'));
     const prepare = new vm.Script('(function(msg){' + nodes.find(n => n.id === 'effprepare000003').func + '})').runInContext(h.sandbox);
     h.stores.memoryOnly.batt_level = 50; h.stores.memoryOnly.batt_level_ts = h.time();
     const request = prepare({})[0]; const msgs = h.messages(5, 4);
