@@ -1,0 +1,619 @@
+/************************************************************
+ * 7-TAGE RINGPUFFER BATTERIE-WIRKUNGSGRAD
+ * kWh-Version
+ *
+ * Speicherstrategie:
+ * - Standard-Store = memoryOnly
+ * - Heutiger Live-Tag nur in memoryOnly
+ * - Historischer 7T-Ring nur in file
+ * - Optional: heutiger Live-Tag per Steuerkonstante zusätzlich
+ *   in file sichern, damit er nach Neustart wieder geladen wird
+ *
+ * Eingänge:
+ * - msg.payload = Tageswert in kWh
+ * - msg.data.entity_id =
+ *      sensor.batterie_lade_energie_pro_tag
+ *      sensor.batterie_entlade_energie_pro_tag
+ *
+ * Flow-Variablen memoryOnly:
+ * - batt_eff_today_live
+ * - batt_level
+ * - batt_min_s
+ * - batt_max_s
+ *
+ * Flow-Variablen file:
+ * - batt_eff_ring_7d
+ * - sum_batt_la_7d
+ * - sum_batt_ela_7d
+ * - la_ela_es
+ * - batt_eff_today_live_snapshot
+ *
+ * Bedienung Snapshot:
+ * - SAVE_TODAY_SNAPSHOT_TO_FILE = false  -> Normalbetrieb
+ * - SAVE_TODAY_SNAPSHOT_TO_FILE = true   -> aktuellen Tag vor Neustart sichern
+ *
+ * Nach Neustart:
+ * - Snapshot wird einmalig aus file gelesen und nach memoryOnly übernommen,
+ *   wenn Datum = heute.
+ * - Danach Steuerkonstante wieder auf false setzen.
+ ************************************************************/
+
+var ENTITY_CHARGE = "sensor.batterie_lade_energie_pro_tag";
+var ENTITY_DISCHARGE = "sensor.batterie_entlade_energie_pro_tag";
+
+// Batteriegesamtkapazität in kWh
+var BAT_CAPACITY_KWH = 8.640;  // 2880 Wh * 3 / 1000 = 8.640 kWh
+var RING_SIZE = 7;
+
+// --------------------------------------------------
+// Manuelle Steuerung
+// --------------------------------------------------
+var SAVE_TODAY_SNAPSHOT_TO_FILE = false;
+
+// --------------------------------------------------
+// Stores / Keys
+// --------------------------------------------------
+var STORE_FILE = "file";
+var STORE_MEMORY = "memoryOnly";
+
+var KEY_RING = "batt_eff_ring_7d";
+var KEY_SUM_CHARGE = "sum_batt_la_7d";
+var KEY_SUM_DISCHARGE = "sum_batt_ela_7d";
+var KEY_ETA = "la_ela_es";
+var KEY_TODAY = "batt_eff_today_live";
+var KEY_TODAY_SNAPSHOT = "batt_eff_today_live_snapshot";
+
+// --------------------------------------------------
+// Hilfsfunktionen
+// --------------------------------------------------
+function toNum(v, d) {
+    var n = Number(v);
+    return isFinite(n) ? n : d;
+}
+
+function clamp(v, min, max) {
+    return Math.min(Math.max(v, min), max);
+}
+
+function round3(v) {
+    return Math.round(toNum(v, 0) * 1000) / 1000;
+}
+
+function localDateStr(d) {
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1);
+    var day = String(d.getDate());
+
+    if (m.length < 2) m = "0" + m;
+    if (day.length < 2) day = "0" + day;
+
+    return y + "-" + m + "-" + day;
+}
+
+function parseLocalDate(dateStr) {
+    return new Date(dateStr + "T00:00:00");
+}
+
+function dayDiff(aStr, bStr) {
+    var a = parseLocalDate(aStr);
+    var b = parseLocalDate(bStr);
+    return Math.round((a.getTime() - b.getTime()) / 86400000);
+}
+
+function makeEmptySlot() {
+    return {
+        date: null,
+        chargeKWh: 0,
+        dischargeKWh: 0,
+        socStart: null,
+        socEnd: null
+    };
+}
+
+function sanitizeSoc(v, fallbackSoc) {
+    var n = Number(v);
+    if (!isFinite(n)) return fallbackSoc;
+    return clamp(n, 0, 100);
+}
+
+function sanitizeSlot(slot) {
+    if (!slot || typeof slot !== "object") {
+        return makeEmptySlot();
+    }
+
+    return {
+        date: (typeof slot.date === "string") ? slot.date : null,
+        chargeKWh: Math.max(0, toNum(slot.chargeKWh, 0)),
+        dischargeKWh: Math.max(0, toNum(slot.dischargeKWh, 0)),
+        socStart: isFinite(Number(slot.socStart)) ? clamp(Number(slot.socStart), 0, 100) : null,
+        socEnd: isFinite(Number(slot.socEnd)) ? clamp(Number(slot.socEnd), 0, 100) : null
+    };
+}
+
+function initRing() {
+    var slots = [];
+    for (var i = 0; i < RING_SIZE; i++) {
+        slots.push(makeEmptySlot());
+    }
+
+    return {
+        version: 2,
+        unit: "kWh",
+        size: RING_SIZE,
+        head: -1,
+        slots: slots
+    };
+}
+
+function sanitizeRing(ring) {
+    if (!ring || typeof ring !== "object" || !Array.isArray(ring.slots) || ring.slots.length !== RING_SIZE) {
+        return initRing();
+    }
+
+    var cleanedSlots = [];
+    for (var i = 0; i < RING_SIZE; i++) {
+        cleanedSlots.push(sanitizeSlot(ring.slots[i]));
+    }
+
+    var out = {
+        version: 2,
+        unit: "kWh",
+        size: RING_SIZE,
+        head: toNum(ring.head, -1),
+        slots: cleanedSlots
+    };
+
+    if (out.head < -1) out.head = -1;
+    if (out.head > (RING_SIZE - 1)) out.head = RING_SIZE - 1;
+
+    return out;
+}
+
+function sanitizeToday(todayObj, todayStr, socNowForEff) {
+    if (!todayObj || typeof todayObj !== "object") {
+        return {
+            date: todayStr,
+            chargeKWh: 0,
+            dischargeKWh: 0,
+            socStart: socNowForEff,
+            socEnd: socNowForEff
+        };
+    }
+
+    var objDate = (typeof todayObj.date === "string") ? todayObj.date : todayStr;
+
+    return {
+        date: objDate,
+        chargeKWh: Math.max(0, toNum(todayObj.chargeKWh, 0)),
+        dischargeKWh: Math.max(0, toNum(todayObj.dischargeKWh, 0)),
+        socStart: sanitizeSoc(todayObj.socStart, socNowForEff),
+        socEnd: sanitizeSoc(todayObj.socEnd, socNowForEff)
+    };
+}
+
+function sanitizeTodaySnapshot(obj) {
+    if (!obj || typeof obj !== "object") return null;
+
+    return {
+        date: (typeof obj.date === "string") ? obj.date : null,
+        chargeKWh: Math.max(0, toNum(obj.chargeKWh, 0)),
+        dischargeKWh: Math.max(0, toNum(obj.dischargeKWh, 0)),
+        socStart: isFinite(Number(obj.socStart)) ? clamp(Number(obj.socStart), 0, 100) : null,
+        socEnd: isFinite(Number(obj.socEnd)) ? clamp(Number(obj.socEnd), 0, 100) : null
+    };
+}
+
+function pushCompletedDayToRing(ring, daySlot) {
+    var idx = (ring.head + 1 + ring.size) % ring.size;
+
+    ring.slots[idx] = {
+        date: daySlot.date,
+        chargeKWh: Math.max(0, toNum(daySlot.chargeKWh, 0)),
+        dischargeKWh: Math.max(0, toNum(daySlot.dischargeKWh, 0)),
+        socStart: isFinite(Number(daySlot.socStart)) ? clamp(Number(daySlot.socStart), 0, 100) : null,
+        socEnd: isFinite(Number(daySlot.socEnd)) ? clamp(Number(daySlot.socEnd), 0, 100) : null
+    };
+
+    ring.head = idx;
+    return ring;
+}
+
+function getValidWindow(ring, todayLive, todayStr) {
+    var arr = [];
+
+    for (var i = 0; i < ring.size; i++) {
+        var s = sanitizeSlot(ring.slots[i]);
+        if (!s.date) continue;
+
+        var diff = dayDiff(todayStr, s.date);
+        if (diff >= 0 && diff <= 6) {
+            arr.push(s);
+        }
+    }
+
+    if (todayLive && todayLive.date === todayStr) {
+        arr.push(sanitizeSlot(todayLive));
+    }
+
+    arr.sort(function (a, b) {
+        if (a.date < b.date) return -1;
+        if (a.date > b.date) return 1;
+        return 0;
+    });
+
+    var dedup = [];
+    var seen = {};
+
+    for (var j = 0; j < arr.length; j++) {
+        if (!seen[arr[j].date]) {
+            dedup.push(arr[j]);
+            seen[arr[j].date] = true;
+        } else {
+            dedup[dedup.length - 1] = arr[j];
+        }
+    }
+
+    return dedup;
+}
+
+function recalcAndStore(ring, todayLive, todayStr, socNowForEff, battMin, battMax, usableSocPct, usableCapacityKWh) {
+    var windowDays = getValidWindow(ring, todayLive, todayStr);
+
+    var sumChargeKWh = 0;
+    var sumDischargeKWh = 0;
+
+    for (var i = 0; i < windowDays.length; i++) {
+        var d = windowDays[i];
+        sumChargeKWh += Math.max(0, toNum(d.chargeKWh, 0));
+        sumDischargeKWh += Math.max(0, toNum(d.dischargeKWh, 0));
+    }
+
+    var socStart = socNowForEff;
+    var socEnd = socNowForEff;
+    var deltaStoredEnergyKWh = 0;
+    var etaRawPct = 0;
+    var etaPct = 0;
+    var lossesKWh = 0;
+
+    if (windowDays.length > 0) {
+        var firstDay = windowDays[0];
+        var lastDay = windowDays[windowDays.length - 1];
+
+        socStart = sanitizeSoc(firstDay.socStart, socNowForEff);
+        socEnd = sanitizeSoc(lastDay.socEnd, socNowForEff);
+
+        if (usableSocPct > 0) {
+            deltaStoredEnergyKWh = usableCapacityKWh * ((socEnd - socStart) / usableSocPct);
+        }
+
+        if (sumChargeKWh > 0) {
+            etaRawPct = ((sumDischargeKWh + deltaStoredEnergyKWh) / sumChargeKWh) * 100;
+        }
+
+        if (!isFinite(etaRawPct)) etaRawPct = 0;
+        etaPct = Math.max(0, Math.min(100, etaRawPct));
+        etaPct = Math.round(etaPct);
+
+        lossesKWh = sumChargeKWh - sumDischargeKWh - deltaStoredEnergyKWh;
+    }
+
+    flow.set(KEY_SUM_CHARGE, round3(sumChargeKWh), STORE_FILE);
+    flow.set(KEY_SUM_DISCHARGE, round3(sumDischargeKWh), STORE_FILE);
+    flow.set(KEY_ETA, etaPct, STORE_FILE);
+
+    return {
+        etaPct: etaPct,
+        etaRawPct: etaRawPct,
+        windowDays: windowDays,
+        sumChargeKWh: sumChargeKWh,
+        sumDischargeKWh: sumDischargeKWh,
+        socStart: socStart,
+        socEnd: socEnd,
+        deltaStoredEnergyKWh: deltaStoredEnergyKWh,
+        lossesKWh: lossesKWh
+    };
+}
+
+// --------------------------------------------------
+// Eingang prüfen
+// --------------------------------------------------
+var entityId = null;
+
+if (msg && msg.data && msg.data.entity_id) {
+    entityId = msg.data.entity_id;
+}
+
+if (entityId !== ENTITY_CHARGE && entityId !== ENTITY_DISCHARGE) {
+    node.status({ fill: "red", shape: "ring", text: "entity_id fehlt/falsch" });
+    node.error("Unbekannte oder fehlende msg.data.entity_id");
+    return null;
+}
+
+var inputValueKWh = Math.max(0, toNum(msg.payload, 0));
+
+// --------------------------------------------------
+// SOC / Grenzen
+// --------------------------------------------------
+var socNowRaw = toNum(flow.get("batt_level"), NaN);
+
+if (!isFinite(socNowRaw)) {
+    node.status({ fill: "red", shape: "ring", text: "batt_level fehlt" });
+    node.error("flow.batt_level fehlt oder ist ungültig");
+    return null;
+}
+
+var battMin = clamp(toNum(flow.get("batt_min_s"), 0), 0, 100);
+var battMax = clamp(toNum(flow.get("batt_max_s"), 100), 0, 100);
+
+if (battMax <= battMin) {
+    battMin = 0;
+    battMax = 100;
+}
+
+var usableSocPct = battMax - battMin;
+var usableCapacityKWh = BAT_CAPACITY_KWH * usableSocPct / 100;
+
+// --------------------------------------------------
+// SOC-Puffer / Plausibilisierung
+// --------------------------------------------------
+var KEY_SOC_BUFFER = "batt_eff_soc_buffer";
+var SOC_BUFFER_MS = 10 * 60 * 1000;      // 10 Minuten
+var SOC_MAX_STEP_PCT = 2;                // max. plausibler Sprung je Node-Lauf
+var SOC_MIN_SAMPLES = 12;                // bei 5s Trigger ca. 60s Mindestdaten
+
+function median(values) {
+    if (!values || values.length === 0) return NaN;
+
+    var a = values.slice().sort(function (x, y) {
+        return x - y;
+    });
+
+    var mid = Math.floor(a.length / 2);
+
+    if (a.length % 2 === 0) {
+        return (a[mid - 1] + a[mid]) / 2;
+    }
+
+    return a[mid];
+}
+
+var socRawForBuffer = Number(socNowRaw);
+
+var socInAllowedWindow =
+    isFinite(socRawForBuffer) &&
+    socRawForBuffer >= battMin &&
+    socRawForBuffer <= battMax;
+
+var socBuffer = flow.get(KEY_SOC_BUFFER, STORE_MEMORY);
+
+if (!Array.isArray(socBuffer)) {
+    socBuffer = [];
+}
+
+// Alte/ungültige/außerhalb Fenster liegende Werte aus dem Array entfernen,
+// bevor der aktuelle Wert geprüft wird.
+var socLimitTs = Date.now() - SOC_BUFFER_MS;
+
+socBuffer = socBuffer.filter(function (p) {
+    return p &&
+        isFinite(Number(p.ts)) &&
+        isFinite(Number(p.soc)) &&
+        Number(p.ts) >= socLimitTs &&
+        Number(p.soc) >= battMin &&
+        Number(p.soc) <= battMax;
+});
+
+var lastSoc = null;
+
+if (socBuffer.length > 0) {
+    lastSoc = Number(socBuffer[socBuffer.length - 1].soc);
+}
+
+var socAccepted = socInAllowedWindow;
+
+if (socAccepted && lastSoc !== null && isFinite(lastSoc)) {
+    var socStep = Math.abs(socRawForBuffer - lastSoc);
+
+    if (socStep > SOC_MAX_STEP_PCT) {
+        socAccepted = false;
+    }
+}
+
+// Nur gültige und plausible SOC-Werte aufnehmen
+if (socAccepted) {
+    socBuffer.push({
+        ts: Date.now(),
+        soc: socRawForBuffer
+    });
+}
+
+flow.set(KEY_SOC_BUFFER, socBuffer, STORE_MEMORY);
+
+var socValues = socBuffer.map(function (p) {
+    return Number(p.soc);
+});
+
+var socMedian = median(socValues);
+
+var socNowForEff = NaN;
+
+if (socValues.length >= SOC_MIN_SAMPLES && isFinite(socMedian)) {
+    socNowForEff = socMedian;
+} else if (socInAllowedWindow) {
+    socNowForEff = socRawForBuffer;
+}
+
+if (!isFinite(socNowForEff)) {
+    node.status({
+        fill: "red",
+        shape: "ring",
+        text: `SOC ungültig: raw=${socNowRaw}, erlaubt ${battMin}-${battMax}, Buffer=${socValues.length}`
+    });
+
+    node.error("Kein gültiger SOC für Effizienzberechnung verfügbar");
+    return null;
+}
+
+// Dieser Wert bleibt nur als Diagnose erhalten.
+// Er wird NICHT mehr für socStart/socEnd verwendet.
+var socNowClamped = clamp(socNowRaw, battMin, battMax);
+
+// --------------------------------------------------
+// Datum / Speicher laden
+// --------------------------------------------------
+var now = new Date();
+var todayStr = localDateStr(now);
+
+var ring = sanitizeRing(flow.get(KEY_RING, STORE_FILE));
+var todayLive = flow.get(KEY_TODAY, STORE_MEMORY);
+var restoredSnapshot = false;
+
+// --------------------------------------------------
+// Snapshot nach Neustart einmalig aus file holen
+// --------------------------------------------------
+if (!todayLive || typeof todayLive !== "object") {
+    var snap = sanitizeTodaySnapshot(flow.get(KEY_TODAY_SNAPSHOT, STORE_FILE));
+
+    if (snap && snap.date === todayStr) {
+        todayLive = sanitizeToday(snap, todayStr, socNowForEff);
+        restoredSnapshot = true;
+    } else {
+        todayLive = sanitizeToday(null, todayStr, socNowForEff);
+    }
+} else {
+    todayLive = sanitizeToday(todayLive, todayStr, socNowForEff);
+}
+
+// --------------------------------------------------
+// Tageswechsel behandeln
+// --------------------------------------------------
+var ringChanged = false;
+
+if (todayLive.date !== todayStr) {
+    todayLive.socEnd = sanitizeSoc(todayLive.socEnd, socNowForEff);
+
+    if (todayLive.date) {
+        ring = pushCompletedDayToRing(ring, todayLive);
+        flow.set(KEY_RING, ring, STORE_FILE);
+        ringChanged = true;
+    }
+
+    todayLive = {
+        date: todayStr,
+        chargeKWh: 0,
+        dischargeKWh: 0,
+        socStart: socNowForEff,
+        socEnd: socNowForEff
+    };
+}
+
+// --------------------------------------------------
+// Live-Tageswert nur in memoryOnly aktualisieren
+// --------------------------------------------------
+if (entityId === ENTITY_CHARGE) {
+    todayLive.chargeKWh = inputValueKWh;
+} else if (entityId === ENTITY_DISCHARGE) {
+    todayLive.dischargeKWh = inputValueKWh;
+}
+
+todayLive.socEnd = socNowForEff;
+flow.set(KEY_TODAY, todayLive, STORE_MEMORY);
+
+// --------------------------------------------------
+// Optionaler Snapshot des heutigen Tages in file
+// --------------------------------------------------
+var snapshotWritten = false;
+
+if (SAVE_TODAY_SNAPSHOT_TO_FILE) {
+    if (todayLive && typeof todayLive === "object") {
+        flow.set(KEY_TODAY_SNAPSHOT, todayLive, STORE_FILE);
+        snapshotWritten = true;
+    }
+}
+
+// --------------------------------------------------
+// Wirkungsgrad aus file-Ring + heutigem memory-Tag berechnen
+// --------------------------------------------------
+var calc = recalcAndStore(
+    ring,
+    todayLive,
+    todayStr,
+    socNowForEff,
+    battMin,
+    battMax,
+    usableSocPct,
+    usableCapacityKWh
+);
+
+// --------------------------------------------------
+// Ausgabe
+// --------------------------------------------------
+msg.payload = calc.etaPct;
+msg.result = {
+    eta_pct: calc.etaPct,
+    eta_raw_pct: Math.round(calc.etaRawPct * 10) / 10,
+    days_used: calc.windowDays.length,
+    sum_charge_kwh_7d: round3(calc.sumChargeKWh),
+    sum_discharge_kwh_7d: round3(calc.sumDischargeKWh),
+    soc_start_pct: Math.round(calc.socStart * 10) / 10,
+    soc_end_pct: Math.round(calc.socEnd * 10) / 10,
+    soc_now_raw_pct: Math.round(socNowRaw * 10) / 10,
+    soc_now_eff_pct: Math.round(socNowForEff * 10) / 10,
+    soc_now_clamped_pct: Math.round(socNowClamped * 10) / 10,
+    soc_buffer_samples: socValues.length,
+    soc_buffer_used_median: socValues.length >= SOC_MIN_SAMPLES && isFinite(socMedian),
+    soc_buffer_accepted: socAccepted,
+    soc_in_allowed_window: socInAllowedWindow,
+    batt_min_pct: battMin,
+    batt_max_pct: battMax,
+    usable_capacity_kwh: round3(usableCapacityKWh),
+    delta_stored_energy_kwh: round3(calc.deltaStoredEnergyKWh),
+    losses_kwh: round3(calc.lossesKWh),
+    ring_head: ring.head,
+    today_live: todayLive,
+    ring_slots: ring.slots,
+    ring_written_to_file: ringChanged,
+    today_snapshot_restored: restoredSnapshot,
+    today_snapshot_written: snapshotWritten,
+    today_snapshot_enabled: SAVE_TODAY_SNAPSHOT_TO_FILE
+};
+
+// --------------------------------------------------
+// Debug / Statusanzeige
+// --------------------------------------------------
+var validDates = [];
+for (var k = 0; k < ring.slots.length; k++) {
+    if (ring.slots[k] && typeof ring.slots[k].date === "string" && ring.slots[k].date) {
+        validDates.push(ring.slots[k].date);
+    }
+}
+validDates.sort();
+
+var oldestDate = validDates.length > 0 ? validDates[0] : "-";
+var newestDate = validDates.length > 0 ? validDates[validDates.length - 1] : "-";
+
+var statusText = calc.etaPct + "%";
+if (calc.etaRawPct > 100) {
+    statusText += " raw " + Math.round(calc.etaRawPct) + "%";
+}
+
+statusText += " | " + calc.windowDays.length + "d | H" + ring.head +
+    " | " + oldestDate + " -> " + newestDate +
+    " | L " + round3(calc.sumChargeKWh) + "kWh | E " + round3(calc.sumDischargeKWh) + "kWh" +
+    " | SOC " + Math.round(calc.socStart) + "->" + Math.round(calc.socEnd);
+
+if (SAVE_TODAY_SNAPSHOT_TO_FILE) {
+    statusText += " | SNAP";
+}
+
+if (restoredSnapshot) {
+    statusText += " | RESTORE";
+}
+
+node.status({
+    fill: calc.etaRawPct > 100 ? "yellow" : "green",
+    shape: "dot",
+    text: statusText
+});
+
+return msg;
