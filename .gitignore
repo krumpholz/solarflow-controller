@@ -1,0 +1,30 @@
+# Local credentials and configuration
+.env
+.env.*
+!.env.example
+secrets.yaml
+secrets.yml
+*_cred.json
+settings.js
+*.pem
+*.key
+
+# Local Node-RED runtime data
+.config*.json
+.config*.json.backup
+.context/
+context/
+sessions.json
+lib/
+
+# Dependencies, generated files, and local logs
+node_modules/
+*.log
+*.tmp
+*.bak
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
