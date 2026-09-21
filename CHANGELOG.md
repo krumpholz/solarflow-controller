@@ -6,6 +6,8 @@
 
 ### Changed
 
+- Revision 3.3 publication candidate: remove automatic v2 history import; new installations start empty while existing v3 state stays compatible. Replace personal-history regression fixtures with synthetic state. Rewrite bilingual setup guides with external variables, HA input sensor creation, SOC acquisition, output integration requirements and final deploy checks; add optional HA energy-helper YAML. 47 regression tests per language and three localization checks pass.
+
 - Remove the appended estimate label from Function status in both languages; document calculation, partial-buffer startup and interpretation. Calculation revision remains 3.2.
 
 - Calculation revision 3.2: persistent bounded energy allowances for delayed/rounded HA updates (2400 W, 20% reserve, 120-second reporting allowance, 0.1 kWh assumed resolution). Hold anomalous increments without losing the accepted baseline; distinguish real observation outages, verify resets, allow SOC timestamps up to 120 seconds. Preserve existing history. 55 regression tests per language plus three localization checks passed.

@@ -1,65 +1,35 @@
-# Validation
+# Validation — revision 3.3 publication candidate
 
 **English** | [Deutsch](VALIDATION_DE.md)
 
-## Scope
+## Automated checks
 
-Reviewed against the supplied full Node-RED export, which declares `node-red-contrib-home-assistant-websocket` 0.80.3. That export contains the daily charge/discharge reads and HA output sensor but not the trigger or SOC acquisition writer.
+Run from the repository root with Node.js:
 
-The replacement adds paired measurement cycles and uses a versioned interval ledger. It imports the older version-2 kWh ring and live day/snapshot once, retaining a full backup and explicit legacy provenance. New intervals use the revised accounting.
+```sh
+TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs
+EFFICIENCY_LANGUAGE=de TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs
+node --test round-trip-efficiency/tests/localization.test.cjs
+```
 
-## Automated checks performed
+**47 tests per language plus 3 localization checks: 97 passing executions, no failures.** These execute the actual Function bodies using controlled time and simulated Node-RED stores. Removed v2 import tests have been replaced by fresh-start isolation and existing-v3 compatibility tests; personal history is not included in the test fixtures.
 
-- Runtime: Node.js v24.19.0.
-- Timezone: Europe/Berlin.
-- Command: `TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs` from the repository root.
-- Result: **55 tests passed; 0 failed**.
+Covered cases:
 
-The tests execute the actual Function bodies with simulated Node-RED context, status/error handlers and a controlled clock. They cover:
+- New installation ignores v2 ring/live/snapshot keys and creates no migration backup; valid results appear with only one day of included intervals.
+- Already persisted v3 history, SOC corrections and metadata survive restart without reimport or compounding, then expire by calendar date.
+- Existing v3 state without an optional energy allowance initializes that allowance in place.
+- Known energy balance, aligned SOC correction, invalid inputs, units and timestamp boundaries.
+- Pair ordering, duplicates, incomplete cycles, late responses, watchdog and exported wiring/source synchronization.
+- SOC spikes, confirmed rebaselining, restart, older flushed checkpoints, outages, daily reset and DST boundaries.
+- Delayed minute/coarse counter updates, independent directions, repeated excessive increments, deferred recovery, counter decreases and bounded persistent anomalies.
+- Corrupt state, changed configuration, zero throughput, out-of-range results and seven-day expiration.
+- Identical executable core in both languages, German diagnostics and matching graph/entity references.
 
-- Known 80% energy balance and aligned SOC correction.
-- Partial-day startup without counting earlier energy.
-- Invalid energy/SOC values and original HA state coercion.
-- Unit validation and strict/optional SOC timestamp behavior.
-- Reversed arrival order, incomplete pairs, duplicates and delayed responses.
-- SOC spike rejection, recovery and confirmed rebaselining.
-- Same-day restart and recovery from a simulated older flushed checkpoint.
-- Long downtime, midnight rollover, cross-day restart and daily reset metadata.
-- Counter decreases and implausible counter jumps.
-- Zero throughput, insufficient energy and out-of-range efficiency without clipping.
-- Seven-calendar-day expiration and daylight-saving calendar boundaries.
-- Corrupt state, configuration changes and untouched legacy state.
-- Missing stores, preparation snapshot and watchdog behavior.
-- Exported JSON references, two-output wiring, exact Function/source/text equality and preparation/calculation execution together.
+The optional Home Assistant YAML is syntax-checked and its template sign/availability logic reviewed manually (not executed in HA); this does not substitute for loading it into a real HA installation. It requires a real power source and verified entity IDs. No claim is made that importing the Node-RED flow provisions those inputs.
 
-Additional migration tests cover first-cycle history reuse, snapshot fallback, live-record precedence, restart idempotence, unknown SOC boundaries, all-slot backup, date-window expiration, invalid legacy data, recovery of a disjoint prefix in an existing v3 ledger, and explicit overlapping-date conflicts.
+## Remaining live checks
 
-## Review conclusions
+Earlier revisions have limited user feedback. Revision 3.3 still needs the planned deploy/log review. Verify actual HA and websocket/companion-integration versions, input units/reset metadata, source update cadence, entity mapping, null-to-Unknown output, SOC acquisition, context persistence, midnight and restart behavior. Restart simulations do not test real filesystem durability. Capacity, SOC/BMS behavior and meter boundaries determine measurement uncertainty.
 
-Invalid input does not overwrite accepted energy history. Paired current counters establish the baseline for subsequent differences. Every accumulated SOC difference is associated with the same accepted interval as its energy counters. No new interval spanning an unresolvable reset, long gap or confirmed SOC discontinuity is silently included.
-
-Persistent totals and the matching baseline are stored as one object. Restart tests model in-memory context loss and an older persisted checkpoint; they do not test a real filesystem, disk durability or a real abrupt shutdown.
-
-## Not yet verified on hardware
-
-- Live import/deploy behavior with the user's exact Node-RED and HA integration versions.
-- Actual source counter units, meter boundaries, reset metadata and update cadence.
-- Correct HA sensor entity mapping and null-to-Unknown handling in the installed versions.
-- External SOC acquisition freshness and optional timestamp writer.
-- Actual persistent-store configuration and startup/shutdown behavior.
-- Capacity accuracy, SOC quantization, BMS recalibration and resulting measurement uncertainty.
-
-This is a tested implementation in a simulated execution environment, not a hardware acceptance test or proof of measurement accuracy. Commission the complete flow using the README and observe diagnostics before relying on the displayed estimate.
-
-
-## German alternative validation
-
-The same 55 regression tests pass for both English and German (110 executions). For German: `EFFICIENCY_LANGUAGE=de TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs`. Three additional checks pass with `node --test round-trip-efficiency/tests/localization.test.cjs`: identical executable core, German diagnostic/status text with stable technical codes, and matching graph/entity references. Total: 113 passing test executions. Live validation remains outstanding.
-
-## Imported SOC balance correction (3.1)
-
-Three additional scenarios cover discontinuous legacy SOC boundaries, updating already-migrated state without remigration or compounding, and adjustment expiration. The reported diagnostic case yields 70.8% with unchanged energy sums and stored daily deltas. Unmeasured SOC change at handover is not invented.
-
-## Reporting-delay regression checks (3.2)
-
-Simulated checks cover minute-batched 2400 W increments, independent coarse charge/discharge updates, repeated excessive increments, full deferred recovery, bounded persistent anomalies, temporary decreasing counters, restart persistence, real observation outages, upgrade from existing migrated state, invalid settings/state, and delayed SOC timestamps at the configured boundary. These are simulated Node-RED contexts, not a live HA/device certification. Actual update cadence and counter resolution still need installation verification.
+Follow the commissioning steps in [README.md](README.md). This is a simulated implementation test report, not hardware acceptance or certification of efficiency accuracy.

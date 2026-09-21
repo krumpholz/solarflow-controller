@@ -8,7 +8,7 @@ Node-RED-Regelungsprojekt für SolarFlow-Batteriesysteme. Es verbindet Messwerte
 
 ## Projektstand
 
-Das Repository enthält einen [Flow zur SOC-korrigierten Wirkungsgradschätzung über sieben Tage](round-trip-efficiency/README_DE.md), die Einbauanleitung auf Deutsch und Englisch sowie automatisierte Regressionstests. Dieses Auswertungswerkzeug sendet keine Steuerbefehle an die Batterie. Eine Prüfung in einer laufenden Anlage steht noch aus.
+Das Repository enthält einen [Flow zur SOC-korrigierten Wirkungsgradschätzung über sieben Tage](round-trip-efficiency/README_DE.md), die Einbauanleitung auf Deutsch und Englisch sowie automatisierte Regressionstests. Dieses Auswertungswerkzeug sendet keine Steuerbefehle an die Batterie. Die Fassung ist als Veröffentlichungskandidat vorbereitet; der abschließende Deploy-Test steht noch aus.
 
 Die eigentliche Node-RED-Lade-/Entladeregelung wurde hier noch nicht veröffentlicht.
 
@@ -75,7 +75,7 @@ Das Projekt stellt keinen zertifizierten Netzschutz bereit und ersetzt kein Batt
 
 | Datei | Inhalt |
 | --- | --- |
-| [round-trip-efficiency](round-trip-efficiency/README_DE.md) | Wirkungsgrad-Auswertung, Einbau, Migration und Tests |
+| [round-trip-efficiency](round-trip-efficiency/README_DE.md) | Wirkungsgrad-Auswertung, Voraussetzungen, Einbau und Tests |
 | [LICENSE](LICENSE) | MIT-Lizenz im englischen Original |
 | [NOTICE_DE.md](NOTICE_DE.md) | Unabhängigkeit des Projekts und Markenhinweise |
 | [DISCLAIMER_DE.md](DISCLAIMER_DE.md) | Einsatzbereich, Betriebsverantwortung und Gewährleistungsausschluss |

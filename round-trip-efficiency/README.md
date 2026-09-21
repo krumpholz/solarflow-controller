@@ -1,64 +1,86 @@
-# Seven-Day SOC-Adjusted Battery Efficiency Estimate
+# Seven-Day SOC-Adjusted Battery Efficiency
 
 **English** | [Deutsch](README_DE.md)
 
-A Node-RED monitoring flow that estimates battery energy efficiency from daily charging/discharging counters and state of charge (SOC). It does not send battery control commands.
+Node-RED monitoring flow for battery energy efficiency. It reads daily energy counters and state of charge (SOC), calculates an energy balance and publishes a percentage to Home Assistant. It sends no battery control commands.
 
-**Status:** reviewed implementation with automated simulated-context tests. Not yet validated in a live Home Assistant/Node-RED installation. This is an estimate, not a certified round-trip efficiency measurement.
+**Publication candidate: calculation revision 3.3.** Automated simulated-context tests are provided. Earlier revisions have received limited live feedback; final deployment acceptance remains pending. The percentage is a calculated SOC-based estimate, not a certified round-trip measurement.
 
-## Choose the flow language
+## What is created automatically?
 
-Use [flow.json](flow.json) for English or [flow_DE.json](flow_DE.json) for German node names, status/error messages and code explanations. The German alternative restores the original node/sensor labels, including `Batterie Wirkungsgrad` and `Lade Entlade Effizenz`. **Run only one version**: both share the same graph references and context keys. Verify the existing HA entity mapping after import.
-
-Calculation and migration behavior are identical. Technical diagnostic keys and codes stay compatible; German messages add `grund`, `intervallstatus` and `pufferuebernahme`, plus the HA attribute `diagnose`. Generate the alternative with `python round-trip-efficiency/build-german-flow.py`. Its executable core is taken unchanged from the English sources.
-
-## Files
-
-| File | Purpose |
+| Item | Created by importing this flow? |
 | --- | --- |
-| [flow_DE.json](flow_DE.json) | Complete German flow alternative |
-| [battery-efficiency_DE.js](battery-efficiency_DE.js) | German calculation Function |
-| [prepare-cycle_DE.js](prepare-cycle_DE.js) | German preparation Function |
-| [flow.json](flow.json) | Importable flow, including trigger, paired requests, calculation, diagnostics and HA sensor |
-| [battery-efficiency.js](battery-efficiency.js) | Calculation Function body; two outputs |
-| [prepare-cycle.js](prepare-cycle.js) | SOC snapshot, cycle ID and missing-response watchdog; two outputs |
-| [function node - Round-Trip Efficiency.txt](function%20node%20-%20Round-Trip%20Efficiency.txt) | Identical copy of the calculation Function body for the existing download path |
-| [tests/efficiency.test.cjs](tests/efficiency.test.cjs) | Automated regression scenarios |
-| [VALIDATION.md](VALIDATION.md) | Validation scope and remaining installation checks |
+| Daily charge/discharge energy input sensors | **No.** They must already exist in Home Assistant; instructions below. |
+| Battery power or SOC measurement | **No.** A device integration or meter must supply real measurements. |
+| `flow.batt_level` and optional `flow.batt_level_ts` | **No.** An external SOC writer on the same flow tab supplies them. |
+| Context stores `memoryOnly` and `file` | **No.** Configure Node-RED before deployment. |
+| Efficiency result sensor | The included HA Sensor node can create it after server/entity configuration and deployment, with the companion integration installed. |
 
-**Upgrade the complete flow.** Replacing only the old Function body is insufficient: the new calculation requires the cycle metadata supplied by the preparation node and has two outputs.
+Pasting only the calculation JavaScript into a Function node creates no HA entities and does not provide the required measurement-cycle metadata. New users import the complete flow. Existing revision-3.2 installations can replace only the calculation Function body.
 
-## What changed from the supplied flow
+## Dependencies and external inputs
 
-The original export included two independent Current State nodes, the calculation Function, an HA sensor and configuration nodes. It did not include a polling trigger or the node that writes `flow.batt_level`.
+Install Node-RED and `node-red-contrib-home-assistant-websocket`, connect it to your Home Assistant server, and install/configure the companion [Node-RED integration](https://github.com/zachowj/hass-node-red) in HA for the output sensor. The export declares websocket package 0.80.3; this is the source-export version, not a universal compatibility guarantee. The Node-RED add-on and the HA companion integration are separate components. See [HA Sensor node requirements](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/sensor.html).
 
-- Both energy readings now belong to one numbered request cycle. Incomplete, duplicate and delayed responses cannot silently mix different cycles.
-- Unknown, unavailable, blank, boolean, non-finite and negative energy values are rejected. Null SOC is never converted to zero.
-- Existing version-2 kWh history is imported once, including the live day or snapshot. The first paired measurement establishes the baseline for NEW intervals; existing history is retained separately in the same ledger.
-- Energy differences and SOC differences use the same accepted interval endpoints. The delayed ten-minute median has been removed.
-- Totals and their matching baseline are kept together in one automatically persisted state object.
-- A gap or reset starts a new segment. Its unmeasured energy and SOC change are both excluded.
-- Out-of-range estimates are reported as diagnostics; the HA sensor becomes Unknown instead of showing a clipped 0% or 100%.
-- The default flow uses English comments, names and status messages; the German alternative provides a German interface and code explanations; documentation is available in English and German. Existing German entity IDs and compatibility context keys remain unchanged so their references still work.
+For HACS installation: search for `hass-node-red`, download it, restart HA, then add **Node-RED Companion** under **Settings → Devices & services → Add integration**. Follow the companion project's linked installation instructions if installing manually.
 
-## Installation and upgrade
+| External input | Required value / location | Supplied by |
+| --- | --- | --- |
+| `sensor.batterie_lade_energie_pro_tag` | Nonnegative daily cumulative **charge energy**, unit exactly `kWh`; resets at local midnight | HA device integration or helpers |
+| `sensor.batterie_entlade_energie_pro_tag` | Nonnegative daily cumulative **discharge energy**, unit exactly `kWh`; resets at local midnight | HA device integration or helpers |
+| `batt_level` | Number or numeric string, 0–100 **percent**, flow context, store `memoryOnly` | External SOC acquisition |
+| `batt_level_ts` | Optional numeric Unix time in **milliseconds**, same flow/store | External SOC acquisition; required when `requireSocTimestamp: true` |
+| `CFG.capacityKWh` | Actual battery capacity in kWh | User configuration in calculation Function |
+| `CFG.maxPowerKW` | Maximum charge/discharge power in kW; check both directions | User configuration |
+| Runtime timezone | Same local timezone as HA daily resets | Node-RED / HA configuration |
 
-1. Back up your existing flow and persistent context. Disable the old efficiency calculation before enabling this replacement. Keep the original flow tab and its context: migration reads the history from that tab.
-2. Check the context stores below. If they already exist, do not restart before migration: the latest legacy live day is in memoryOnly. If a restart is necessary, first save the live day with the old snapshot switch and let the file store flush; otherwise only an existing snapshot and completed ring days can be recovered.
-3. Import `flow.json` (English) or `flow_DE.json` (German) **onto the existing flow tab that supplies `flow.batt_level`**. A new tab has a different flow context. Select your existing Home Assistant server in both Current State nodes and the entity configuration; avoid leaving duplicate old and new estimators connected to the same sensor.
-4. Review `CFG.capacityKWh`: the supplied **8.640 kWh** is the original installation's value, not a universal default. Review `maxPowerKW` and counter resolution as well.
-5. Check both energy entity IDs in the Current State nodes and in `CFG`. They must be daily cumulative energy counters in **kWh**, resetting at local midnight. The calculation also checks the entity's `unit_of_measurement` attribute. Current State nodes use string state type so invalid source states remain distinguishable.
-6. Ensure the external SOC writer supplies a finite percentage from 0 to 100 to `batt_level` in `memoryOnly`. Do not divide this percentage by ten unless the upstream value is actually in tenths of a percent.
-7. Prefer adding `batt_level_ts` as described below and enabling `requireSocTimestamp`. It is optional by default to accommodate the supplied flow's existing interface.
-8. Set the Node-RED runtime timezone to the same timezone used for the daily sensor resets, for example `Europe/Berlin` when appropriate. Restart after changing the runtime timezone.
-9. Deploy and check the diagnostic output. The included Inject node runs every five seconds. On a fresh installation, the first complete measurement produces Unknown. With valid imported history, it can display the inherited estimate immediately. New interval accumulation starts with the next accepted interval.
-10. Verify the HA sensor name/entity and any dashboards that used the previous sensor. The exported friendly name is `Battery Efficiency Estimate` in English and the original `Lade Entlade Effizenz` in German; preserve your existing entity mapping if required.
+The energy IDs are examples retained for compatibility. If your IDs differ, change **both Current State nodes and `CFG.chargeEntity` / `CFG.dischargeEntity`**. An entity's friendly name alone is insufficient. Match SOC, capacity and both counters to the same battery system and measurement boundary. PV generation and household/grid consumption are not substitutes for battery charge/discharge energy.
 
-The supplied export declares `node-red-contrib-home-assistant-websocket` **0.80.3**. The HA Sensor node also requires the companion Node-RED integration in Home Assistant. This package version is the source export's dependency, not a claim of a completed runtime compatibility test.
+There are **no required global context variables**. `batt_min_s`, `batt_max_s`, regulator mode, price blocks and battery control variables are not inputs to this calculation. `_eff` cycle metadata is created internally by the preparation Function. Do not manually prepopulate the persistent calculation state.
 
-### Context storage
+## Prepare the two daily energy sensors in Home Assistant
 
-Merge this configuration into Node-RED's `settings.js`; preserve any other stores you already use:
+### A. Daily battery energy already exists
+
+Reuse it if it has the correct direction, unit `kWh`, midnight reset and measurement boundary. Check actual states and attributes under **Developer tools → States**, including availability and `last_reset` when supplied. Convert Wh to kWh correctly upstream if needed; do not simply relabel the unit.
+
+### B. Separate cumulative charge/discharge energy totals already exist
+
+Create two **Utility Meter** helpers under **Settings → Devices & services → Helpers → Create helper**. Select the respective cumulative kWh input, daily reset, no reset offset, no tariffs, net consumption off and delta values off. For monotonically increasing lifetime inputs, disable periodically resetting; adapt that option if the source really resets. Leave “always available” off so source outages are not intentionally hidden. Verify the resulting entity IDs and map them into the flow. The first helper day contains only energy since setup. See [Utility Meter](https://www.home-assistant.io/integrations/utility_meter/).
+
+### C. Only battery power in watts exists
+
+Split signed battery power into two nonnegative signals before integrating: for **positive = charging**, charge power is `max(P, 0)` and discharge power is `max(-P, 0)`. Reverse the sign convention if your device uses the opposite one. Never integrate signed net power as if it were two separate energy counters.
+
+Create one **Integral** helper for each directional power sensor. For W inputs select prefix `k`, time unit `h`, precision 3 and maximum sub-interval 60 seconds. Use `left` for a held, stepwise power signal; assess another method for a different sampling model. This produces two cumulative kWh totals, then create the daily Utility Meters from section B. See [Integral helper](https://www.home-assistant.io/integrations/integration/).
+
+An optional complete YAML example is provided in [examples/home-assistant-energy.yaml](examples/home-assistant-energy.yaml). It uses `sensor.batterie_power` as a **placeholder for your real signed W measurement**. Replace it; verify every generated entity ID (existing names can cause suffixes), and adjust downstream `source` references as necessary. Merge `template`, `sensor` and `utility_meter` sections with existing configuration rather than duplicating top-level keys. Check HA configuration before applying/restarting. Do not create duplicate helpers if equivalent inputs already exist. The template availability condition prevents an unavailable source from being presented as a genuine zero-power reading; see [Template sensors](https://www.home-assistant.io/integrations/template/).
+
+The example does not create a physical meter, SOC source or missing historical energy. A frozen but numeric power sensor can still produce incorrect integrated energy. Source health must be monitored upstream. Software integration is approximate and may not recover outages; compare the counters with the device's energy records. Keep both measurement directions on the same AC or DC boundary, including any intended auxiliary consumption.
+
+## Supply SOC on the same Node-RED tab
+
+Use your real battery SOC integration or measurement receiver and feed a validated percent value to an external Function node on the **same tab** as this flow. The writer is not included because the source is installation-specific. This example assumes `msg.payload` is the newly received SOC, not a whole HA event object:
+
+```js
+const raw = msg.payload;
+const soc = (typeof raw === "number" ||
+    (typeof raw === "string" && raw.trim() !== "")) ? Number(raw) : NaN;
+if (!Number.isFinite(soc) || soc < 0 || soc > 100) {
+    flow.set("batt_level", null, "memoryOnly");
+    flow.set("batt_level_ts", null, "memoryOnly");
+    return null;
+}
+flow.set("batt_level", soc, "memoryOnly");
+flow.set("batt_level_ts", Date.now(), "memoryOnly");
+return msg;
+```
+
+Set that timestamp only on receipt of a real current measurement; for delayed messages use a trustworthy source observation timestamp instead. Repeatedly reading an old cached HA state does not make it fresh. A state-change-only event may not arrive when SOC stays constant, so it cannot by itself prove periodic source freshness. If freshness cannot be established, supply only `batt_level`, clear any stale `batt_level_ts`, and leave `requireSocTimestamp: false`; diagnostics then explicitly report unverified freshness. With a timestamp present, readings older than `maxSocAgeMs` (120 seconds) or in the future are rejected even in optional mode. Scale tenths-of-percent only if that is actually the source unit. Repopulate the memory values after a Node-RED restart.
+
+## Context storage and installation
+
+Configure named stores in Node-RED `settings.js`, merging with existing settings. Keep the Node-RED user directory on persistent storage. Restart Node-RED if its settings changed.
 
 ```js
 contextStorage: {
@@ -68,145 +90,79 @@ contextStorage: {
 }
 ```
 
-The functions use synchronous context access, so the file store must have caching enabled. Each accepted paired sample updates the cached persistent state; the store batches disk writes. No manual snapshot switch is needed. Sudden power loss can still lose unflushed data. See [Node-RED's localfilesystem documentation](https://nodered.org/docs/api/context/store/localfilesystem).
+The Functions require synchronous cached access. Disk writes are batched; abrupt power loss can lose unflushed updates. This is not a disk-durability guarantee. See [Node-RED filesystem context](https://nodered.org/docs/api/context/store/localfilesystem).
 
-### SOC timestamp
+1. Prepare both daily kWh sensors, SOC writer and context stores above.
+2. Import **one** language: [flow.json](flow.json) or [flow_DE.json](flow_DE.json), on the SOC writer's tab. Both exports share IDs/context keys and must not run concurrently.
+3. Select your HA server in both Current State nodes and the output entity configuration. Replace or remove the imported server placeholder; configure the connection for your add-on or standalone installation. Never publish credentials.
+4. Match both input entity IDs in nodes and code. Current State outputs must retain the HA entity object in `msg.data` and string state in `msg.payload`; do not overwrite `_eff`.
+5. Set capacity and power for your hardware. **8.640 kWh and 2.4 kW are example defaults, not automatic device detection.** Review delay/resolution settings below.
+6. Match the Node-RED timezone to HA, e.g. `Europe/Berlin` where appropriate. Keep the included five-second polling trigger and two-output wiring.
+7. Deploy, enable the diagnostic Debug node and inspect the output sensor in HA. Its friendly name is `Battery Efficiency Estimate` (EN) / `Lade Entlade Effizenz` (DE); its actual entity ID is assigned by HA and may differ or acquire a suffix. Reuse existing mappings when updating.
 
-In your **actual SOC acquisition node**, after validating a newly received SOC measurement, update these values together:
+The Current State nodes read existing entities. Only the HA Sensor node publishes the result entity; it requires the configured companion integration. JavaScript-only updates to an existing calculation do not create another sensor.
 
-```js
-// socPercent must already be validated as a number in the range 0..100.
-flow.set("batt_level", socPercent, "memoryOnly");
-flow.set("batt_level_ts", Date.now(), "memoryOnly");
-```
+## Calculation, partial buffers and interpretation
 
-Only refresh the timestamp when a real measurement arrives. Reading an old cached SOC every five seconds does not make it fresh. The preparation node copies both values once into the shared request cycle.
-
-With a timestamp, the calculation rejects SOC more than 120 seconds old or from the future. Without one, the result explicitly reports `soc_freshness_verified: false`. Set `requireSocTimestamp: true` to refuse unverified SOC entirely. The optional timestamp writer is not included because the original SOC acquisition flow was not supplied.
-
-Current State returns HA's last known entity state, not a guaranteed fresh device measurement. Cycle pairing coordinates requests; it does not make the underlying device measurements physically simultaneous. Unchanged energy counters can be legitimate, so `last_updated` alone is not used as a freshness timeout. Source availability and correct energy integration must be checked upstream. See the [Current State documentation](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/current-state.html).
-
-## Calculation and interpretation
-
-For each accepted NEW interval:
+The first complete valid pair stores a baseline and publishes Unknown. Later accepted pairs contribute:
 
 ```text
-charge energy       = current daily charge counter - previous counter
-discharge energy    = current daily discharge counter - previous counter
-stored energy delta = capacity_kWh * (current SOC - previous SOC) / 100
+charge   = current charge counter - previous accepted charge counter
+output   = current discharge counter - previous accepted discharge counter
+delta    = capacity_kWh * (current SOC - previous accepted SOC) / 100
+eta (%)  = 100 * (sum(output) + sum(delta)) / sum(charge)
+loss kWh = sum(charge) - sum(output) - sum(delta)
 ```
 
-Within today and the previous six **local calendar days**, the flow sums accepted new intervals plus explicitly marked imported legacy records:
+The window is **today plus the preceding six local calendar days**. New users start empty: no personal values or old v2 buffers are imported. A percentage is published once at least 0.1 kWh included charge energy is available, the current interval is accepted, SOC inputs are valid, and the result is finite and between 0 and 100%. **A full seven-day buffer is not required.** Earlier energy from the initial day is excluded because its matching SOC baseline is unknown. Example: 1.0 kWh charge, 0.7 kWh discharge, +0.1 kWh stored energy gives 80%.
 
-```text
-calculated efficiency (%) = 100 * (sum(discharge) + sum(stored energy delta)) / sum(charge)
-calculated losses (kWh)    = sum(charge) - sum(discharge) - sum(stored energy delta)
-```
+The status shows percentage, days used and covered hours without an appended “estimate” label. Days used is not a count of complete days. `window_complete` remains false because midnight intervals and outages can be excluded; this is not a guaranteed 168-hour measurement. Invalid results are Unknown, never clipped to 0 or 100%. Both outputs carry the result; the second feeds diagnostics. The documented HA Sensor maps null to Unknown; verify that behavior in your installed versions.
 
-This is an SOC-adjusted energy-balance estimate. It assumes stored energy is approximately proportional to SOC and the configured capacity reflects the battery being measured. It does not measure separate charging and discharging efficiencies. With different start/end SOC, it is not equivalent to a complete AC-to-AC round-trip test. Confirm whether the source counters measure AC energy, DC energy, and any auxiliary consumption; the submitted flow does not establish those measurement boundaries.
+SOC is only an estimate of stored energy. The formula assumes approximately linear SOC-to-energy conversion and a correct capacity. One point at 8.640 kWh corresponds to 0.0864 kWh; the 0.1 kWh startup threshold is not an accuracy guarantee. BMS recalibrations, quantization, source timing and missing intervals can materially affect short windows. Large detected SOC jumps are confirmed then excluded with their matching energy interval; smaller or gradual recalibrations may remain undetected. Separate charge/discharge efficiencies are not measured, and unequal endpoint SOC does not constitute a full AC-to-AC round-trip test.
 
-Operating SOC limits are not physical measurement validity limits: a real SOC below a configured minimum may still be a valid reading. `batt_min_s` and `batt_max_s` are therefore no longer used to reject or clamp SOC. The nominal-capacity correction in the old formula already algebraically cancelled those limits.
+## Delays, resets and restarts
 
-SOC is quantized and may be recalibrated by the BMS. At 8.640 kWh, one percentage point represents 0.0864 kWh in this model. The 0.1 kWh minimum charge threshold is only a numerical guard; it is not an accuracy guarantee. Low-throughput estimates can remain noisy or out of range. Longer measured periods generally reduce the relative effect of endpoint quantization, but gaps and repeated rebaselining add uncertainty.
+| Parameter | Default | Meaning |
+| --- | --- | --- |
+| `maxPowerKW` | 2.4 | Physical power basis, both directions |
+| `powerSafetyFactor` | 1.20 | 20% plausibility reserve; no hardware power setting |
+| `maxReportingDelayMs` | 120000 | Reporting delay allowance |
+| `counterStepKWh` | 0.1 | Conservative resolution allowance; use actual source resolution |
+| `maxIntervalMs` | 120000 | Maximum gap between valid paired observations |
+| `maxSocAgeMs` | 120000 | Maximum age of an available SOC timestamp |
+| `requireSocTimestamp` | false | Set true only with a reliable timestamp writer |
 
-### Start with an incomplete buffer and status display
+Each energy direction gets a bounded allowance: `2.4 × 1.20 × 120 / 3600 + 0.1 = 0.196 kWh`. Accepted increments consume it; elapsed time replenishes it at 2.88 kW, capped at 0.196 kWh. It persists across normal restarts, rather than granting a fresh tolerance on every poll. HA polling does not guarantee fresh device measurements; the 120-second allowance must match actual source behavior.
 
-A fresh installation first stores a paired counter/SOC baseline. Energy accumulated before this first observation is excluded because its matching initial SOC is unknown. Each later accepted interval contributes immediately. A numeric result is published as soon as the included charge energy reaches `minChargeKWh` (default 0.1 kWh), the calculated result is finite and within 0–100%, and the required SOC data are valid. No seven-day waiting period or full buffer is required. Until those conditions hold, the output is Unknown. Valid migrated history can provide a result on the first paired observation.
-
-For example, accepted intervals containing 1.0 kWh charge, 0.7 kWh discharge and a +0.1 kWh stored-energy change produce `100 × (0.7 + 0.1) / 1.0 = 80%`. A positive stored-energy change increases the numerator; a negative change reduces it. For imported history, the stored-energy term also includes the legacy window-endpoint adjustment described in the migration section; it is not a sum of uncorrected legacy daily SOC differences.
-
-The Function status displays the percentage, days used and covered hours, for example `80% | 1d | 2h`. There is no appended “estimate” label, regardless of buffer fill. Days used counts days with accepted intervals or imported records; it does not certify full days. Covered hours counts accepted new intervals and excludes unknown legacy coverage. The rolling calendar window remains marked `window_complete: false`. Yellow status with legacy data and diagnostic quality fields remain available.
-
-The concise display does not change the calculation's limitations: capacity/SOC proportionality, BMS recalibration, counter accuracy, asynchronous source updates and excluded intervals affect the result. It remains an SOC-based energy-balance estimate as explained above. The internal `estimate_available` / `legacy_estimate_available` codes are retained for compatibility.
-
-## Gaps, resets and restart behavior
-
-| Situation | Behavior |
+| Event | Behavior |
 | --- | --- |
-| No v3 history | Import the existing v2 kWh ring and live day/snapshot once, if present; then establish the baseline for new intervals. Without legacy data, start from current counters and SOC. |
-| Restart on the same day, latest valid paired observation at most 120 seconds old | Continue from the stored matching baseline, including increments since that sample. |
-| More than 120 seconds without a valid paired observation | Preserve previous measured totals; exclude the gap's energy and SOC change; establish a new baseline. |
-| Local midnight | Preserve prior measured intervals; exclude the interval spanning the daily reset; begin at a new paired baseline. |
-| Reset timestamp changes | Exclude that interval and rebaseline both counters and SOC together. |
-| Counter decreases without reset evidence | Return Unknown and retain the accepted baseline while waiting for correction or verified reset. |
-| Energy increment exceeds the available allowance | Return Unknown and retain the baseline; accept the entire deferred increment once plausible, or wait for source correction. |
-| SOC jump beyond configured tolerance plus elapsed-time power allowance | Reject it without updating the energy baseline. Three consecutive coherent candidate pairs trigger rebaselining, excluding the jump interval. |
-| Capacity, entity IDs or runtime timezone changed | Preserve the previous v3 state in an archive key and start a new baseline. |
+| Energy increment above available allowance, or decrease without reset evidence | Unknown; retain the last accepted baseline and defer the entire difference. Recovery can include it later. A persistent jump above the maximum allowance does not become valid just by waiting. |
+| Real paired-observation outage longer than 120 seconds | Keep history, exclude energy and SOC change across the gap, then rebaseline. |
+| Midnight or confirmed counter reset | Exclude the boundary interval and rebaseline both counters and SOC together. |
+| Excessive SOC jump | Defer; three consistent consecutive candidate pairs establish a new baseline, excluding the jump interval. |
+| Same-day Node-RED restart with a recent valid observation | Continue from persistent state after inputs return. |
+| Capacity, input entity mapping or runtime timezone changes | Archive the previous state and start a new baseline. |
 
-When `last_reset` is present, it must identify the current local day. Without it, crossing midnight requires observed reset evidence for both counters. If a reset occurred during an outage and the counter has already exceeded its previous value, the flow cannot infer the reset; it waits instead of inventing continuity. Providing reliable reset metadata is preferable. An intra-day reset that is not reported and has already regrown beyond the prior counter value cannot always be detected.
+If `last_reset` is present, it must belong to the current local day. Without it, both daily counters must show reset evidence at midnight. Unreported intra-day resets are not always detectable. A HA-only restart does not clear Node-RED context; a longer data outage still invokes gap handling. The preparation watchdog reports missing completed cycles after 15 seconds while Node-RED continues running. Daily-counter design intentionally excludes some energy across boundaries and outages.
 
-Midnight gaps and initial partial days are intentional with the available daily counters. `window_complete` is always false; `covered_hours` describes included intervals. This is neither seven guaranteed complete days nor a rolling 168-hour measurement. `excluded_gap_hours` counts the elapsed gaps detected when a new baseline is established; it does not include time before the initial baseline and is not a completeness percentage. Continuous lifetime energy counters would be needed for a more complete midnight-spanning design.
+## Persistent state and upgrading an existing installation
 
-## Outputs and persistent data
-
-The calculation Function has two outputs:
-
-1. HA state message: `msg.payload` is a plausible estimate rounded to one decimal, or `null` (Unknown) for invalid data, insufficient throughput, a new baseline or an out-of-range estimate. The HA sensor retains quality and timestamp attributes.
-2. Diagnostic message: the same payload plus `msg.result`, including raw efficiency, energy sums, estimated losses, interval coverage, reset/SOC timestamp verification and daily interval totals. Enable the supplied Debug node when commissioning.
-
-An incomplete pair normally produces no output while waiting for its second response. Missing responses are caught by later cycles and the 15-second watchdog. The watchdog depends on Node-RED and its Inject node continuing to run; it cannot run while Node-RED itself is stopped. `timestamp` on an error is the diagnostic time, not proof of a fresh measurement.
-
-The documented HA Sensor behavior maps a null state to Unknown. Confirm this with your installed integration during commissioning. See the [Sensor documentation](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/sensor.html).
-
-| Context key | Store | Meaning |
+| Context key | Store | Role |
 | --- | --- | --- |
-| `batt_eff_state_v3` | `file` | Versioned daily interval totals and matching last sample |
-| `batt_eff_legacy_backup_v3` | `file` | Original ring, live day and snapshot retained before migration, including older dates |
-| `batt_eff_previous_state_v3` | `file` | Most recent state archived after a configuration change |
-| `sum_batt_la_7d` | `file` | Imported charging history plus included new intervals, kWh |
-| `sum_batt_ela_7d` | `file` | Imported discharging history plus included new intervals, kWh |
-| `la_ela_es` | `file` | Current plausible estimate or null |
-| `batt_eff_last_completed_v3` | `memoryOnly` | Watchdog completion timestamp |
+| `batt_eff_state_v3` | `file` | Daily totals, last accepted sample, persistent energy allowance |
+| `batt_eff_previous_state_v3` | `file` | Most recent archive after configuration change |
+| `sum_batt_la_7d`, `sum_batt_ela_7d` | `file` | Included energy sums in kWh |
+| `la_ela_es` | `file` | Current percentage or null |
+| `batt_eff_last_completed_v3` | `memoryOnly` | Internal watchdog timestamp |
 
-The two compatibility energy sums represent **imported history plus included new interval energy**, not unconditional current daily-counter totals. Existing consumers must account for that change. On an input failure, the energy sums retain their last accepted values while the efficiency is invalidated.
+These are internal outputs, not required external variables. Included sums can differ from raw daily counters because unobserved/excluded intervals are not counted.
 
-### Automatic migration of the existing buffer
+Revision 3.3 has **no automatic v2 migration** and never reads the old ring/live/snapshot keys. Existing v3 state is retained on the same tab/stores with unchanged capacity, IDs and timezone. Compatibility evaluation for records already marked `legacy` remains until they expire naturally; their window-endpoint SOC adjustment, existing migration metadata and uncertainty flags are preserved. Nothing is reimported. New users never acquire those records from this distribution.
 
-On the first valid paired cycle, the function reads the original `batt_eff_ring_7d` from `file`, `batt_eff_today_live` from `memoryOnly`, and `batt_eff_today_live_snapshot` from `file`. It stores a separate backup in `batt_eff_legacy_backup_v3` before converting anything. **The original keys are never changed or deleted.** All original slots remain in that backup; the active calculation includes today and the preceding six calendar days, exactly the original date window.
+For an existing 3.2 deployment, back up the flow/context, replace only the body of the calculation Function with [battery-efficiency.js](battery-efficiency.js) or [battery-efficiency_DE.js](battery-efficiency_DE.js), preserve your CFG values and deploy the modified node. Do not delete state or reimport a second flow for this update. Schema `version: 3` stays compatible; diagnostics identify `calculation_revision: "3.3"`.
 
-For a duplicated date, live memory takes precedence. A completed ring record takes precedence over an older snapshot. Migration copies recorded charge/discharge totals, and calculates each legacy record's SOC correction from its stored start/end SOC using the configured capacity. It cannot retrospectively repair quantization, previously filtered SOC, or null values that the old code already turned into numeric zero. Use the same capacity as the old installation.
+For the final deployment check, capture diagnostics after deployment, after a real charge-counter increase, after a discharge increase, after midnight and after a controlled restart. Check input values against included increments, `interval_status`, `excluded_intervals`, `energy_guard`, SOC freshness and persistence. A known measurement gap may legitimately exclude an interval; investigate unexpected exclusions. Share logs without credentials. The final live acceptance is pending.
 
-A stored legacy day has no reliable measurement timestamps. Its duration is not counted in `covered_hours`. The handover gap between its stored counters and the first new paired baseline is not silently estimated. Thus a stale snapshot preserves the recorded history but cannot recover the unrecorded tail. If today's memory record and snapshot are both absent, completed ring days are still imported, but today's earlier SOC baseline cannot be recreated.
+## Files and verification
 
-Calculation revision 3.1 uses the original first-start/last-end SOC principle for the imported history window. It adds a reporting adjustment to the stored daily deltas, without rewriting the ledger. New measured intervals retain their aligned energy/SOC accounting. The adjustment is recomputed as old days expire and never compounded into persistent state.
-
-`legacy_adjustment_kwh` reports the adjustment and `legacy_boundary_gaps` lists historical SOC discontinuities. With legacy data, the reason is `legacy_estimate_available` and the status is yellow. This explicitly marks historical uncertainty, not necessarily a current measurement fault. `valid: true` means a numerically plausible estimate is available; `historical_accuracy_verified` remains false. The result need not exactly match the original display because an unmeasured handover interval is not reconstructed.
-
-For an already-running v3 flow, replace only the full calculation Function body with [battery-efficiency.js](battery-efficiency.js) and deploy. Preserve its two outputs, wiring, context, capacity configuration and preparation node. Do not delete the buffer or force remigration. Upgrading the original old flow still requires the complete installation procedure.
-
-Missing/invalid SOC boundaries retain the day's energy but produce Unknown efficiency (`legacy_soc_boundaries_missing`) while that day remains in the active window. Malformed energy values, unsupported units, or invalid dates stop migration rather than replacing history with zero. Inspect the error and original data before correcting them.
-
-An already-running v3 installation can also import legacy days not yet represented. For today's overlapping date, a frozen legacy prefix is added only if the gap-free v3 ledger proves both energy directions are disjoint. Otherwise, the original record is retained in the backup and the date is reported in `legacy_migration.overlappingDates`; it is not added twice. Such a conflict needs review if its historical contribution must be reconstructed.
-
-Migration is marked in the same persisted state as the imported totals, preventing repeated imports after restart. No reimport occurs after a configuration reset, because changing capacity/timezone/entity mapping may invalidate old assumptions. Normal seven-day expiration continues. Multiple instances on one flow tab require distinct context keys.
-
-## License and project independence
-
-MIT; see [LICENSE](../LICENSE). This is an independent community project, not affiliated with or endorsed by Zendure. See [NOTICE.md](../NOTICE.md) and [DISCLAIMER.md](../DISCLAIMER.md).
-
-
-## Delayed Home Assistant updates (calculation revision 3.2)
-
-Five-second polling does not mean the source meter updates every five seconds. Current State reads Home Assistant's last-known value. Integration sensors can update on source changes or their configured `max_sub_interval`; there is no universal HA update interval. See [Current State](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/current-state.html) and [HA Integral sensor](https://www.home-assistant.io/integrations/integration/).
-
-Defaults in the calculation Function:
-
-| Setting | Value | Meaning |
-| --- | --- | --- |
-| `maxPowerKW` | 2.4 | Existing charge/discharge plausibility limit; confirm discharge maximum for your installation. |
-| `powerSafetyFactor` | 1.20 | 20% allowance: checks replenish at 2.88 kW; no device power setting changes. |
-| `maxReportingDelayMs` | 120000 | Two-minute reporting allowance; configure for the actual source cadence. |
-| `counterStepKWh` | 0.1 | Conservative assumed counter resolution in kWh; configure from the actual entity state, not rounded UI display. |
-| `maxSocAgeMs` | 120000 | Maximum age of an available SOC observation timestamp. |
-
-Each energy direction gets a bounded allowance of `2.4 × 1.20 × 120 / 3600 + 0.1 = 0.196 kWh`. Accepted increments consume it; elapsed time replenishes it at 2.88 kW, capped at 0.196 kWh. The tolerance is **not added again on every poll**. Between baseline resets, cumulative accepted energy cannot exceed the initial allowance plus elapsed-time replenishment. Unchanged counter readings therefore permit subsequent coarse updates, while repeated excessive increments exhaust the allowance. It persists across normal restarts. A first upgrade or changed allowance configuration initializes the allowance once.
-
-A pending increment does not advance the accepted energy/SOC baseline. `counter_energy_pending` or `counter_decrease_pending` emits Unknown with `baseline_preserved: true`. Recovery includes the whole deferred difference. Continuing paired observations are distinct from an actual observation outage; only an outage longer than `maxIntervalMs` triggers gap handling. A persistent jump larger than the allowance is never legalized merely by waiting. Confirmed resets, day boundaries and confirmed SOC discontinuities still establish new baselines and explicitly exclude the unresolved interval.
-
-At 8.640 kWh, 2400 W corresponds to **0.463 SOC percentage points per minute**, or **0.556 with the reserve**. The SOC jump check adds the existing 2-point reporting/quantization tolerance to the elapsed-time limit. Three consecutive consistent readings can still establish a new baseline for a device SOC recalibration; they do not prove that the jump was physical charging. The optional SOC timestamp must reflect a real source observation, not be refreshed just because this calculation polls an unchanged cached state. Without it, freshness remains unverified.
-
-The defaults are tolerances, not measured guarantees about your installation. Energy and SOC may arrive at different times; temporary efficiency fluctuations remain possible. Check the actual source cadence and resolution. Increasing the allowances weakens anomaly detection. Already excluded energy from older revisions is not reconstructed by this upgrade.
-
-### Upgrade an existing 3.1 installation
-
-Replace only the body of the existing calculation Function with `battery-efficiency.js` (English) or `battery-efficiency_DE.js` (German), keep your capacity/entity configuration, and deploy the modified node. Retain the existing preparation node, wiring and context stores. Do not delete the state or reimport the legacy buffer. Both full flow exports also contain revision 3.2. Check diagnostics for `calculation_revision: "3.2"` and `energy_guard`. Existing history and its migration marker remain intact.
+Function sources: [calculation](battery-efficiency.js), [preparation](prepare-cycle.js); German equivalents have `_DE` suffixes. The existing [text download](function%20node%20-%20Round-Trip%20Efficiency.txt) matches the English calculation. `build-german-flow.py` generates the German interface from the identical executable core. [VALIDATION.md](VALIDATION.md) documents test scope. This flow has no embedded user energy history.

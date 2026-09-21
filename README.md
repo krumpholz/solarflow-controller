@@ -8,7 +8,7 @@ Node-RED controller project for SolarFlow battery systems, integrating Home Assi
 
 ## Project status
 
-The repository includes a [seven-day SOC-adjusted battery efficiency monitoring flow](round-trip-efficiency/README.md), its English and German setup documentation, and automated regression tests. This monitoring utility does not issue battery control commands and has not yet been validated in a live installation.
+The repository includes a [seven-day SOC-adjusted battery efficiency monitoring flow](round-trip-efficiency/README.md), its English and German setup documentation, and automated regression tests. This monitoring utility does not issue battery control commands and is prepared as a publication candidate; final deployment acceptance is pending.
 
 The main Node-RED charge/discharge controller has not yet been published here.
 

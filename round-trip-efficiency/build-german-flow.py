@@ -21,7 +21,6 @@ TEXT = {
     "baseline_initialized": "Ausgangspunkt für neue Messintervalle gesetzt",
     "configuration_changed_new_baseline": "Konfiguration geändert – neuer Ausgangspunkt",
     "non_increasing_sample_time": "Messzeitpunkt liegt nicht nach der letzten Messung",
-    "legacy_history_imported_new_baseline": "Vorhandene Historie übernommen – neuer Messausgangspunkt",
     "waiting_for_daily_counter_resets": "Warte auf Rücksetzung beider Tageszähler",
     "new_day_boundary_excluded": "Tageswechselintervall ausgeschlossen",
     "measurement_gap_excluded": "Messlücke ausgeschlossen",
@@ -46,10 +45,6 @@ TEXT = {
     "skipped_configuration_change": "Wegen Konfigurationsänderung nicht erneut übernommen",
     "No completed measurement cycle": "Kein abgeschlossener Messzyklus",
     "Requesting paired daily counters": "Zusammengehörige Tageszähler werden abgefragt",
-    "Legacy migration: invalid calendar date; original data retained": "Pufferübernahme: ungültiges Datum; Originaldaten bleiben erhalten",
-    "Legacy migration: future date; check the runtime timezone/clock": "Pufferübernahme: Datum liegt in der Zukunft; Zeitzone und Uhrzeit prüfen",
-    "Legacy migration: invalid energy value; original data retained": "Pufferübernahme: ungültiger Energiewert; Originaldaten bleiben erhalten",
-    "Legacy migration requires the original version-2 seven-slot kWh ring": "Pufferübernahme benötigt den ursprünglichen kWh-Ring der Version 2 mit sieben Speicherplätzen",
 }
 
 HEADER = """/*
@@ -57,11 +52,11 @@ HEADER = """/*
  * Automatisch erzeugt mit build-german-flow.py; Änderungen am Rechenkern
  * gehören in die englischen Quelldateien, danach beide Fassungen erzeugen.
  * MIT-Lizenz. Unabhängiges Projekt; siehe ../NOTICE_DE.md.
- * Anleitung und Pufferübernahme: README_DE.md.
+ * Einbau und Voraussetzungen: README_DE.md.
  *
  * Vorbereitung: SOC einmal aufnehmen und beide Tageszähler gemeinsam abfragen.
  * Berechnung: Nur zusammengehörige Energie- und SOC-Intervalle einbeziehen.
- * Vorhandenen v2-Puffer einmal übernehmen, sichern und nicht doppelt zählen.
+ * Neuinstallation startet leer; vorhandenen v3-Zustand weiterverwenden.
  * Summen und Messausgangspunkt gemeinsam im Dateispeicher ablegen.
  * Ungültige Eingaben und unklare Intervalle nicht als Energie verbuchen.
  * null am Sensorausgang bedeutet Unbekannt, nicht null Prozent Wirkungsgrad.
@@ -158,8 +153,8 @@ def build():
                 'memoryOnly und file mit Cache verwenden. Home-Assistant-Server auswählen. '
                 'Die bisherige SOC-Erfassung liegt außerhalb dieses Exports. batt_level_ts nur '
                 'beim Eingang einer echten SOC-Messung aktualisieren. Alte Berechnung vor dem '
-                'Aktivieren abschalten. Für die Pufferübernahme vorher möglichst nicht neu starten. '
-                'Vollständige Einbau- und Migrationsanleitung: round-trip-efficiency/README_DE.md.')
+                'Aktivieren abschalten. Eingabe-Energiesensoren und SOC-Erfassung vorher einrichten. '
+                'Vollständige Einbauanleitung: round-trip-efficiency/README_DE.md.')
     (ROOT / 'flow_DE.json').write_text(json.dumps(nodes, indent=2, ensure_ascii=False) + '\n')
 
 if __name__ == '__main__':

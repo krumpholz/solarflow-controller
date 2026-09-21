@@ -1,0 +1,66 @@
+# Optional Home Assistant configuration example / optionales Konfigurationsbeispiel.
+# Merge into existing YAML sections; do not duplicate top-level keys.
+# In vorhandene YAML-Abschnitte integrieren; Hauptschlüssel nicht doppelt anlegen.
+# Replace sensor.batterie_power with your REAL battery power sensor in W.
+# sensor.batterie_power durch den ECHTEN Batterieleistungssensor in W ersetzen.
+# Sign / Vorzeichen: positive = charging / Laden; negative = discharging / Entladen.
+# Verify all generated entity IDs before configuring their consumers.
+# Alle erzeugten Entitäts-IDs vor Verwendung kontrollieren.
+template:
+  - sensor:
+      - name: Battery Charge Power
+        unique_id: solarflow_eff_charge_power
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        availability: "{{ is_number(states('sensor.batterie_power')) }}"
+        state: "{{ [states('sensor.batterie_power') | float(0), 0] | max }}"
+      - name: Battery Discharge Power
+        unique_id: solarflow_eff_discharge_power
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        availability: "{{ is_number(states('sensor.batterie_power')) }}"
+        state: "{{ [-(states('sensor.batterie_power') | float(0)), 0] | max }}"
+
+sensor:
+  - platform: integration
+    source: sensor.battery_charge_power
+    name: Battery Charge Energy Total
+    unique_id: solarflow_eff_charge_energy_total
+    unit_prefix: k
+    unit_time: h
+    method: left
+    round: 3
+    max_sub_interval:
+      seconds: 60
+  - platform: integration
+    source: sensor.battery_discharge_power
+    name: Battery Discharge Energy Total
+    unique_id: solarflow_eff_discharge_energy_total
+    unit_prefix: k
+    unit_time: h
+    method: left
+    round: 3
+    max_sub_interval:
+      seconds: 60
+
+utility_meter:
+  batterie_lade_energie_pro_tag:
+    name: Batterie Lade Energie pro Tag
+    unique_id: solarflow_eff_charge_energy_daily
+    source: sensor.battery_charge_energy_total
+    cycle: daily
+    delta_values: false
+    net_consumption: false
+    periodically_resetting: false
+    always_available: false
+  batterie_entlade_energie_pro_tag:
+    name: Batterie Entlade Energie pro Tag
+    unique_id: solarflow_eff_discharge_energy_daily
+    source: sensor.battery_discharge_energy_total
+    cycle: daily
+    delta_values: false
+    net_consumption: false
+    periodically_resetting: false
+    always_available: false

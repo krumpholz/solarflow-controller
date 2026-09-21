@@ -7,21 +7,17 @@ const root = path.join(__dirname, '..');
 const german = process.env.EFFICIENCY_LANGUAGE === 'de';
 const localized = file => german ? file.replace(/(\.[^.]+)$/, '_DE$1') : file;
 const source = fs.readFileSync(path.join(root, localized('battery-efficiency.js')), 'utf8');
-function legacy(h, slots) {
-    h.stores.file.batt_eff_ring_7d = {version: 2, unit: 'kWh', size: 7, head: slots.length - 1,
-        slots: slots.concat(Array.from({length: 7-slots.length}, () => ({date:null, chargeKWh:0, dischargeKWh:0, socStart:null, socEnd:null})))};
-}
-const oldDay = (date, c=5, d=4, start=50, end=50) => ({date, chargeKWh:c, dischargeKWh:d, socStart:start, socEnd:end});
 function harness(options = {}) {
     let time = new Date(2026, 8, 20, 12).getTime();
     const stores = {file: {}, memoryOnly: {}};
     let ctx = {};
     const errors = [];
+    const reads = [];
     class Clock extends Date {
         constructor(...args) { super(...(args.length ? args : [time])); }
         static now() { return time; }
     }
-    const flow = {get(k, s) { if (!stores[s]) throw Error('Missing store'); return stores[s][k]; },
+    const flow = {get(k, s) { reads.push(k); if (!stores[s]) throw Error('Missing store'); return stores[s][k]; },
         set(k, v, s) { if (!stores[s]) throw Error('Missing store'); stores[s][k] = v; }};
     const context = {get: k => ctx[k], set: (k, v) => ctx[k] = v};
     const sandbox = vm.createContext({Date: Clock, Intl, flow, context,
@@ -35,7 +31,7 @@ function harness(options = {}) {
             data: {entity_id: i ? 'sensor.batterie_entlade_energie_pro_tag' : 'sensor.batterie_lade_energie_pro_tag',
                 state: v, attributes: {unit_of_measurement: 'kWh', last_reset: resetStamp(), ...attrs}}}));
     }
-    return {stores, errors, flow, context, sandbox, fn, messages,
+    return {stores, errors, reads, flow, context, sandbox, fn, messages,
         advance: ms => time += ms, setTime: t => time = t,
         time: () => time,
         restart() { ctx = {}; stores.memoryOnly = {}; stores.file = JSON.parse(JSON.stringify(stores.file)); },
@@ -186,11 +182,6 @@ test('corrupt persisted data rejected without destructive overwrite', () => {
     h.advance(5000); assert.equal(h.pair(5, 4)[0].result.reason, 'invalid_persisted_state_requires_review');
     assert.equal(h.stores.file.batt_eff_state_v3.last.soc, null);
 });
-test('empty legacy ring remains untouched during migration', () => {
-    const h = harness(); h.stores.file.batt_eff_ring_7d = {version: 2, unit: 'kWh', head: -1, slots: Array.from({length:7},()=>({date:null})), sentinel: 'keep'};
-    seed(h); assert.equal(h.stores.file.batt_eff_ring_7d.sentinel, 'keep');
-    assert.equal(h.stores.file.batt_eff_state_v3.days[0].charge, 0);
-});
 test('changed capacity archives old state and starts a new baseline', () => {
     const h = harness(); seed(h); h.stores.file.batt_eff_state_v3.fingerprint = 'other capacity';
     h.advance(5000); assert.equal(h.pair(5, 4)[0].result.reason, 'configuration_changed_new_baseline');
@@ -266,110 +257,54 @@ test('maximum seven calendar day buckets; eighth day removes the oldest', () => 
     assert.equal(days.length, 7); assert.equal(days[0].date, '2026-09-21');
     assert.ok(Math.abs(days.reduce((s,d)=>s+d.charge,0) - .84) < 1e-10);
 });
-test('legacy history and live day are used on first output and originals retained', () => {
-    const h = harness(); legacy(h, [oldDay('2026-09-18'),oldDay('2026-09-19')]);
-    h.stores.memoryOnly.batt_eff_today_live = oldDay('2026-09-20', 1, .8);
-    const original = JSON.stringify(h.stores.file.batt_eff_ring_7d);
-    const out = h.pair(1, .8)[0];
-    assert.equal(out.payload,80); assert.equal(out.result.sum_charge_kwh_7d,11);
-    assert.equal(out.result.days_used,3); assert.equal(out.result.legacy_days_in_window,3);
-    assert.equal(out.result.covered_hours,0);
-    assert.equal(JSON.stringify(h.stores.file.batt_eff_ring_7d),original);
-    assert.equal(h.stores.file.batt_eff_legacy_backup_v3.live.chargeKWh,1);
-    h.advance(60000); const next=h.pair(1.04,.832)[0];
-    assert.equal(next.result.sum_charge_kwh_7d,11.04); assert.equal(next.payload,80);
-});
-test('snapshot fallback survives restart; live source takes precedence without double counting', () => {
-    const h=harness();legacy(h,[]);
-    h.stores.file.batt_eff_today_live_snapshot=oldDay('2026-09-20',1,.8);
-    h.stores.memoryOnly.batt_eff_today_live=oldDay('2026-09-20',2,1.6);
-    assert.equal(h.pair(2,1.6)[0].result.sum_charge_kwh_7d,2);
-    h.restart();h.advance(60000);
-    assert.equal(h.pair(2.04,1.632)[0].result.sum_charge_kwh_7d,2.04);
-    const other=harness();legacy(other,[]);other.stores.file.batt_eff_today_live_snapshot=oldDay('2026-09-20',1,.8);
-    assert.equal(other.pair(2,1.6)[0].result.sum_charge_kwh_7d,1);
-});
-test('legacy null SOC preserves energy but never invents efficiency', () => {
-    const h=harness();legacy(h,[oldDay('2026-09-19',5,4,null,50)]);
-    const out=h.pair(0,0)[0];assert.equal(out.payload,null);
-    assert.equal(out.result.sum_charge_kwh_7d,5);assert.equal(out.result.eta_raw_pct,null);
-    assert.equal(out.result.reason,'legacy_soc_boundaries_missing');
-    h.setTime(new Date(2026,8,26,12).getTime());
-    assert.equal(h.pair(0,0)[0].result.legacy_soc_boundaries_missing,false);
-});
-test('all original slots backed up; only active calendar days included', () => {
-    const h=harness();legacy(h,[oldDay('2026-09-13'),oldDay('2026-09-14'),oldDay('2026-09-19')]);
-    const out=h.pair(0,0)[0];assert.equal(out.result.sum_charge_kwh_7d,10);
-    assert.equal(h.stores.file.batt_eff_legacy_backup_v3.ring.slots[0].date,'2026-09-13');
-});
-test('malformed legacy energy and unsupported units stop rather than erase history', () => {
-    for(const bad of ['energy','unit']) {
-        const h=harness();legacy(h,[oldDay('2026-09-19')]);
-        if(bad==='energy')h.stores.file.batt_eff_ring_7d.slots[0].chargeKWh='unknown';
-        else h.stores.file.batt_eff_ring_7d.unit='Wh';
-        assert.equal(h.pair(0,0)[0].payload,null);
-        assert.equal(h.stores.file.batt_eff_state_v3,undefined);
-        assert.ok(h.stores.file.batt_eff_legacy_backup_v3);
-    }
-});
-test('upgrade of already-running v3 restores disjoint legacy prefix exactly once', () => {
-    const h=harness();seed(h);grow(h);
-    delete h.stores.file.batt_eff_state_v3.legacyMigration; // previously published v3 schema
-    legacy(h,[oldDay('2026-09-19')]);h.stores.memoryOnly.batt_eff_today_live=oldDay('2026-09-20',5,4);
-    h.advance(60000);const out=h.pair(5.16,4.128)[0];
-    assert.equal(out.result.sum_charge_kwh_7d,10.16);assert.equal(out.payload,80);
-    h.restart();h.advance(60000);assert.equal(h.pair(5.20,4.16)[0].result.sum_charge_kwh_7d,10.20);
-});
-test('unprovable overlapping legacy day archived and flagged, never added twice', () => {
-    const h=harness();seed(h);grow(h);delete h.stores.file.batt_eff_state_v3.legacyMigration;
-    legacy(h,[]);h.stores.memoryOnly.batt_eff_today_live=oldDay('2026-09-20',5.1,4.08);
-    h.advance(60000);const out=h.pair(5.16,4.128)[0];
-    assert.equal(out.result.sum_charge_kwh_7d,.16);
-    assert.deepEqual(Array.from(out.result.legacy_migration.overlappingDates),['2026-09-20']);
-    assert.equal(h.stores.file.batt_eff_legacy_backup_v3.live.chargeKWh,5.1);
-});
-test('completed ring day beats stale snapshot; previous-day live record retained', () => {
-    const h=harness();legacy(h,[oldDay('2026-09-18',5,4)]);
-    h.stores.file.batt_eff_today_live_snapshot=oldDay('2026-09-18',2,1.6);
-    h.stores.memoryOnly.batt_eff_today_live=oldDay('2026-09-19',3,2.4);
-    assert.equal(h.pair(0,0)[0].result.sum_charge_kwh_7d,8);
-});
-function installActualHistory(h) {
-    legacy(h,[oldDay('2026-09-15',7.8,2.68,60,82),oldDay('2026-09-16',1.4,3.32,82,56),
-        oldDay('2026-09-17',4.3,2.04,88,78),oldDay('2026-09-18',2.3,2.7,78,67),
-        oldDay('2026-09-19',3.2,3.29,72,57),oldDay('2026-09-20',.8,1.95,57,37)]);
-    h.stores.memoryOnly.batt_eff_today_live=oldDay('2026-09-21',1.3,.59,37,41);
-    h.setTime(new Date(2026,8,21,12,47).getTime());
+// Synthetic already-persisted v3 state; no user history or v2 importer.
+function persistedHistory(h) {
+    seed(h);
+    const state=h.stores.file.batt_eff_state_v3;
+    state.days.unshift(
+        {date:'2026-09-18',charge:5,discharge:3,delta:.864,coveredMs:0,gaps:0,gapMs:0,intervals:0,
+         legacy:true,legacySocKnown:true,legacySocStart:40,legacySocEnd:50},
+        {date:'2026-09-19',charge:5,discharge:4,delta:-.864,coveredMs:0,gaps:0,gapMs:0,intervals:0,
+         legacy:true,legacySocKnown:true,legacySocStart:55,legacySocEnd:45});
+    state.legacyMigration={status:'imported',source:'legacy_v2',coverageKnown:false,importedDates:['2026-09-18','2026-09-19'],overlappingDates:[]};
 }
-test('actual user history retains endpoint estimate without inventing handover SOC', () => {
-    const h=harness();installActualHistory(h);const out=h.pair(1.3,.59,42)[0];
-    assert.equal(out.result.sum_charge_kwh_7d,21.1);assert.equal(out.result.sum_discharge_kwh_7d,16.57);
-    assert.equal(out.payload,70.8);assert.equal(out.result.legacy_adjustment_kwh,3.1968);
-    assert.equal(out.result.delta_stored_energy_kwh,-1.642);
-    assert.deepEqual(Array.from(out.result.legacy_boundary_gaps,g=>g.difference_pct_points),[32,5]);
-    assert.equal(out.result.reason,'legacy_estimate_available');
-    assert.equal(out.result.historical_accuracy_verified,false);
-    assert.ok(Math.abs(h.stores.file.batt_eff_state_v3.days.reduce((n,d)=>n+d.delta,0)+4.8384)<1e-9);
+test('fresh installation ignores all v2 sources and creates no migration backup', () => {
+    const h=harness();
+    h.stores.file.batt_eff_ring_7d={sentinel:'do not read'};
+    h.stores.file.batt_eff_today_live_snapshot={sentinel:'do not read'};
+    h.stores.memoryOnly.batt_eff_today_live={sentinel:'do not read'};
+    const first=h.pair(5,4)[0];
+    assert.equal(first.payload,null);assert.equal(first.result.sum_charge_kwh_7d,0);
+    assert.equal(first.result.legacy_migration,null);assert.equal(first.result.legacy_days_in_window,0);
+    const out=grow(h)[0];assert.equal(out.payload,80);assert.equal(out.result.days_used,1);
+    for(const key of ['batt_eff_ring_7d','batt_eff_today_live_snapshot','batt_eff_today_live'])assert.ok(!h.reads.includes(key));
+    assert.equal(h.stores.file.batt_eff_legacy_backup_v3,undefined);
+    assert.equal(h.stores.file.batt_eff_ring_7d.sentinel,'do not read');
 });
-test('existing migrated v3 state is corrected without remigration or compounded adjustment', () => {
-    const h=harness();installActualHistory(h);h.pair(1.3,.59,42);
-    const before=JSON.stringify(h.stores.file.batt_eff_state_v3.days);
-    h.restart();h.advance(5000);let out=h.pair(1.3,.59,42)[0];
-    assert.equal(out.payload,70.8);assert.equal(out.result.legacy_adjustment_kwh,3.1968);
-    h.advance(5000);out=h.pair(1.3,.59,42)[0];assert.equal(out.payload,70.8);
-    const after=h.stores.file.batt_eff_state_v3.days;
-    assert.deepEqual(Array.from(after,d=>d.delta),JSON.parse(before).map(d=>d.delta));
-    h.advance(60000);out=h.pair(1.34,.61,43)[0];
-    assert.equal(out.result.legacy_adjustment_kwh,3.1968);
-    assert.equal(out.result.delta_stored_energy_kwh,-1.555);
+test('already persisted v3 history continues without reimport or compounded correction', () => {
+    const h=harness();persistedHistory(h);const before=JSON.stringify(h.stores.file.batt_eff_state_v3.days);
+    const marker=JSON.stringify(h.stores.file.batt_eff_state_v3.legacyMigration);
+    for(let i=0;i<3;i++) {
+        h.restart();h.advance(5000);const out=h.pair(5,4)[0];
+        assert.equal(out.payload,74.3);assert.equal(out.result.legacy_adjustment_kwh,.432);
+        assert.equal(out.result.reason,'legacy_estimate_available');
+        assert.equal(JSON.stringify(h.stores.file.batt_eff_state_v3.legacyMigration),marker);
+    }
+    assert.deepEqual(Array.from(h.stores.file.batt_eff_state_v3.days,d=>d.delta),JSON.parse(before).map(d=>d.delta));
+    h.advance(60000);assert.equal(h.pair(5.04,4.032)[0].result.sum_charge_kwh_7d,10.04);
 });
-test('legacy endpoint adjustment changes with the active window and expires naturally', () => {
-    const h=harness();installActualHistory(h);h.pair(1.3,.59,42);
-    h.setTime(new Date(2026,8,24,12).getTime());let out=h.pair(0,0,42)[0];
-    assert.equal(out.result.legacy_adjustment_kwh,.432); // only 67 -> 72 remains
-    h.setTime(new Date(2026,8,28,12).getTime());out=h.pair(0,0,42)[0];
-    assert.equal(out.result.legacy_adjustment_kwh,0);assert.equal(out.result.legacy_days_in_window,0);
-    assert.equal(out.result.estimate_basis,'measured_intervals');
+test('already persisted legacy records expire without rereading old sources', () => {
+    const h=harness();persistedHistory(h);
+    h.setTime(new Date(2026,8,25,12).getTime());let out=h.pair(0,0)[0];
+    assert.equal(out.result.legacy_adjustment_kwh,0);assert.equal(out.result.legacy_days_in_window,1);
+    h.setTime(new Date(2026,8,26,12).getTime());out=h.pair(0,0)[0];
+    assert.equal(out.result.legacy_days_in_window,0);assert.equal(out.result.estimate_basis,'measured_intervals');
+});
+test('missing SOC in existing historical records preserves energy and invalidates efficiency', () => {
+    const h=harness();persistedHistory(h);h.stores.file.batt_eff_state_v3.days[0].legacySocKnown=false;
+    h.advance(5000);const out=h.pair(5,4)[0];
+    assert.equal(out.payload,null);assert.equal(out.result.sum_charge_kwh_7d,10);
+    assert.equal(out.result.reason,'legacy_soc_boundaries_missing');
 });
 
 test('minute updates at 2400 W retain all energy despite five-second polls', () => {
@@ -426,13 +361,11 @@ test('real observation outage after pending counter still excludes the unobserve
     const out=h.pair(5.2,4)[0];assert.equal(out.result.reason,'measurement_gap_excluded');
     assert.equal(out.result.sum_charge_kwh_7d,0);
 });
-test('revision 3.1 upgrade preserves migrated history and creates allowance once', () => {
-    const h=harness();installActualHistory(h);h.pair(1.3,.59,42);
-    delete h.stores.file.batt_eff_state_v3.energyGuard;
-    const migration=JSON.stringify(h.stores.file.batt_eff_state_v3.legacyMigration);
-    h.restart();h.advance(5000);const out=h.pair(1.4,.59,42)[0];
-    assert.equal(out.result.sum_charge_kwh_7d,21.2);assert.equal(out.result.calculation_revision,'3.2');
-    assert.equal(JSON.stringify(h.stores.file.batt_eff_state_v3.legacyMigration),migration);
+test('existing v3 state without optional allowance fields upgrades in place', () => {
+    const h=harness();persistedHistory(h);delete h.stores.file.batt_eff_state_v3.energyGuard;
+    h.restart();h.advance(5000);const out=h.pair(5.1,4)[0];
+    assert.equal(out.result.sum_charge_kwh_7d,10.1);assert.equal(out.result.calculation_revision,'3.3');
+    assert.equal(out.result.legacy_migration.status,'imported');
 });
 test('invalid allowance settings and corrupt persisted guard fail without deleting data', () => {
     const h=harness({source:source.replace('powerSafetyFactor: 1.20','powerSafetyFactor: -1')});

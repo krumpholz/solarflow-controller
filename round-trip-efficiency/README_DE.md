@@ -1,69 +1,86 @@
-# SOC-korrigierte Batterie-Wirkungsgradschätzung über sieben Tage
+# SOC-korrigierter Batterie-Wirkungsgrad über sieben Tage
 
 [English](README.md) | **Deutsch**
 
-Dieser Node-RED-Auswertungsflow schätzt den energetischen Batteriewirkungsgrad anhand täglicher Lade-/Entladeenergiezähler und des Ladezustands (SOC). Er sendet keine Steuerbefehle an die Batterie.
+Node-RED-Auswertung für den Batterie-Wirkungsgrad. Der Flow liest Tagesenergiezähler und Ladezustand (SOC), berechnet eine Energiebilanz und veröffentlicht einen Prozentwert in Home Assistant. Er sendet keine Steuerbefehle an die Batterie.
 
-**Stand:** geprüfte Implementierung mit automatisierten Tests in einer simulierten Umgebung. Noch nicht in einer laufenden Home-Assistant-/Node-RED-Anlage validiert. Das Ergebnis ist eine Schätzung und keine zertifizierte Messung des vollständigen Lade-/Entladewirkungsgrads (Round-Trip Efficiency).
+**Veröffentlichungskandidat: Berechnungsrevision 3.3.** Automatisierte Tests mit simulierten Kontexten sind vorhanden. Für frühere Revisionen liegen einzelne Rückmeldungen aus dem laufenden Betrieb vor; der abschließende Deploy-Test steht noch aus. Der Prozentwert ist eine berechnete SOC-basierte Schätzung, keine zertifizierte Roundtrip-Messung.
 
-## Sprachversion des Flows wählen
+## Was wird automatisch angelegt?
 
-- **Deutsch:** [flow_DE.json](flow_DE.json) – deutsche Knotennamen, Code-Erläuterungen, Status- und Fehlermeldungen.
-- **Englisch:** [flow.json](flow.json) – weiterhin separat verfügbar.
-
-Für deine bisherige Anlage übernimmt die deutsche Alternative die ursprünglichen Namen „Batterie Lade Energie Täglich“, „Batterie Entlade Energie Täglich“, „Batterie Wirkungsgrad“ und „Lade Entlade Effizenz“. Auch der bisherige Anzeigename der Sensor-Konfiguration bleibt erhalten. Eine bestehende HA-Entitäts-ID muss beim Import trotzdem kontrolliert werden.
-
-**Nur eine Sprachversion betreiben.** Beide verwenden dieselben Knotenreferenzen und Kontextschlüssel. Die Sprache ändert weder Berechnung noch Pufferübernahme. Maschinenlesbare Felder und Codes bleiben kompatibel; `grund`, `intervallstatus` und `pufferuebernahme` ergänzen deutsche Texte. Im HA-Sensor zeigt das zusätzliche Attribut `diagnose` den deutschen Grund an.
-
-Die deutschen Quelldateien werden mit `python round-trip-efficiency/build-german-flow.py` aus dem englischen Rechenkern erzeugt. Der Generator übersetzt die Oberfläche und ergänzt deutsche Erläuterungen, ohne den ausführbaren Rechenkern zu ändern.
-
-## Dateien
-
-| Datei | Inhalt |
+| Bestandteil | Wird beim Import dieses Flows angelegt? |
 | --- | --- |
-| [flow_DE.json](flow_DE.json) | Vollständige deutsche Alternative zum Import |
-| [battery-efficiency_DE.js](battery-efficiency_DE.js) | Deutsche Berechnungsfunktion |
-| [prepare-cycle_DE.js](prepare-cycle_DE.js) | Deutscher Vorbereitungsknoten |
-| [flow.json](flow.json) | Importierbarer englischer Flow mit Auslöser, zusammengehörigen Abfragen, Berechnung, Diagnose und HA-Sensor |
-| [battery-efficiency.js](battery-efficiency.js) | Code der Berechnungsfunktion; zwei Ausgänge |
-| [prepare-cycle.js](prepare-cycle.js) | SOC-Momentaufnahme, Zyklus-ID und Überwachung fehlender Antworten; zwei Ausgänge |
-| [function node - Round-Trip Efficiency.txt](function%20node%20-%20Round-Trip%20Efficiency.txt) | Identische Kopie der Berechnungsfunktion unter dem bisherigen Downloadpfad |
-| [tests/efficiency.test.cjs](tests/efficiency.test.cjs) | Automatisierte Regressionstests |
-| [VALIDATION_DE.md](VALIDATION_DE.md) | Prüfumfang und noch ausstehende Prüfungen in der Anlage |
+| Eingabesensoren für tägliche Lade-/Entladeenergie | **Nein.** Sie müssen in Home Assistant vorhanden sein; Einrichtung siehe unten. |
+| Batterieleistungs- oder SOC-Messung | **Nein.** Eine Geräteintegration oder ein Messgerät muss echte Messwerte liefern. |
+| `flow.batt_level` und optional `flow.batt_level_ts` | **Nein.** Eine externe SOC-Erfassung auf demselben Flow-Tab schreibt diese Werte. |
+| Kontextspeicher `memoryOnly` und `file` | **Nein.** Vor dem Deploy in Node-RED konfigurieren. |
+| Ergebnissensor für den Wirkungsgrad | Der enthaltene HA-Sensor-Knoten kann ihn nach Server-/Entitätskonfiguration und Deploy anlegen, wenn die Begleitintegration installiert ist. |
 
-**Den vollständigen Flow aktualisieren.** Nur den Code der bisherigen Function-Node auszutauschen reicht nicht: Die neue Berechnung benötigt die Zyklusinformationen des Vorbereitungsknotens und hat zwei Ausgänge.
+Das Einfügen nur des JavaScript-Codes in eine Function-Node erzeugt keine HA-Entitäten und liefert auch nicht die benötigten Messzyklusinformationen. Neue Nutzer importieren den vollständigen Flow. Bei einer bereits vorhandenen Installation mit Revision 3.2 genügt der Austausch der Berechnungsfunktion.
 
-## Änderungen gegenüber dem bereitgestellten Flow
+## Abhängigkeiten und externe Eingaben
 
-Der ursprüngliche Export enthielt zwei unabhängige Current-State-Knoten, die Berechnungsfunktion, einen HA-Sensor und Konfigurationsknoten. Ein regelmäßiger Auslöser und der Knoten, der `flow.batt_level` schreibt, waren nicht enthalten.
+Node-RED und `node-red-contrib-home-assistant-websocket` installieren und mit dem eigenen Home-Assistant-Server verbinden. Für den Ergebnissensor zusätzlich die [Node-RED-Begleitintegration](https://github.com/zachowj/hass-node-red) in HA installieren und einrichten. Der Export nennt Websocket-Paketversion 0.80.3; das ist die Version des Ausgangsexports, keine allgemeine Kompatibilitätsgarantie. Node-RED-Add-on und HA-Begleitintegration sind verschiedene Komponenten. Siehe [Voraussetzungen des HA-Sensor-Knotens](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/sensor.html).
 
-- Beide Energieabfragen gehören jetzt zu einem nummerierten Messzyklus. Unvollständige, doppelte oder verspätete Antworten vermischen nicht unbemerkt verschiedene Zyklen.
-- Unbekannte, nicht verfügbare, leere, boolesche, nicht endliche und negative Energiewerte werden verworfen. Ein SOC-Wert `null` wird nicht als null Prozent behandelt.
-- Vorhandene kWh-Historie der Version 2 wird einmalig übernommen, einschließlich Live-Tagesstand oder Snapshot. Die erste zusammengehörige Messung bildet den Ausgangspunkt für NEUE Intervalle; die übernommene Historie bleibt in derselben Bilanz gesondert gekennzeichnet.
-- Energie- und SOC-Differenzen beziehen sich auf dieselben akzeptierten Intervallgrenzen. Der zeitlich nachlaufende Zehn-Minuten-Median entfällt.
-- Summen und zugehöriger Ausgangspunkt werden gemeinsam in einem automatisch dauerhaft gespeicherten Zustandsobjekt abgelegt.
-- Nach einer Lücke oder Rücksetzung beginnt ein neuer Abschnitt. Nicht erfasste Energie und zugehörige SOC-Änderung werden beide ausgeschlossen.
-- Schätzwerte außerhalb des gültigen Bereichs erscheinen in der Diagnose. Der HA-Sensor wird auf Unknown beziehungsweise Unbekannt gesetzt, statt auf 0 % oder 100 % begrenzt zu werden.
-- Die englische Fassung verwendet englische Kommentare, Knotennamen und Statusmeldungen; die deutsche Alternative hat eine deutsche Oberfläche und deutsche Code-Erläuterungen. Die Dokumentation ist deutsch und englisch verfügbar. Bestehende deutsche Entitäts-IDs und kompatible Kontextschlüssel bleiben erhalten, damit ihre Verweise weiter funktionieren.
+Bei Installation über HACS nach `hass-node-red` suchen, herunterladen, HA neu starten und anschließend unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** die Integration **Node-RED Companion** einrichten. Für manuelle Installation die oben verlinkte Projektanleitung verwenden.
 
-## Einbau und Aktualisierung
+| Externe Eingabe | Benötigter Wert / Ablage | Bereitgestellt durch |
+| --- | --- | --- |
+| `sensor.batterie_lade_energie_pro_tag` | Nichtnegative kumulierte **Ladeenergie des Tages**, Einheit exakt `kWh`; Rücksetzung um lokale Mitternacht | HA-Geräteintegration oder Helfer |
+| `sensor.batterie_entlade_energie_pro_tag` | Nichtnegative kumulierte **Entladeenergie des Tages**, Einheit exakt `kWh`; Rücksetzung um lokale Mitternacht | HA-Geräteintegration oder Helfer |
+| `batt_level` | Zahl oder numerischer Text, 0–100 **Prozent**, Flow-Kontext, Speicher `memoryOnly` | Externe SOC-Erfassung |
+| `batt_level_ts` | Optionaler numerischer Unix-Zeitstempel in **Millisekunden**, gleicher Flow/Speicher | Externe SOC-Erfassung; Pflicht bei `requireSocTimestamp: true` |
+| `CFG.capacityKWh` | Tatsächliche Batteriekapazität in kWh | Nutzereinstellung in der Berechnungsfunktion |
+| `CFG.maxPowerKW` | Maximale Lade-/Entladeleistung in kW; beide Richtungen prüfen | Nutzereinstellung |
+| Laufzeit-Zeitzone | Gleiche lokale Zeitzone wie die HA-Tagesrücksetzung | Node-RED-/HA-Konfiguration |
 
-1. Sichere den bestehenden Flow und seinen persistenten Kontext. Deaktiviere die alte Wirkungsgradberechnung, bevor du die neue aktivierst. Behalte den ursprünglichen Flow-Tab und seinen Kontext: Daraus wird die Historie übernommen.
-2. Prüfe die unten beschriebenen Kontextspeicher. Sind sie bereits vorhanden, **vor der Migration nicht neu starten**: Der aktuelle Live-Tagesstand liegt in `memoryOnly`. Ist ein Neustart erforderlich, sichere den heutigen Stand zuerst mit dem bisherigen Snapshot-Schalter und warte, bis der Dateispeicher geschrieben wurde. Andernfalls lassen sich nur ein vorhandener Snapshot und abgeschlossene Tage aus dem Ringpuffer wiederherstellen.
-3. Importiere `flow_DE.json` (deutsch) oder `flow.json` (englisch) **auf den bestehenden Flow-Tab, auf dem `flow.batt_level` bereitgestellt wird**. Ein neuer Tab besitzt einen anderen Flow-Kontext. Wähle in beiden Current-State-Knoten und in der Entitätskonfiguration deinen vorhandenen Home-Assistant-Server. Alte und neue Berechnung dürfen nicht gleichzeitig denselben Sensor beschreiben.
-4. Prüfe `CFG.capacityKWh`: Die eingetragenen **8,640 kWh** stammen aus der ursprünglichen Anlage und sind kein allgemeingültiger Standardwert. Im JavaScript-Code steht dafür `8.640` mit Dezimalpunkt. Prüfe auch `maxPowerKW` und die Auflösung der Energiezähler.
-5. Prüfe beide Energie-Entitäts-IDs in den Current-State-Knoten und in `CFG`. Erforderlich sind täglich aufsummierte Energiezähler in **kWh**, die um lokale Mitternacht zurückgesetzt werden. Die Berechnung prüft zusätzlich das Attribut `unit_of_measurement`. Die Current-State-Knoten verwenden den Zustandstyp String, damit ungültige Ausgangswerte erkennbar bleiben.
-6. Der externe SOC-Knoten muss `batt_level` im Speicher `memoryOnly` mit einer endlichen Prozentzahl zwischen 0 und 100 versorgen. Teile diesen Wert nur dann durch zehn, wenn der ursprüngliche Messwert tatsächlich in Zehntelprozent vorliegt.
-7. Ergänze möglichst `batt_level_ts` wie unten beschrieben und aktiviere `requireSocTimestamp`. Standardmäßig bleibt der Zeitstempel optional, damit die bisherige Schnittstelle weiter verwendet werden kann.
-8. Die Zeitzone der Node-RED-Laufzeit muss zur Zeitzone der täglichen Zählerrücksetzung passen, beispielsweise `Europe/Berlin`. Eine Änderung der Laufzeit-Zeitzone erfordert einen Neustart. Beachte davor die Sicherung des Live-Tagesstands aus Schritt 2.
-9. Übernimm die Änderungen mit Deploy und prüfe die Diagnoseausgabe. Der enthaltene Inject-Knoten löst alle fünf Sekunden aus. Ohne Vorgeschichte liefert die erste vollständige Messung Unknown. Mit gültiger übernommener Historie kann sofort deren Schätzwert angezeigt werden. Neue Intervalle werden ab der nächsten akzeptierten Messung ergänzt.
-10. Prüfe den Namen und die Entität des HA-Sensors sowie vorhandene Dashboards. Der Anzeigename lautet in der deutschen Fassung wie ursprünglich `Lade Entlade Effizenz`, in der englischen Fassung `Battery Efficiency Estimate`. Behalte bei Bedarf die bisherige Entitätszuordnung bei.
+Die Energie-IDs sind aus Kompatibilitätsgründen beibehaltene Beispiele. Bei anderen IDs **beide Current-State-Knoten und `CFG.chargeEntity` / `CFG.dischargeEntity`** anpassen. Nur den Anzeigenamen zu ändern genügt nicht. SOC, Kapazität und beide Zähler müssen dasselbe Batteriesystem und dieselbe Messgrenze beschreiben. PV-Erzeugung und Haus-/Netzverbrauch ersetzen die Batterie-Lade-/Entladeenergie nicht.
 
-Der bereitgestellte Export nennt `node-red-contrib-home-assistant-websocket` **0.80.3**. Der HA-Sensor-Knoten benötigt außerdem die zugehörige Node-RED-Integration in Home Assistant. Die Versionsangabe stammt aus dem Ausgangsexport; sie bedeutet nicht, dass bereits ein vollständiger Kompatibilitätstest in dieser Laufzeit durchgeführt wurde.
+Es werden **keine globalen Kontextvariablen benötigt**. `batt_min_s`, `batt_max_s`, Reglerbetriebsart, Preissperren und Batterie-Steuervariablen sind keine Eingaben dieser Berechnung. Die `_eff`-Zyklusinformationen erzeugt der Vorbereitungsknoten intern. Den persistenten Berechnungszustand nicht manuell vorbefüllen.
 
-### Kontextspeicher
+## Die beiden Tagesenergiesensoren in Home Assistant vorbereiten
 
-Ergänze diese Konfiguration in der Node-RED-Datei `settings.js`. Andere bereits verwendete Speicher müssen erhalten bleiben:
+### A. Tägliche Batterieenergie ist bereits vorhanden
+
+Vorhandene Sensoren verwenden, wenn Richtung, Einheit `kWh`, Mitternachtsrücksetzung und Messgrenze passen. Unter **Entwicklerwerkzeuge → Zustände** echte Zustände und Attribute kontrollieren, einschließlich Verfügbarkeit und gegebenenfalls `last_reset`. Falls nötig, Wh vorgelagert korrekt in kWh umrechnen; die Einheit nicht lediglich umbenennen.
+
+### B. Getrennte kumulierte Gesamtzähler für Laden und Entladen sind vorhanden
+
+Unter **Einstellungen → Geräte & Dienste → Helfer → Helfer erstellen** zwei **Verbrauchszähler (Utility Meter)** erstellen. Jeweiligen kumulierten kWh-Eingang auswählen, Rücksetzung täglich, kein Zeitversatz, keine Tarife, Nettoverbrauch aus und Deltawerte aus. Für monoton steigende Gesamtzähler „periodisch zurücksetzend“ deaktivieren; bei tatsächlich zurücksetzenden Quellen passend konfigurieren. „Immer verfügbar“ ausgeschaltet lassen, damit Ausfälle nicht absichtlich verdeckt werden. Erzeugte Entitäts-IDs kontrollieren und im Flow zuordnen. Der erste Helfertag enthält nur Energie seit der Einrichtung. Siehe [Verbrauchszähler](https://www.home-assistant.io/integrations/utility_meter/).
+
+### C. Es gibt nur Batterieleistung in Watt
+
+Die vorzeichenbehaftete Batterieleistung vor der Integration in zwei nichtnegative Signale aufteilen: Bei **positiv = Laden** gilt Ladeleistung `max(P, 0)` und Entladeleistung `max(-P, 0)`. Bei umgekehrter Gerätekonvention die Vorzeichen entsprechend ändern. Vorzeichenbehaftete Nettoleistung nicht als zwei getrennte Energiezähler behandeln.
+
+Für jede Richtung einen **Integral-Helfer** erstellen. Bei W als Eingang Präfix `k`, Zeiteinheit `h`, Genauigkeit 3 Nachkommastellen und maximales Teilintervall 60 Sekunden wählen. Für gehaltene, stufenförmige Leistungssignale `left` verwenden; bei anderem Abtastverhalten die Methode prüfen. Daraus entstehen zwei kumulierte kWh-Gesamtzähler. Anschließend daraus die täglichen Verbrauchszähler aus Abschnitt B erstellen. Siehe [Integral-Helfer](https://www.home-assistant.io/integrations/integration/).
+
+Ein optionales vollständiges YAML-Beispiel liegt unter [examples/home-assistant-energy.yaml](examples/home-assistant-energy.yaml). Darin ist `sensor.batterie_power` ein **Platzhalter für deinen echten vorzeichenbehafteten W-Messwert**. Ersetzen und jede erzeugte Entitäts-ID prüfen: Bereits belegte Namen können zusätzliche Suffixe verursachen. Nachgelagerte `source`-Verweise dann anpassen. Die Abschnitte `template`, `sensor` und `utility_meter` mit vorhandener Konfiguration zusammenführen; Hauptschlüssel nicht doppelt anlegen. HA-Konfiguration vor Anwenden/Neustart prüfen. Keine doppelten Helfer erstellen, wenn passende Eingabesensoren bereits existieren. Die Verfügbarkeitsbedingung im Template verhindert, dass eine nicht verfügbare Quelle als echte Null-Watt-Messung dargestellt wird; siehe [Template-Sensoren](https://www.home-assistant.io/integrations/template/).
+
+Das Beispiel erzeugt kein physisches Messgerät, keine SOC-Quelle und keine fehlende Vergangenheit. Ein eingefrorener, weiterhin numerischer Leistungssensor kann trotzdem falsche integrierte Energie liefern. Die Quellenfunktion muss vorgelagert überwacht werden. Softwareintegration ist eine Näherung und kann Ausfälle nicht zuverlässig rekonstruieren; Zähler mit den Energieaufzeichnungen des Geräts vergleichen. Beide Richtungen an derselben AC- oder DC-Messgrenze erfassen, einschließlich der vorgesehenen Hilfsverbräuche.
+
+## SOC auf demselben Node-RED-Tab bereitstellen
+
+Die echte Batterie-SOC-Integration oder den Messwertempfänger verwenden und einen geprüften Prozentwert an eine externe Function-Node auf **demselben Tab** wie diesen Flow übergeben. Der Schreibknoten ist nicht enthalten, weil die Quelle anlagenspezifisch ist. Dieses Beispiel erwartet in `msg.payload` den neu empfangenen SOC, kein vollständiges HA-Ereignisobjekt:
+
+```js
+const raw = msg.payload;
+const soc = (typeof raw === "number" ||
+    (typeof raw === "string" && raw.trim() !== "")) ? Number(raw) : NaN;
+if (!Number.isFinite(soc) || soc < 0 || soc > 100) {
+    flow.set("batt_level", null, "memoryOnly");
+    flow.set("batt_level_ts", null, "memoryOnly");
+    return null;
+}
+flow.set("batt_level", soc, "memoryOnly");
+flow.set("batt_level_ts", Date.now(), "memoryOnly");
+return msg;
+```
+
+Den Zeitstempel nur beim Eingang einer echten aktuellen Messung setzen; für verzögert eintreffende Nachrichten stattdessen einen verlässlichen Quellenzeitstempel verwenden. Wiederholtes Lesen eines alten HA-Zustands macht ihn nicht frisch. Ein Ereignis nur bei Zustandsänderung bleibt bei konstantem SOC möglicherweise aus und beweist allein keine regelmäßige Quellenaktualisierung. Ist die Aktualität nicht nachweisbar, nur `batt_level` bereitstellen, einen alten `batt_level_ts` entfernen und `requireSocTimestamp: false` beibehalten. Die Diagnose meldet dann ausdrücklich ungeprüfte Aktualität. Bei vorhandenem Zeitstempel werden Werte älter als `maxSocAgeMs` (120 Sekunden) oder aus der Zukunft auch im optionalen Modus abgelehnt. Zehntelprozent nur umrechnen, wenn dies tatsächlich die Quelleneinheit ist. Nach einem Node-RED-Neustart die Speicherwerte neu aus der Quelle befüllen.
+
+## Kontextspeicher und Einbau
+
+Benannte Speicher in Node-RED `settings.js` konfigurieren und mit vorhandenen Einstellungen zusammenführen. Das Node-RED-Benutzerverzeichnis muss dauerhaft gespeichert sein. Nach Änderungen an diesen Einstellungen Node-RED neu starten.
 
 ```js
 contextStorage: {
@@ -73,144 +90,79 @@ contextStorage: {
 }
 ```
 
-Die Funktionen greifen synchron auf den Kontext zu. Deshalb muss beim Dateispeicher der Cache aktiviert sein. Jedes akzeptierte Messpaar aktualisiert den zwischengespeicherten persistenten Zustand; der Speicher bündelt die Schreibvorgänge auf den Datenträger. Im neuen Betrieb ist kein manueller Snapshot-Schalter erforderlich. Bei plötzlichem Stromausfall können noch nicht geschriebene Daten trotzdem verloren gehen. Siehe die [Node-RED-Dokumentation zu localfilesystem](https://nodered.org/docs/api/context/store/localfilesystem).
+Die Funktionen benötigen synchronen Zugriff mit Cache. Schreibvorgänge auf den Datenträger werden gebündelt; bei abruptem Stromausfall können noch nicht geschriebene Änderungen fehlen. Das ist keine Garantie gegen Datenverlust auf dem Datenträger. Siehe [Node-RED-Dateikontext](https://nodered.org/docs/api/context/store/localfilesystem).
 
-### SOC-Zeitstempel
+1. Beide kWh-Tageszähler, SOC-Schreibknoten und Kontextspeicher wie oben vorbereiten.
+2. **Eine** Sprachversion importieren: [flow_DE.json](flow_DE.json) oder [flow.json](flow.json), auf den Tab des SOC-Schreibknotens. Beide Exporte teilen IDs/Kontextschlüssel und dürfen nicht gleichzeitig laufen.
+3. Eigenen HA-Server in beiden Current-State-Knoten und in der Konfiguration der Ausgabeentität auswählen. Importierten Serverplatzhalter ersetzen oder entfernen; Verbindung passend zum Add-on oder eigenständigen Betrieb konfigurieren. Zugangsdaten nicht veröffentlichen.
+4. Beide Eingabe-IDs in Knoten und Code abgleichen. Die Current-State-Ausgaben müssen das HA-Entitätsobjekt in `msg.data` und den Zustand als Text in `msg.payload` behalten; `_eff` nicht überschreiben.
+5. Kapazität und Leistung passend zur Hardware einstellen. **8,640 kWh und 2,4 kW sind Beispielvorgaben, keine automatische Geräteerkennung.** Verzögerungs-/Auflösungseinstellungen unten prüfen.
+6. Node-RED-Zeitzone an HA angleichen, beispielsweise `Europe/Berlin`, wenn passend. Enthaltenen Fünf-Sekunden-Auslöser und Verdrahtung mit zwei Ausgängen beibehalten.
+7. Deployen, Diagnose-Debug-Knoten aktivieren und Ergebnissensor in HA kontrollieren. Anzeigename: `Lade Entlade Effizenz` (DE) / `Battery Efficiency Estimate` (EN). Die tatsächliche Entitäts-ID vergibt HA; sie kann abweichen oder einen Suffix erhalten. Bei Updates vorhandene Zuordnungen weiterverwenden.
 
-Aktualisiere im **tatsächlichen SOC-Erfassungsknoten** nach der Prüfung eines neu eingegangenen Messwerts beide Werte gemeinsam:
+Current-State-Knoten lesen vorhandene Entitäten. Nur der HA-Sensor-Knoten veröffentlicht die Ergebnisentität und benötigt die eingerichtete Begleitintegration. Der reine Austausch des JavaScript-Codes einer bestehenden Berechnung legt keinen weiteren Sensor an.
 
-```js
-// socPercent muss bereits als Zahl im Bereich 0..100 geprüft sein.
-flow.set("batt_level", socPercent, "memoryOnly");
-flow.set("batt_level_ts", Date.now(), "memoryOnly");
-```
+## Berechnung, Teilpuffer und Einordnung
 
-Erneuere den Zeitstempel nur, wenn eine echte Messung eingeht. Einen alten zwischengespeicherten SOC alle fünf Sekunden auszulesen macht ihn nicht aktuell. Der Vorbereitungsknoten kopiert beide Werte einmal in den gemeinsamen Abfragezyklus.
-
-Mit Zeitstempel verwirft die Berechnung SOC-Werte, die älter als 120 Sekunden sind oder aus der Zukunft stammen. Ohne Zeitstempel meldet sie ausdrücklich `soc_freshness_verified: false`. Mit `requireSocTimestamp: true` werden Werte ohne überprüfbaren Zeitstempel vollständig abgelehnt. Der optionale Zeitstempel-Schreibknoten ist nicht enthalten, weil der ursprüngliche SOC-Erfassungsflow nicht bereitgestellt wurde.
-
-Current State liefert den zuletzt in HA bekannten Entitätszustand, nicht zwangsläufig eine frische Gerätemessung. Gemeinsame Abfragezyklen koordinieren die Abfragen, machen die zugrunde liegenden Messungen aber nicht physikalisch gleichzeitig. Unveränderte Energiezähler können korrekt sein; deshalb dient `last_updated` allein nicht als Altersgrenze. Verfügbarkeit der Quelle und korrekte Energieintegration müssen vorgelagert geprüft werden. Siehe die [Current-State-Dokumentation](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/current-state.html).
-
-## Berechnung und Einordnung
-
-Für jedes akzeptierte NEUE Intervall gilt:
+Das erste vollständige gültige Messpaar speichert einen Ausgangspunkt und gibt Unbekannt aus. Spätere akzeptierte Messpaare liefern:
 
 ```text
-Ladeenergie          = aktueller Tages-Ladezähler - vorheriger Zählerstand
-Entladeenergie       = aktueller Tages-Entladezähler - vorheriger Zählerstand
-Speicherenergieänderung = capacity_kWh * (aktueller SOC - vorheriger SOC) / 100
+Ladeenergie = aktueller Ladezähler - vorheriger akzeptierter Ladezähler
+Entladeenergie = aktueller Entladezähler - vorheriger akzeptierter Entladezähler
+Speicheränderung = capacity_kWh * (aktueller SOC - vorheriger akzeptierter SOC) / 100
+Wirkungsgrad (%) = 100 * (Summe Entladeenergie + Summe Speicheränderung) / Summe Ladeenergie
+Verluste (kWh) = Summe Ladeenergie - Summe Entladeenergie - Summe Speicheränderung
 ```
 
-Für heute und die vorherigen sechs **lokalen Kalendertage** summiert der Flow akzeptierte neue Intervalle und ausdrücklich gekennzeichnete übernommene Altdaten:
+Das Fenster umfasst **heute und die vorherigen sechs lokalen Kalendertage**. Neue Nutzer beginnen leer: Persönliche Werte oder alte v2-Puffer werden nicht importiert. Ein Prozentwert erscheint, sobald mindestens 0,1 kWh berücksichtigte Ladeenergie vorliegt, das aktuelle Intervall akzeptiert ist, SOC-Daten gültig sind und das Ergebnis endlich zwischen 0 und 100 % liegt. **Ein vollständig gefüllter Siebentagepuffer ist nicht erforderlich.** Frühere Energie des Starttages bleibt ausgeschlossen, weil die zugehörige SOC-Ausgangsmessung fehlt. Beispiel: 1,0 kWh Laden, 0,7 kWh Entladen, +0,1 kWh Speicheränderung ergeben 80 %.
 
-```text
-Berechneter Wirkungsgrad (%) = 100 * (Summe Entladeenergie + Summe Speicherenergieänderung) / Summe Ladeenergie
-Berechnete Verluste (kWh)    = Summe Ladeenergie - Summe Entladeenergie - Summe Speicherenergieänderung
-```
+Im Status stehen Prozentwert, verwendete Tage und erfasste Stunden ohne nachgestelltes „geschätzt“. Verwendete Tage sind keine vollständig gemessenen Tage. `window_complete` bleibt false, weil Mitternachtsintervalle und Ausfälle ausgeschlossen sein können; es ist keine garantiert vollständige 168-Stunden-Messung. Ungültige Ergebnisse werden Unbekannt, niemals auf 0 oder 100 % begrenzt. Beide Ausgänge enthalten das Ergebnis; der zweite dient der Diagnose. Laut Dokumentation setzt der HA-Sensor bei null den Zustand auf Unbekannt; mit den installierten Versionen kontrollieren.
 
-Das ist eine SOC-korrigierte Schätzung aus der Energiebilanz. Sie setzt voraus, dass die gespeicherte Energie annähernd proportional zum SOC ist und die eingestellte Kapazität zur gemessenen Batterie passt. Separate Lade- und Entladewirkungsgrade werden nicht ermittelt. Bei unterschiedlichen Anfangs- und End-SOC ist das Ergebnis nicht mit einem vollständigen AC-zu-AC-Zyklustest gleichzusetzen. Prüfe, ob die verwendeten Zähler AC-Energie, DC-Energie und gegebenenfalls Hilfsverbräuche erfassen; aus dem bereitgestellten Flow gehen diese Messgrenzen nicht hervor.
+Der SOC ist nur eine Schätzung der gespeicherten Energie. Die Formel setzt annähernd lineare SOC-Energie-Zuordnung und passende Kapazität voraus. Ein Prozentpunkt bei 8,640 kWh entspricht 0,0864 kWh; die Startgrenze 0,1 kWh ist keine Genauigkeitsgarantie. BMS-Neukalibrierungen, Auflösung, Quellenzeitversatz und fehlende Intervalle können kurze Fenster deutlich beeinflussen. Große erkannte SOC-Sprünge werden bestätigt und mit dem zugehörigen Energieintervall ausgeschlossen; kleinere oder allmähliche Neukalibrierungen können unerkannt bleiben. Separate Lade-/Entladewirkungsgrade werden nicht gemessen; ungleicher Anfangs-/End-SOC entspricht keinem vollständigen AC-zu-AC-Zyklustest.
 
-Betriebliche SOC-Grenzen sind keine physikalischen Gültigkeitsgrenzen der Messung: Ein tatsächlicher SOC unterhalb eines eingestellten Minimums kann trotzdem korrekt sein. `batt_min_s` und `batt_max_s` werden deshalb nicht mehr zum Verwerfen oder Begrenzen des SOC verwendet. In der bisherigen Formel kürzten sich diese Grenzen bei der Kapazitätskorrektur bereits rechnerisch heraus.
+## Verzögerungen, Rücksetzungen und Neustarts
 
-SOC-Werte sind in Stufen aufgelöst und können vom BMS neu kalibriert werden. Bei 8,640 kWh entspricht ein Prozentpunkt in diesem Modell 0,0864 kWh. Die Mindestladeenergie von 0,1 kWh ist nur eine rechnerische Untergrenze und keine Genauigkeitsgarantie. Bei geringem Energiedurchsatz können Schätzwerte schwanken oder außerhalb des gültigen Bereichs liegen. Längere Messzeiträume reduzieren im Allgemeinen den relativen Einfluss der SOC-Auflösung an den Intervallgrenzen. Lücken und wiederholtes Festlegen neuer Ausgangspunkte erhöhen jedoch die Unsicherheit.
+| Parameter | Vorgabe | Bedeutung |
+| --- | --- | --- |
+| `maxPowerKW` | 2.4 | Physikalische Leistungsbasis für beide Richtungen |
+| `powerSafetyFactor` | 1.20 | 20 % Plausibilitätsreserve; keine Geräteleistungseinstellung |
+| `maxReportingDelayMs` | 120000 | Tolerierte Meldeverzögerung |
+| `counterStepKWh` | 0.1 | Vorsichtige Auflösungstoleranz; tatsächliche Quellauflösung prüfen |
+| `maxIntervalMs` | 120000 | Maximale Lücke zwischen gültigen abgefragten Messpaaren |
+| `maxSocAgeMs` | 120000 | Höchstalter eines vorhandenen SOC-Zeitstempels |
+| `requireSocTimestamp` | false | Erst mit zuverlässigem Zeitstempel-Schreibknoten aktivieren |
 
-### Start mit unvollständigem Puffer und Statusanzeige
+Jede Energierichtung hat eine begrenzte Toleranz: `2,4 × 1,20 × 120 / 3600 + 0,1 = 0,196 kWh`. Akzeptierte Zuwächse verbrauchen sie; verstrichene Zeit füllt sie mit 2,88 kW bis höchstens 0,196 kWh auf. Sie bleibt bei normalen Neustarts erhalten und wird nicht bei jeder Abfrage neu gewährt. HA-Abfragen garantieren keine frischen Gerätemessungen; die 120-Sekunden-Toleranz muss zur tatsächlichen Quelle passen.
 
-Eine neue Installation speichert zunächst ein zusammengehöriges Energiezähler-/SOC-Messpaar als Ausgangspunkt. Energie vor dieser ersten Beobachtung wird ausgeschlossen, weil der passende Anfangs-SOC unbekannt ist. Jedes spätere akzeptierte Intervall geht unmittelbar in die Berechnung ein. Ein Zahlenwert wird ausgegeben, sobald die berücksichtigte Ladeenergie `minChargeKWh` erreicht (standardmäßig 0,1 kWh), das Ergebnis endlich und im Bereich 0–100 % liegt und die erforderlichen SOC-Daten gültig sind. Es gibt keine siebentägige Wartezeit; der Puffer muss nicht vollständig gefüllt sein. Bis diese Bedingungen erfüllt sind, wird Unbekannt ausgegeben. Gültige übernommene Historie kann bereits beim ersten zusammengehörigen Messpaar einen Wert liefern.
-
-Beispiel: Akzeptierte Intervalle mit 1,0 kWh Ladeenergie, 0,7 kWh Entladeenergie und +0,1 kWh Speicherenergieänderung ergeben `100 × (0,7 + 0,1) / 1,0 = 80 %`. Eine positive Speicherenergieänderung erhöht den Zähler der Formel, eine negative verringert ihn. Bei übernommenen Altdaten enthält dieser Term zusätzlich die im Migrationsabschnitt beschriebene Korrektur anhand der historischen Fenstergrenzen; es werden nicht einfach die unkorrigierten historischen SOC-Tagesdifferenzen summiert.
-
-Der Function-Status zeigt Prozentwert, verwendete Tage und erfasste Stunden, beispielsweise `80% | 1 Tage | 2 Std.`. Der nachgestellte Zusatz „geschätzt“ entfällt unabhängig vom Füllstand. Verwendete Tage sind Tage mit akzeptierten Intervallen oder übernommenen Datensätzen, keine Bestätigung vollständiger Tage. Die Stunden zählen akzeptierte neue Intervalle; unbekannte historische Zeitabdeckung bleibt ausgenommen. Das gleitende Kalenderfenster bleibt mit `window_complete: false` gekennzeichnet. Der gelbe Status bei Altdaten und die Qualitätsangaben in der Diagnose bleiben verfügbar.
-
-Die kompakte Anzeige ändert nichts an den Aussagegrenzen: Kapazitäts-/SOC-Proportionalität, BMS-Neukalibrierungen, Zählergenauigkeit, zeitversetzte Quellenaktualisierungen und ausgeschlossene Intervalle beeinflussen das Ergebnis. Es bleibt die oben erläuterte SOC-basierte Schätzung aus der Energiebilanz. Die internen Codes `estimate_available` / `legacy_estimate_available` bleiben aus Kompatibilitätsgründen erhalten.
-
-## Lücken, Rücksetzungen und Neustarts
-
-| Situation | Verhalten |
+| Ereignis | Verhalten |
 | --- | --- |
-| Keine v3-Historie vorhanden | Vorhandenen v2-kWh-Ringpuffer und Live-Tagesstand/Snapshot einmalig übernehmen; anschließend einen Ausgangspunkt für neue Intervalle festlegen. Ohne Altdaten mit aktuellen Zählern und SOC beginnen. |
-| Neustart am selben Tag; letztes gültiges abgefragtes Messpaar höchstens 120 Sekunden alt | Vom zusammengehörigen gespeicherten Ausgangspunkt fortsetzen, einschließlich der Zählerzuwächse seit dieser Messung. |
-| Mehr als 120 Sekunden ohne gültiges abgefragtes Messpaar | Bisherige gemessene Summen behalten; Energie und SOC-Änderung der Lücke ausschließen; neuen Ausgangspunkt festlegen. |
-| Lokale Mitternacht | Vorherige Messintervalle behalten; das Intervall über die Tagesrücksetzung ausschließen; mit einem neuen zusammengehörigen Messpaar beginnen. |
-| Rücksetzungszeitstempel ändert sich | Das Intervall ausschließen und beide Zähler zusammen mit dem SOC neu als Ausgangspunkt übernehmen. |
-| Zählerstand fällt ohne Rücksetzungsnachweis | Unbekannt ausgeben und den akzeptierten Ausgangspunkt bis zur Korrektur oder bestätigten Rücksetzung behalten. |
-| Energiezuwachs überschreitet die verfügbare Toleranz | Unbekannt ausgeben und Ausgangspunkt behalten; den vollständigen zurückgestellten Zuwachs übernehmen, sobald er plausibel ist, oder auf eine Quellenkorrektur warten. |
-| SOC-Sprung über Toleranz plus zeitabhängigen Leistungszuschlag | Verwerfen, ohne den Ausgangspunkt der Energiebilanz zu verändern. Drei aufeinanderfolgende, übereinstimmende Kandidatenpaare lösen eine neue Ausgangsmessung aus; das Sprungintervall bleibt ausgeschlossen. |
-| Kapazität, Entitäts-IDs oder Laufzeit-Zeitzone ändern sich | Vorherigen v3-Zustand unter einem Archivschlüssel erhalten und einen neuen Ausgangspunkt festlegen. |
+| Energiezuwachs über verfügbarer Toleranz oder Abnahme ohne Rücksetzungsnachweis | Unbekannt; letzten akzeptierten Ausgangspunkt behalten und gesamte Differenz zurückstellen. Spätere Übernahme bei plausibler Erholung möglich. Ein dauerhafter Sprung über der maximalen Toleranz wird durch Warten nicht gültig. |
+| Echte Abfragelücke länger als 120 Sekunden | Historie behalten, Energie und SOC-Änderung über die Lücke ausschließen, neuen Ausgangspunkt setzen. |
+| Mitternacht oder bestätigte Zählerrücksetzung | Grenzintervall ausschließen; beide Zähler und SOC gemeinsam neu als Ausgangspunkt setzen. |
+| Überhöhter SOC-Sprung | Zurückstellen; drei aufeinanderfolgende übereinstimmende Kandidatenpaare setzen einen neuen Ausgangspunkt unter Ausschluss des Sprungintervalls. |
+| Node-RED-Neustart am selben Tag mit kürzlich gültigem Messpaar | Nach Rückkehr der Eingaben aus dauerhaftem Zustand weiterrechnen. |
+| Kapazität, Eingabe-Entitätszuordnung oder Laufzeit-Zeitzone geändert | Vorherigen Zustand archivieren und neu beginnen. |
 
-Wenn `last_reset` vorhanden ist, muss es den aktuellen lokalen Tag bezeichnen. Ohne dieses Attribut muss beim Tageswechsel für beide Zähler eine Rücksetzung erkennbar sein. Erfolgt die Rücksetzung während eines Ausfalls und ist der Zähler danach bereits über den vorherigen Wert gestiegen, kann der Flow die Rücksetzung nicht herleiten. Er wartet, statt eine durchgehende Messung anzunehmen. Verlässliche Rücksetzungsinformationen sind daher vorzuziehen. Eine nicht gemeldete Rücksetzung innerhalb eines Tages, nach der der Zähler bereits wieder über dem alten Wert liegt, ist nicht immer erkennbar.
+Ein vorhandenes `last_reset` muss zum aktuellen lokalen Tag gehören. Ohne dieses Attribut müssen beide Tageszähler um Mitternacht Rücksetzungsnachweise liefern. Ungemeldete Rücksetzungen innerhalb eines Tages sind nicht immer erkennbar. Ein reiner HA-Neustart löscht den Node-RED-Kontext nicht; ein längerer Datenausfall löst trotzdem die Lückenbehandlung aus. Der Vorbereitungsknoten meldet nach 15 Sekunden fehlende abgeschlossene Messzyklen, solange Node-RED läuft. Das Tageszählerverfahren schließt bewusst Teile der Energie an Grenzen und bei Ausfällen aus.
 
-Mit den vorhandenen Tageszählern werden Lücken um Mitternacht und unvollständig erfasste Anfangstage bewusst berücksichtigt. `window_complete` ist immer false; `covered_hours` beschreibt die einbezogenen Messintervalle. Es handelt sich weder um garantiert sieben vollständige Tage noch um eine gleitende 168-Stunden-Messung. `excluded_gap_hours` summiert erkannte Zeitlücken beim Festlegen eines neuen Ausgangspunkts. Zeiten vor der ersten Ausgangsmessung sind darin nicht enthalten; der Wert ist keine prozentuale Vollständigkeitsangabe. Für eine vollständigere Erfassung über Mitternacht hinweg wären durchlaufende Gesamtenergiezähler erforderlich.
+## Dauerhafter Zustand und Update bestehender Installationen
 
-## Ausgänge und dauerhaft gespeicherte Daten
-
-Die Berechnungsfunktion besitzt zwei Ausgänge:
-
-1. HA-Zustandsnachricht: `msg.payload` enthält einen plausiblen Schätzwert mit einer Nachkommastelle oder `null` (Unknown/Unbekannt), wenn Daten ungültig sind, der Energiedurchsatz nicht ausreicht, ein neuer Ausgangspunkt gesetzt wird oder der Schätzwert außerhalb des gültigen Bereichs liegt. Der HA-Sensor enthält zusätzlich Qualitäts- und Zeitstempelattribute.
-2. Diagnosenachricht: dieselben Daten sowie `msg.result` mit unverändertem rechnerischem Wirkungsgrad, Energiesummen, geschätzten Verlusten, Zeitabdeckung, Prüfung der Rücksetzungs-/SOC-Zeitstempel und täglichen Intervallsummen. Aktiviere bei der Inbetriebnahme den enthaltenen Debug-Knoten.
-
-Ein unvollständiges Messpaar liefert normalerweise zunächst keine Ausgabe, solange die zweite Antwort aussteht. Fehlende Antworten werden durch spätere Zyklen und die 15-Sekunden-Überwachung erkannt. Diese Überwachung setzt voraus, dass Node-RED und sein Inject-Knoten weiterlaufen; bei gestopptem Node-RED kann sie nicht arbeiten. `timestamp` bezeichnet bei einer Fehlermeldung den Diagnosezeitpunkt und belegt keine aktuelle Messung.
-
-Laut Dokumentation setzt der HA-Sensor einen null-Zustand auf Unknown. Prüfe dieses Verhalten mit deiner installierten Integration bei der Inbetriebnahme. Siehe die [Sensor-Dokumentation](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/sensor.html).
-
-| Kontextschlüssel | Speicher | Bedeutung |
+| Kontextschlüssel | Speicher | Aufgabe |
 | --- | --- | --- |
-| `batt_eff_state_v3` | `file` | Versionierte tägliche Intervallsummen und zugehörige letzte Messung |
-| `batt_eff_legacy_backup_v3` | `file` | Vor der Migration gesicherter Original-Ringpuffer, Live-Tagesstand und Snapshot, einschließlich älterer Tage |
-| `batt_eff_previous_state_v3` | `file` | Zuletzt nach einer Konfigurationsänderung archivierter Zustand |
-| `sum_batt_la_7d` | `file` | Übernommene Ladehistorie plus einbezogene neue Intervalle, kWh |
-| `sum_batt_ela_7d` | `file` | Übernommene Entladehistorie plus einbezogene neue Intervalle, kWh |
-| `la_ela_es` | `file` | Aktueller plausibler Schätzwert oder null |
-| `batt_eff_last_completed_v3` | `memoryOnly` | Abschlusszeitstempel für die Überwachung fehlender Messungen |
+| `batt_eff_state_v3` | `file` | Tagessummen, letztes akzeptiertes Messpaar, dauerhafte Energietoleranz |
+| `batt_eff_previous_state_v3` | `file` | Letztes Archiv nach Konfigurationsänderung |
+| `sum_batt_la_7d`, `sum_batt_ela_7d` | `file` | Berücksichtigte Energiesummen in kWh |
+| `la_ela_es` | `file` | Aktueller Prozentwert oder null |
+| `batt_eff_last_completed_v3` | `memoryOnly` | Interner Überwachungszeitstempel |
 
-Die beiden kompatiblen Energiesummen enthalten **übernommene Historie plus einbezogene neue Intervallenergie**, nicht ungeprüft die vollständigen aktuellen Tageszählerstände. Vorhandene Auswertungen müssen diese Änderung berücksichtigen. Bei einem Eingabefehler behalten die Energiesummen ihre zuletzt akzeptierten Werte; der Wirkungsgrad wird als ungültig markiert.
+Dies sind interne Ausgaben, keine benötigten externen Variablen. Die Summen können von den Roh-Tageszählern abweichen, weil unbeobachtete/ausgeschlossene Intervalle nicht mitgezählt werden.
 
-### Automatische Übernahme des vorhandenen Puffers
+Revision 3.3 hat **keine automatische v2-Übernahme** und liest die alten Ring-/Live-/Snapshot-Schlüssel nicht. Ein vorhandener v3-Zustand bleibt bei gleichem Tab/Speicher und unveränderter Kapazität, IDs und Zeitzone erhalten. Die kompatible Auswertung bereits mit `legacy` markierter v3-Datensätze bleibt bis zu deren regulärem Herausfallen bestehen: SOC-Korrektur anhand der historischen Fenstergrenzen, bestehende Übernahmemetadaten und Unsicherheitskennzeichnung bleiben erhalten. Es wird nichts erneut importiert. Neue Nutzer erhalten aus dieser Veröffentlichung keine solchen Datensätze.
 
-Beim ersten gültigen Messpaar liest die Funktion `batt_eff_ring_7d` aus `file`, `batt_eff_today_live` aus `memoryOnly` und `batt_eff_today_live_snapshot` aus `file`. Vor der Umwandlung legt sie eine eigene Sicherung unter `batt_eff_legacy_backup_v3` an. **Die ursprünglichen Schlüssel werden weder verändert noch gelöscht.** Alle ursprünglichen Speicherplätze bleiben in dieser Sicherung erhalten. Die aktive Berechnung umfasst heute und die sechs vorherigen Kalendertage, also dasselbe Datumsfenster wie zuvor.
+Für ein vorhandenes 3.2-System Flow/Kontext sichern und nur den Inhalt der Berechnungsfunktion „Batterie Wirkungsgrad“ durch [battery-efficiency_DE.js](battery-efficiency_DE.js) oder [battery-efficiency.js](battery-efficiency.js) ersetzen. Eigene CFG-Werte beibehalten und geänderten Knoten deployen. Zustand nicht löschen und für dieses Update keinen zweiten Flow importieren. Schema `version: 3` bleibt kompatibel; die Diagnose zeigt `calculation_revision: "3.3"`.
 
-Liegt ein Datum mehrfach vor, hat der Live-Speicher Vorrang. Ein abgeschlossener Tag aus dem Ringpuffer hat Vorrang vor einem älteren Snapshot. Die Migration kopiert die aufgezeichneten Lade-/Entladesummen und berechnet die SOC-Korrektur jedes übernommenen Tages aus dessen gespeichertem Anfangs-/End-SOC und der eingestellten Kapazität. Frühere Messwertauflösung, bereits gefilterte SOC-Werte oder null-Werte, die der alte Code schon in eine numerische Null umgewandelt hat, lassen sich nachträglich nicht reparieren. Verwende dieselbe Kapazität wie in der bisherigen Anlage.
+Für den abschließenden Deploy-Test Diagnosen direkt nach Deploy, nach echtem Ladezählerzuwachs, nach Entladezuwachs, nach Mitternacht und nach kontrolliertem Neustart aufnehmen. Eingabewerte mit berücksichtigten Zuwächsen vergleichen sowie `interval_status`, `excluded_intervals`, `energy_guard`, SOC-Aktualität und Persistenz prüfen. Bei bekannter Messlücke kann ein Intervall berechtigt ausgeschlossen werden; unerwartete Ausschlüsse untersuchen. Logs ohne Zugangsdaten teilen. Der abschließende Live-Test steht noch aus.
 
-Ein gespeicherter Alttag enthält keine verlässlichen Messzeitstempel. Seine Dauer wird daher nicht in `covered_hours` gezählt. Die Übergangslücke zwischen seinen gespeicherten Zählerständen und dem ersten neuen Messpaar wird nicht stillschweigend geschätzt. Ein veralteter Snapshot erhält somit die aufgezeichnete Historie, kann aber den danach nicht gespeicherten Rest nicht wiederherstellen. Fehlen sowohl der heutige Live-Stand als auch sein Snapshot, werden abgeschlossene Ringpuffertage trotzdem übernommen; der frühere SOC-Ausgangspunkt des heutigen Tages lässt sich jedoch nicht rekonstruieren.
+## Dateien und Prüfung
 
-Ab Berechnungsrevision 3.1 wird für die übernommene Historie wieder das bisherige Prinzip verwendet: erster gespeicherter Anfangs-SOC bis letzter gespeicherter End-SOC innerhalb des aktiven Altdatenfensters. Dazu wird bei der Auswertung eine Korrektur zur Summe der gespeicherten Tagesdifferenzen addiert; die Tagesdatensätze selbst bleiben unverändert. Neue Messintervalle werden weiterhin einzeln mit ihren zusammengehörigen Energie-/SOC-Grenzen berücksichtigt. Die Korrektur wird bei jeder Ausgabe neu berechnet und mit dem Herausfallen alter Tage angepasst; sie wird nicht wiederholt auf den Puffer addiert.
-
-`legacy_adjustment_kwh` zeigt diese Korrektur; `legacy_boundary_gaps` listet die Brüche der historischen SOC-Grenzen auf. Solange Altdaten enthalten sind, lautet der Diagnosegrund `legacy_estimate_available` und die Statusfarbe ist gelb. Das ist eine ausdrückliche Kennzeichnung historischer Unsicherheit, kein Beleg für einen aktuellen Messfehler. `valid: true` bestätigt lediglich einen verfügbaren, rechnerisch plausiblen Schätzwert; `historical_accuracy_verified` bleibt false. Die frühere Anzeige und die neue Übergangsschätzung müssen nicht exakt übereinstimmen, weil ein nicht erfasster Übergang zwischen alter und neuer Messung nicht nachträglich ergänzt wird.
-
-Bei bereits laufender v3-Fassung genügt es, den vollständigen Code der Berechnungsfunktion durch [battery-efficiency_DE.js](battery-efficiency_DE.js) zu ersetzen und zu deployen. Zwei Ausgänge, Verdrahtung, Kontext, Kapazitätskonfiguration und Vorbereitungsknoten beibehalten. Keine Puffer löschen und keine Migration erneut erzwingen. Für den Wechsel vom ursprünglichen alten Flow gilt weiterhin die vollständige Einbauanleitung.
-
-Bei fehlenden oder ungültigen SOC-Grenzen bleibt die Tagesenergie erhalten. Der Wirkungsgrad wird jedoch als Unknown mit `legacy_soc_boundaries_missing` ausgegeben, solange dieser Tag im aktiven Fenster liegt. Ungültige Energiewerte, nicht unterstützte Einheiten oder ungültige Datumsangaben stoppen die Migration, statt Historie durch null zu ersetzen. Prüfe die Fehlermeldung und Originaldaten vor einer Korrektur.
-
-Auch eine bereits laufende v3-Installation kann noch nicht enthaltene Alttage übernehmen. Überschneidet sich der heutige Tag, wird ein eingefrorener älterer Teil nur dann ergänzt, wenn die lückenlose v3-Bilanz für beide Energierichtungen nachweist, dass keine Doppelzählung entsteht. Andernfalls bleibt der Originaldatensatz in der Sicherung erhalten und das Datum erscheint in `legacy_migration.overlappingDates`. Für die Rekonstruktion seines historischen Anteils muss dieser Konflikt gesondert geprüft werden.
-
-Die erfolgte Migration wird zusammen mit den übernommenen Summen im persistenten Zustand vermerkt. Dadurch werden Daten nach einem Neustart nicht erneut importiert. Nach einer Konfigurationsrücksetzung erfolgt keine erneute Übernahme, weil Änderungen an Kapazität, Zeitzone oder Entitätszuordnung die bisherigen Annahmen ungültig machen können. Das normale Herausfallen alter Tage aus dem Sieben-Tage-Fenster bleibt bestehen. Mehrere Instanzen auf demselben Flow-Tab benötigen unterschiedliche Kontextschlüssel.
-
-## Lizenz und Unabhängigkeit des Projekts
-
-MIT; siehe [LICENSE](../LICENSE). Dies ist ein unabhängiges Community-Projekt ohne Verbindung zu oder Unterstützung durch Zendure. Siehe [Marken- und Projekthinweise](../NOTICE_DE.md) sowie [Haftungs- und Betriebshinweise](../DISCLAIMER_DE.md).
-
-## Verzögerte Home-Assistant-Aktualisierungen (Berechnungsrevision 3.2)
-
-Eine Abfrage alle fünf Sekunden bedeutet nicht, dass der Quellzähler alle fünf Sekunden aktualisiert wird. Current State liefert den zuletzt in Home Assistant bekannten Zustand. Integralsensoren können bei Änderungen der Quelle oder nach ihrem eingestellten `max_sub_interval` aktualisieren. Es gibt keinen allgemeingültigen HA-Aktualisierungstakt. Siehe [Current State](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/current-state.html) und [HA-Integralsensor](https://www.home-assistant.io/integrations/integration/).
-
-Voreinstellungen in der Berechnungsfunktion:
-
-| Einstellung | Wert | Bedeutung |
-| --- | --- | --- |
-| `maxPowerKW` | 2.4 | Bisherige Plausibilitätsgrenze für Laden/Entladen; maximale Entladeleistung der eigenen Anlage prüfen. |
-| `powerSafetyFactor` | 1.20 | 20 % Reserve: Toleranz wächst mit 2,88 kW nach; verändert keine Geräteleistung. |
-| `maxReportingDelayMs` | 120000 | Zwei Minuten Meldetoleranz; auf den tatsächlichen Quelltakt abstimmen. |
-| `counterStepKWh` | 0.1 | Vorsichtig angenommene Zählerauflösung in kWh; anhand des tatsächlichen Entitätszustands prüfen, nicht anhand der gerundeten Oberfläche. |
-| `maxSocAgeMs` | 120000 | Höchstalter eines vorhandenen SOC-Beobachtungszeitstempels. |
-
-Jede Energierichtung erhält eine begrenzte Toleranz von `2,4 × 1,20 × 120 / 3600 + 0,1 = 0,196 kWh`. Akzeptierte Zuwächse verbrauchen diese Toleranz. Verstrichene Zeit füllt sie mit 2,88 kW wieder auf, höchstens bis 0,196 kWh. Die Toleranz wird **nicht bei jeder Abfrage erneut addiert**. Zwischen neuen Ausgangsmessungen kann die insgesamt akzeptierte Energie die anfängliche Toleranz plus den zeitabhängigen Zuwachs nicht überschreiten. Unveränderte Zählerstände erlauben dadurch spätere gröbere Aktualisierungen; wiederholt überhöhte Zuwächse verbrauchen die Toleranz. Der Zustand bleibt bei normalen Neustarts erhalten. Das erste Upgrade oder geänderte Toleranzeinstellungen initialisieren die Toleranz einmalig.
-
-Bei einem zurückgestellten Zuwachs bleiben die zuletzt akzeptierten Energie-/SOC-Ausgangswerte erhalten. `counter_energy_pending` oder `counter_decrease_pending` liefert Unbekannt mit `baseline_preserved: true`. Nach einer plausiblen Korrektur wird die vollständige Differenz übernommen. Weiter eintreffende zusammengehörige Abfragen sind von einem echten Abfrageausfall zu unterscheiden; erst ein Ausfall länger als `maxIntervalMs` löst die Lückenbehandlung aus. Ein dauerhaft über der Toleranz liegender Sprung wird durch bloßes Warten nicht gültig. Bestätigte Rücksetzungen, Tageswechsel und bestätigte SOC-Sprünge setzen weiterhin einen neuen Ausgangspunkt und schließen das ungeklärte Intervall ausdrücklich aus.
-
-Bei 8,640 kWh entsprechen 2400 W **0,463 SOC-Prozentpunkten pro Minute**, mit Reserve **0,556**. Die SOC-Sprungprüfung addiert die vorhandene Meldungs-/Rundungstoleranz von 2 Prozentpunkten zur zeitabhängigen Grenze. Drei aufeinanderfolgende übereinstimmende Werte können weiterhin einen neuen Ausgangspunkt für eine geräteseitige SOC-Neukalibrierung setzen; sie beweisen keine physikalische Ladung während des Sprungs. Der optionale SOC-Zeitstempel muss eine echte Quellenbeobachtung bezeichnen. Ihn nicht bloß deshalb erneuern, weil die Berechnung einen unveränderten zwischengespeicherten Zustand abfragt. Ohne Zeitstempel bleibt die Aktualität ungeprüft.
-
-Diese Voreinstellungen sind Toleranzen, keine gemessenen Garantien für deine Anlage. Energie und SOC können zeitversetzt eintreffen; vorübergehende Wirkungsgradschwankungen bleiben möglich. Tatsächlichen Quelltakt und Auflösung prüfen. Größere Toleranzen schwächen die Fehlererkennung. Bereits durch ältere Revisionen ausgeschlossene Energie wird durch dieses Upgrade nicht nachträglich rekonstruiert.
-
-### Bestehende Installation mit Revision 3.1 aktualisieren
-
-Nur den Inhalt der vorhandenen Berechnungsfunktion „Batterie Wirkungsgrad“ durch `battery-efficiency_DE.js` ersetzen, eigene Kapazitäts-/Entitätseinstellungen beibehalten und den geänderten Knoten deployen. Vorbereitungsknoten, Verbindungen und Kontextspeicher behalten. Den Zustand nicht löschen und den Altpuffer nicht erneut importieren. Beide vollständigen Flow-Exporte enthalten ebenfalls Revision 3.2. In der Diagnose `calculation_revision: "3.2"` und `energy_guard` prüfen. Vorhandene Historie und Übernahmemarkierung bleiben erhalten.
+Funktionsquellen: [Berechnung](battery-efficiency.js), [Vorbereitung](prepare-cycle.js); deutsche Gegenstücke tragen `_DE`. Der vorhandene [Textdownload](function%20node%20-%20Round-Trip%20Efficiency.txt) entspricht der englischen Berechnung. `build-german-flow.py` erzeugt die deutsche Oberfläche aus dem identischen ausführbaren Rechenkern. [VALIDATION_DE.md](VALIDATION_DE.md) beschreibt den Prüfumfang. Der Flow enthält keine persönlichen Energieverlaufsdaten.

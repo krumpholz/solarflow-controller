@@ -3,11 +3,11 @@
  * Automatisch erzeugt mit build-german-flow.py; Änderungen am Rechenkern
  * gehören in die englischen Quelldateien, danach beide Fassungen erzeugen.
  * MIT-Lizenz. Unabhängiges Projekt; siehe ../NOTICE_DE.md.
- * Anleitung und Pufferübernahme: README_DE.md.
+ * Einbau und Voraussetzungen: README_DE.md.
  *
  * Vorbereitung: SOC einmal aufnehmen und beide Tageszähler gemeinsam abfragen.
  * Berechnung: Nur zusammengehörige Energie- und SOC-Intervalle einbeziehen.
- * Vorhandenen v2-Puffer einmal übernehmen, sichern und nicht doppelt zählen.
+ * Neuinstallation startet leer; vorhandenen v3-Zustand weiterverwenden.
  * Summen und Messausgangspunkt gemeinsam im Dateispeicher ablegen.
  * Ungültige Eingaben und unklare Intervalle nicht als Energie verbuchen.
  * null am Sensorausgang bedeutet Unbekannt, nicht null Prozent Wirkungsgrad.
@@ -33,7 +33,6 @@ const DE_TEXTE = {
     "baseline_initialized": "Ausgangspunkt für neue Messintervalle gesetzt",
     "configuration_changed_new_baseline": "Konfiguration geändert – neuer Ausgangspunkt",
     "non_increasing_sample_time": "Messzeitpunkt liegt nicht nach der letzten Messung",
-    "legacy_history_imported_new_baseline": "Vorhandene Historie übernommen – neuer Messausgangspunkt",
     "waiting_for_daily_counter_resets": "Warte auf Rücksetzung beider Tageszähler",
     "new_day_boundary_excluded": "Tageswechselintervall ausgeschlossen",
     "measurement_gap_excluded": "Messlücke ausgeschlossen",
@@ -57,11 +56,7 @@ const DE_TEXTE = {
     "no_legacy_data": "Keine bisherigen Pufferdaten vorhanden",
     "skipped_configuration_change": "Wegen Konfigurationsänderung nicht erneut übernommen",
     "No completed measurement cycle": "Kein abgeschlossener Messzyklus",
-    "Requesting paired daily counters": "Zusammengehörige Tageszähler werden abgefragt",
-    "Legacy migration: invalid calendar date; original data retained": "Pufferübernahme: ungültiges Datum; Originaldaten bleiben erhalten",
-    "Legacy migration: future date; check the runtime timezone/clock": "Pufferübernahme: Datum liegt in der Zukunft; Zeitzone und Uhrzeit prüfen",
-    "Legacy migration: invalid energy value; original data retained": "Pufferübernahme: ungültiger Energiewert; Originaldaten bleiben erhalten",
-    "Legacy migration requires the original version-2 seven-slot kWh ring": "Pufferübernahme benötigt den ursprünglichen kWh-Ring der Version 2 mit sieben Speicherplätzen"
+    "Requesting paired daily counters": "Zusammengehörige Tageszähler werden abgefragt"
 };
 
 function deutsch(text) {
@@ -146,85 +141,7 @@ function validState(s) {
 }
 
 
-function migrateLegacy(state, sample) {
-    if (state.legacyMigration) return false;
-    const sources = {
-        ring: flow.get("batt_eff_ring_7d", FILE) ?? null,
-        live: flow.get("batt_eff_today_live", MEM) ?? null,
-        snapshot: flow.get("batt_eff_today_live_snapshot", FILE) ?? null
-    };
-    const report = {at: sample.ts, importedDates: [], overlappingDates: [], source: "legacy_v2", coverageKnown: false};
-    if (!sources.ring && !sources.live && !sources.snapshot) {
-        state.legacyMigration = {...report, status: "no_legacy_data"};
-        return false;
-    }
 
-    if (!flow.get("batt_eff_legacy_backup_v3", FILE)) {
-        flow.set("batt_eff_legacy_backup_v3", clone({at: sample.ts, ...sources}), FILE);
-    }
-    const records = new Map();
-    function add(slot, overwrite) {
-        if (!slot || slot.date === null) return;
-        if (typeof slot.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(slot.date) ||
-            new Date(ordinal(slot.date) * 86400000).toISOString().slice(0, 10) !== slot.date) {
-            throw Error("Legacy migration: invalid calendar date; original data retained");
-        }
-        const age = ordinal(sample.date) - ordinal(slot.date);
-        if (age < 0) throw Error("Legacy migration: future date; check the runtime timezone/clock");
-        if (age > 6) return;
-        const charge = num(slot.chargeKWh), discharge = num(slot.dischargeKWh);
-        if (charge === null || discharge === null || charge < 0 || discharge < 0) {
-            throw Error("Legacy migration: invalid energy value; original data retained");
-        }
-        const start = num(slot.socStart), end = num(slot.socEnd);
-        const known = start !== null && end !== null && start >= 0 && start <= 100 && end >= 0 && end <= 100;
-        if (overwrite || !records.has(slot.date)) records.set(slot.date, {charge, discharge, start, end, known});
-    }
-    if (sources.ring) {
-        const ring = sources.ring;
-        if (ring.version !== 2 || ring.unit !== "kWh" || !Array.isArray(ring.slots) ||
-            ring.slots.length !== 7 || !Number.isInteger(ring.head) || ring.head < -1 || ring.head > 6) {
-            throw Error("Legacy migration requires the original version-2 seven-slot kWh ring");
-        }
-
-        for (let i = 1; i <= 7; i++) add(ring.slots[(ring.head + i + 7) % 7], true);
-    }
-    add(sources.snapshot, false);
-    add(sources.live, true);
-    for (const [date, record] of records) {
-        const existing = state.days.find(d => d.date === date);
-        if (existing) {
-
-
-
-            const last = state.last;
-            if (last && last.date === date && existing.gaps === 0 && !existing.legacy &&
-                record.charge <= last.charge - existing.charge + 1e-9 &&
-                record.discharge <= last.discharge - existing.discharge + 1e-9) {
-                existing.charge += record.charge;
-                existing.discharge += record.discharge;
-                existing.delta += record.known ? CFG.capacityKWh * (record.end - record.start) / 100 : 0;
-                Object.assign(existing, {legacy: true, legacySocKnown: record.known,
-                    legacySocStart: record.start, legacySocEnd: record.end});
-                report.importedDates.push(date);
-                continue;
-            }
-
-
-
-            report.overlappingDates.push(date);
-            continue;
-        }
-        state.days.push({date, charge: record.charge, discharge: record.discharge,
-            delta: record.known ? CFG.capacityKWh * (record.end - record.start) / 100 : 0,
-            coveredMs: 0, gaps: 0, gapMs: 0, intervals: 0,
-            legacy: true, legacySocKnown: record.known,
-            legacySocStart: record.start, legacySocEnd: record.end});
-        report.importedDates.push(date);
-    }
-    state.legacyMigration = {...report, status: "imported"};
-    return report.importedDates.length > 0;
-}
 try {
     const cycle = msg._eff;
     if (!cycle || typeof cycle.id !== "string" || !finite(cycle.ts) || now < cycle.ts || now - cycle.ts > CFG.cycleTimeoutMs) {
@@ -279,15 +196,12 @@ try {
     let reason = "baseline_initialized";
     if (state.fingerprint !== fingerprint) {
         flow.set("batt_eff_previous_state_v3", state, FILE);
-        state = {version: 3, unit: "kWh", fingerprint, last: null, days: [],
-            legacyMigration: {status: "skipped_configuration_change"}};
+        state = {version: 3, unit: "kWh", fingerprint, last: null, days: []};
         reason = "configuration_changed_new_baseline";
     }
     const prev = state.last;
     if (prev && sample.ts <= prev.ts) return failure("non_increasing_sample_time");
     state.days = state.days.filter(d => ordinal(sample.date) - ordinal(d.date) >= 0 && ordinal(sample.date) - ordinal(d.date) <= 6);
-    const migrated = migrateLegacy(state, sample);
-    if (migrated && !prev) reason = "legacy_history_imported_new_baseline";
     let day = state.days.find(d => d.date === sample.date);
     if (!day) {
         day = {date: sample.date, charge: 0, discharge: 0, delta: 0, coveredMs: 0, gaps: 0, gapMs: 0, intervals: 0};
@@ -316,7 +230,7 @@ try {
         guard.pendingSince = guard.pendingSince ?? sample.ts;
         flow.set(STATE, state, FILE);
         flow.set("batt_eff_last_completed_v3", now, MEM);
-        return failure(reason, {calculation_revision: "3.2", pending_since: guard.pendingSince,
+        return failure(reason, {calculation_revision: "3.3", pending_since: guard.pendingSince,
             deferred_charge_kwh: rounded(dc, 6), deferred_discharge_kwh: rounded(dd, 6),
             energy_guard: {max_power_kw: CFG.maxPowerKW, safety_factor: CFG.powerSafetyFactor,
                 burst_allowance_kwh: rounded(burstKWh, 6), charge_available_kwh: rounded(guard.charge, 6),
@@ -404,16 +318,16 @@ try {
     const rawPct = charge > 0 ? (discharge + delta) / charge * 100 : null;
     const enough = charge >= CFG.minChargeKWh;
     const plausible = rawPct !== null && finite(rawPct) && rawPct >= 0 && rawPct <= 100;
-    const valid = (acceptedInterval || (migrated && !prev)) && enough && plausible && !legacySocMissing;
+    const valid = acceptedInterval && enough && plausible && !legacySocMissing;
     const eta = valid ? rounded(rawPct, 1) : null;
     const quality = legacySocMissing ? "legacy_soc_boundaries_missing" :
-        !(acceptedInterval || (migrated && !prev)) ? reason : !enough ? "insufficient_charge_energy" :
+        !acceptedInterval ? reason : !enough ? "insufficient_charge_energy" :
         !plausible ? "efficiency_out_of_range" : legacyDays.length ? "legacy_estimate_available" : "estimate_available";
     flow.set("sum_batt_la_7d", rounded(charge), FILE);
     flow.set("sum_batt_ela_7d", rounded(discharge), FILE);
     flow.set("la_ela_es", eta, FILE);
     const result = {
-        version: 3, calculation_revision: "3.2", valid, reason: quality, interval_status: reason,
+        version: 3, calculation_revision: "3.3", valid, reason: quality, interval_status: reason,
         energy_guard: {max_power_kw: CFG.maxPowerKW, safety_factor: CFG.powerSafetyFactor,
             reporting_delay_ms: CFG.maxReportingDelayMs, counter_step_kwh: CFG.counterStepKWh,
             burst_allowance_kwh: rounded(burstKWh, 6), charge_available_kwh: rounded(guard.charge, 6),
@@ -425,7 +339,7 @@ try {
         timestamp: new Date(sample.ts).toISOString(),
         eta_pct: eta, eta_raw_pct: legacySocMissing ? null : rounded(rawPct, 3),
         days_used: state.days.filter(d => d.intervals > 0 || d.legacy).length,
-        legacy_migration: clone(state.legacyMigration),
+        legacy_migration: state.legacyMigration ? clone(state.legacyMigration) : null,
         legacy_days_in_window: state.days.filter(d => d.legacy).length,
         legacy_soc_boundaries_missing: legacySocMissing,
         window: "today_and_previous_six_local_calendar_days",

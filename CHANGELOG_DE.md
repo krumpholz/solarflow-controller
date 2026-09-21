@@ -6,6 +6,8 @@
 
 ### Geändert
 
+- Veröffentlichungskandidat Revision 3.3: automatische v2-Historienübernahme entfernt; Neuinstallationen beginnen leer, vorhandener v3-Zustand bleibt kompatibel. Persönliche Historie in Regressionstests durch synthetischen Zustand ersetzt. Zweisprachige Einbauanleitungen mit externen Variablen, HA-Eingabesensoren, SOC-Erfassung, Ausgabeintegration und abschließenden Deploy-Prüfungen überarbeitet; optionales YAML für Energie-Helfer ergänzt. 47 Regressionstests je Sprache und drei Sprachprüfungen bestanden.
+
 - Nachgestellten Zusatz „geschätzt“ im Function-Status beider Sprachversionen entfernt; Berechnung, Start mit Teilpuffer und Aussagegrenzen erläutert. Berechnungsrevision bleibt 3.2.
 
 - Berechnungsrevision 3.2: dauerhaft gespeicherte, begrenzte Energietoleranz für verzögerte/gerundete HA-Aktualisierungen (2400 W, 20 % Reserve, 120 Sekunden Meldetoleranz, angenommene Auflösung 0,1 kWh). Auffällige Zuwächse ohne Verlust des Ausgangspunkts zurückstellen; echte Abfrageausfälle unterscheiden, Rücksetzungen prüfen, SOC-Zeitstempel bis 120 Sekunden zulassen. Vorhandene Historie bleibt erhalten. 55 Regressionstests je Sprache und drei Sprachprüfungen bestanden.

@@ -3,11 +3,11 @@
  * Automatisch erzeugt mit build-german-flow.py; Änderungen am Rechenkern
  * gehören in die englischen Quelldateien, danach beide Fassungen erzeugen.
  * MIT-Lizenz. Unabhängiges Projekt; siehe ../NOTICE_DE.md.
- * Anleitung und Pufferübernahme: README_DE.md.
+ * Einbau und Voraussetzungen: README_DE.md.
  *
  * Vorbereitung: SOC einmal aufnehmen und beide Tageszähler gemeinsam abfragen.
  * Berechnung: Nur zusammengehörige Energie- und SOC-Intervalle einbeziehen.
- * Vorhandenen v2-Puffer einmal übernehmen, sichern und nicht doppelt zählen.
+ * Neuinstallation startet leer; vorhandenen v3-Zustand weiterverwenden.
  * Summen und Messausgangspunkt gemeinsam im Dateispeicher ablegen.
  * Ungültige Eingaben und unklare Intervalle nicht als Energie verbuchen.
  * null am Sensorausgang bedeutet Unbekannt, nicht null Prozent Wirkungsgrad.
@@ -33,12 +33,14 @@ const DE_TEXTE = {
     "baseline_initialized": "Ausgangspunkt für neue Messintervalle gesetzt",
     "configuration_changed_new_baseline": "Konfiguration geändert – neuer Ausgangspunkt",
     "non_increasing_sample_time": "Messzeitpunkt liegt nicht nach der letzten Messung",
-    "legacy_history_imported_new_baseline": "Vorhandene Historie übernommen – neuer Messausgangspunkt",
     "waiting_for_daily_counter_resets": "Warte auf Rücksetzung beider Tageszähler",
     "new_day_boundary_excluded": "Tageswechselintervall ausgeschlossen",
     "measurement_gap_excluded": "Messlücke ausgeschlossen",
     "counter_reset_interval_excluded": "Intervall mit Zählerrücksetzung ausgeschlossen",
     "counter_jump_interval_excluded": "Intervall mit Zählersprung ausgeschlossen",
+    "counter_energy_pending": "Energiezuwachs zurückgestellt – Messausgangspunkt bleibt erhalten",
+    "counter_decrease_pending": "Sinkender Zählerstand ohne Rücksetzungsnachweis – warte auf Klärung",
+    "invalid_energy_guard_configuration": "Ungültige Einstellung der Energie-Plausibilitätsprüfung",
     "soc_jump_rejected": "Unplausibler SOC-Sprung verworfen",
     "confirmed_soc_jump_interval_excluded": "Bestätigter SOC-Sprung – Intervall ausgeschlossen",
     "interval_accepted": "Messintervall übernommen",
@@ -54,11 +56,7 @@ const DE_TEXTE = {
     "no_legacy_data": "Keine bisherigen Pufferdaten vorhanden",
     "skipped_configuration_change": "Wegen Konfigurationsänderung nicht erneut übernommen",
     "No completed measurement cycle": "Kein abgeschlossener Messzyklus",
-    "Requesting paired daily counters": "Zusammengehörige Tageszähler werden abgefragt",
-    "Legacy migration: invalid calendar date; original data retained": "Pufferübernahme: ungültiges Datum; Originaldaten bleiben erhalten",
-    "Legacy migration: future date; check the runtime timezone/clock": "Pufferübernahme: Datum liegt in der Zukunft; Zeitzone und Uhrzeit prüfen",
-    "Legacy migration: invalid energy value; original data retained": "Pufferübernahme: ungültiger Energiewert; Originaldaten bleiben erhalten",
-    "Legacy migration requires the original version-2 seven-slot kWh ring": "Pufferübernahme benötigt den ursprünglichen kWh-Ring der Version 2 mit sieben Speicherplätzen"
+    "Requesting paired daily counters": "Zusammengehörige Tageszähler werden abgefragt"
 };
 
 function deutsch(text) {
@@ -70,8 +68,7 @@ function deutsch(text) {
     ]) {
         if (text.startsWith(en)) return de + deutsch(text.slice(en.length));
     }
-    return text.replace("% estimate |", "% geschätzt |")
-        .replace(/(\d+)d \|/, "$1 Tage |")
+    return text.replace(/(\d+)d \|/, "$1 Tage |")
         .replace(/([\d.]+)h$/, "$1 Std.");
 }
 // Nur die Anzeige übersetzen; Speicherwerte und Berechnungen unverändert lassen.
