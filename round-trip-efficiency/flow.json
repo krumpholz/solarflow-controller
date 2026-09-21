@@ -1,0 +1,305 @@
+[
+  {
+    "id": "2aa6785d888b744e",
+    "type": "api-current-state",
+    "z": "577158dd0ea2615a",
+    "name": "Daily Battery Charge Energy",
+    "server": "4c54b454.60653c",
+    "version": 3,
+    "outputs": 1,
+    "halt_if": "",
+    "halt_if_type": "num",
+    "halt_if_compare": "is",
+    "entity_id": "sensor.batterie_lade_energie_pro_tag",
+    "state_type": "str",
+    "blockInputOverrides": true,
+    "outputProperties": [
+      {
+        "property": "payload",
+        "propertyType": "msg",
+        "value": "",
+        "valueType": "entityState"
+      },
+      {
+        "property": "data",
+        "propertyType": "msg",
+        "value": "",
+        "valueType": "entity"
+      }
+    ],
+    "for": "0",
+    "forType": "num",
+    "forUnits": "minutes",
+    "override_topic": false,
+    "state_location": "payload",
+    "override_payload": "msg",
+    "entity_location": "data",
+    "override_data": "msg",
+    "x": 480,
+    "y": 220,
+    "wires": [
+      [
+        "e46be25028e13f5d"
+      ]
+    ]
+  },
+  {
+    "id": "f95f0118d1ac8e2e",
+    "type": "api-current-state",
+    "z": "577158dd0ea2615a",
+    "name": "Daily Battery Discharge Energy",
+    "server": "4c54b454.60653c",
+    "version": 3,
+    "outputs": 1,
+    "halt_if": "",
+    "halt_if_type": "num",
+    "halt_if_compare": "is",
+    "entity_id": "sensor.batterie_entlade_energie_pro_tag",
+    "state_type": "str",
+    "blockInputOverrides": true,
+    "outputProperties": [
+      {
+        "property": "payload",
+        "propertyType": "msg",
+        "value": "",
+        "valueType": "entityState"
+      },
+      {
+        "property": "data",
+        "propertyType": "msg",
+        "value": "",
+        "valueType": "entity"
+      }
+    ],
+    "for": "0",
+    "forType": "num",
+    "forUnits": "minutes",
+    "override_topic": false,
+    "state_location": "payload",
+    "override_payload": "msg",
+    "entity_location": "data",
+    "override_data": "msg",
+    "x": 480,
+    "y": 300,
+    "wires": [
+      [
+        "e46be25028e13f5d"
+      ]
+    ]
+  },
+  {
+    "id": "e46be25028e13f5d",
+    "type": "function",
+    "z": "577158dd0ea2615a",
+    "name": "Seven-Day SOC-Adjusted Efficiency",
+    "func": "/*\n * Seven-Day SOC-Adjusted Battery Efficiency Estimate — v3\n * MIT licensed. Independent community project; see ../NOTICE.md.\n * Node-RED Function body, TWO outputs: HA state / detailed diagnostics.\n * Use prepare-cycle.js before BOTH current-state nodes. See README.md.\n * Daily kWh counters are differenced from a paired baseline. SOC changes\n * are accumulated only over the SAME accepted intervals, never across gaps.\n * A null payload means Unknown; it is never a manufactured 0% or 100%.\n */\nconst CFG = {\n    chargeEntity: \"sensor.batterie_lade_energie_pro_tag\",\n    dischargeEntity: \"sensor.batterie_entlade_energie_pro_tag\",\n    capacityKWh: 8.640,             // INSTALLATION VALUE: 3 x 2.880 kWh.\n    maxPowerKW: 2.4,                // Maximum charge/discharge power.\n    counterToleranceKWh: 0.02,      // Allow asynchronous/quantized reporting.\n    minChargeKWh: 0.1,             // Do not divide by a near-zero throughput.\n    cycleTimeoutMs: 4000,\n    maxIntervalMs: 120000,          // Longer gaps start a new baseline.\n    maxSocAgeMs: 15000,\n    requireSocTimestamp: false,     // Set true after adding batt_level_ts.\n    socStepTolerancePct: 2,\n    socRebaseConfirmations: 3,\n    socConfirmationTolerancePct: 1\n};\nconst MEM = \"memoryOnly\", FILE = \"file\";\nconst STATE = \"batt_eff_state_v3\";\nconst now = Date.now();\nconst clone = value => JSON.parse(JSON.stringify(value));\nfunction num(v) {\n    if (typeof v === \"number\") return Number.isFinite(v) ? v : null;\n    if (typeof v !== \"string\" || !/^[+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?:e[+-]?\\d+)?$/i.test(v.trim())) return null;\n    const n = Number(v);\n    return Number.isFinite(n) ? n : null;\n}\nconst finite = v => typeof v === \"number\" && Number.isFinite(v);\nconst rounded = (v, digits = 3) => v === null ? null : Number(v.toFixed(digits));\nfunction dateOf(ts) {\n    const d = new Date(ts);\n    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, \"0\")}-${String(d.getDate()).padStart(2, \"0\")}`;\n}\nfunction ordinal(date) {\n    const parts = date.split(\"-\").map(Number);\n    return Date.UTC(parts[0], parts[1] - 1, parts[2]) / 86400000;\n}\nfunction failure(reason) {\n    flow.set(\"la_ela_es\", null, FILE);\n    node.status({fill: \"yellow\", shape: \"ring\", text: reason});\n    const out = {payload: null, result: {valid: false, reason, timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}};\n    return [out, clone(out)];\n}\nfunction validSample(s) {\n    return s && finite(s.ts) && s.ts > 0 && s.date === dateOf(s.ts) &&\n        finite(s.charge) && s.charge >= 0 && finite(s.discharge) && s.discharge >= 0 &&\n        finite(s.soc) && s.soc >= 0 && s.soc <= 100 &&\n        [s.chargeReset, s.dischargeReset].every(v => v === null || (finite(v) && v >= 0));\n}\nfunction validState(s) {\n    return s && s.version === 3 && s.unit === \"kWh\" && typeof s.fingerprint === \"string\" &&\n        (s.last === null || validSample(s.last)) && Array.isArray(s.days) && s.days.length <= 7 &&\n        new Set(s.days.map(d => d.date)).size === s.days.length &&\n        s.days.every(d => /^\\d{4}-\\d{2}-\\d{2}$/.test(d.date) &&\n            [d.charge, d.discharge, d.coveredMs, d.gaps, d.gapMs, d.intervals].every(v => finite(v) && v >= 0) &&\n            Number.isInteger(d.intervals) && Number.isInteger(d.gaps) && finite(d.delta));\n}\ntry {\n    const cycle = msg._eff;\n    if (!cycle || typeof cycle.id !== \"string\" || !finite(cycle.ts) || now < cycle.ts || now - cycle.ts > CFG.cycleTimeoutMs) {\n        return failure(\"missing_or_expired_cycle\");\n    }\n    let pending = context.get(\"pending\", MEM);\n    const finished = context.get(\"finished\", MEM);\n    if (finished && cycle.ts <= finished.ts) return null; // duplicate or delayed cycle\n    if (pending && cycle.ts < pending.ts) return null;\n    const lostPair = pending && pending.id !== cycle.id;\n    if (!pending || pending.id !== cycle.id) pending = {id: cycle.id, ts: cycle.ts, soc: cycle.soc, socTs: cycle.socTs};\n    if (cycle.ts !== pending.ts || cycle.soc !== pending.soc || cycle.socTs !== pending.socTs) return failure(\"inconsistent_cycle_snapshot\");\n    const entity = msg.data && msg.data.entity_id;\n    const side = entity === CFG.chargeEntity ? \"charge\" : entity === CFG.dischargeEntity ? \"discharge\" : null;\n    if (!side) return failure(\"unexpected_entity\");\n    // Check the original HA state before any numeric conversion by a node.\n    const data = msg.data || {};\n    const raw = Object.prototype.hasOwnProperty.call(data, \"original_state\") ? data.original_state :\n        Object.prototype.hasOwnProperty.call(data, \"state\") ? data.state : msg.payload;\n    const value = num(raw);\n    if (value === null || value < 0) return failure(\"invalid_energy_value\");\n    if (!data.attributes || data.attributes.unit_of_measurement !== \"kWh\") return failure(\"energy_unit_must_be_kWh\");\n    let reset = null;\n    if (data.attributes.last_reset !== undefined && data.attributes.last_reset !== null) {\n        reset = Date.parse(data.attributes.last_reset);\n        if (!finite(reset) || reset > now) return failure(\"invalid_counter_reset_timestamp\");\n        if (dateOf(reset) !== dateOf(cycle.ts)) return failure(\"daily_counter_not_reset_for_today\");\n    }\n    if (pending[side]) return null; // accept each direction only once per cycle\n    pending[side] = {value, reset};\n    context.set(\"pending\", pending, MEM);\n    if (!pending.charge || !pending.discharge) return lostPair ? failure(\"incomplete_previous_cycle\") : null;\n    context.set(\"pending\", null, MEM);\n    context.set(\"finished\", {ts: cycle.ts}, MEM);\n    const soc = num(pending.soc), socTs = num(pending.socTs);\n    if (soc === null || soc < 0 || soc > 100) return failure(\"invalid_soc\");\n    if (socTs === null && CFG.requireSocTimestamp) return failure(\"soc_timestamp_required\");\n    if (socTs !== null && (socTs > cycle.ts || cycle.ts - socTs > CFG.maxSocAgeMs)) return failure(\"stale_or_future_soc\");\n    if (!finite(CFG.capacityKWh) || CFG.capacityKWh <= 0) return failure(\"invalid_capacity\");\n    const sample = {ts: cycle.ts, date: dateOf(cycle.ts), soc,\n        charge: pending.charge.value, discharge: pending.discharge.value,\n        chargeReset: pending.charge.reset, dischargeReset: pending.discharge.reset};\n    const fingerprint = JSON.stringify([CFG.capacityKWh, CFG.chargeEntity, CFG.dischargeEntity,\n        Intl.DateTimeFormat().resolvedOptions().timeZone]);\n    const saved = flow.get(STATE, FILE);\n    if (saved !== undefined && saved !== null && !validState(saved)) return failure(\"invalid_persisted_state_requires_review\");\n    let state = saved ? clone(saved) : {version: 3, unit: \"kWh\", fingerprint, last: null, days: []};\n    let reason = \"baseline_initialized\";\n    if (state.fingerprint !== fingerprint) {\n        flow.set(\"batt_eff_previous_state_v3\", state, FILE);\n        state = {version: 3, unit: \"kWh\", fingerprint, last: null, days: []};\n        reason = \"configuration_changed_new_baseline\";\n    }\n    const prev = state.last;\n    if (prev && sample.ts <= prev.ts) return failure(\"non_increasing_sample_time\");\n    state.days = state.days.filter(d => ordinal(sample.date) - ordinal(d.date) >= 0 && ordinal(sample.date) - ordinal(d.date) <= 6);\n    let day = state.days.find(d => d.date === sample.date);\n    if (!day) {\n        day = {date: sample.date, charge: 0, discharge: 0, delta: 0, coveredMs: 0, gaps: 0, gapMs: 0, intervals: 0};\n        state.days.push(day);\n    }\n    state.days.sort((a, b) => a.date.localeCompare(b.date));\n    let acceptedInterval = false;\n    if (prev) {\n        const dt = sample.ts - prev.ts;\n        const dc = sample.charge - prev.charge, dd = sample.discharge - prev.discharge;\n        if (sample.date !== prev.date) {\n            // With no last_reset attribute, require evidence that EACH daily\n            // counter reset. A previously zero counter may remain zero.\n            const resetSeen = side => sample[`${side}Reset`] !== null || sample[side] < prev[side] || (prev[side] === 0 && sample[side] === 0);\n            if (!resetSeen(\"charge\") || !resetSeen(\"discharge\")) return failure(\"waiting_for_daily_counter_resets\");\n            reason = \"new_day_boundary_excluded\";\n        } else if (dt > CFG.maxIntervalMs) {\n            reason = \"measurement_gap_excluded\";\n        } else if (sample.chargeReset !== prev.chargeReset || sample.dischargeReset !== prev.dischargeReset || dc < 0 || dd < 0) {\n            reason = \"counter_reset_interval_excluded\";\n        } else if (dc > CFG.maxPowerKW * dt / 3600000 + CFG.counterToleranceKWh || dd > CFG.maxPowerKW * dt / 3600000 + CFG.counterToleranceKWh) {\n            reason = \"counter_jump_interval_excluded\";\n        } else {\n            // Use a current endpoint, not a delayed ten-minute median.\n            const allowedStep = CFG.socStepTolerancePct + CFG.maxPowerKW * dt / 3600000 / CFG.capacityKWh * 100;\n            if (Math.abs(soc - prev.soc) > allowedStep) {\n                let candidate = context.get(\"socCandidate\", MEM);\n                candidate = candidate && sample.ts > candidate.ts && sample.ts - candidate.ts <= CFG.maxSocAgeMs &&\n                    Math.abs(soc - candidate.soc) <= CFG.socConfirmationTolerancePct ?\n                    {soc, ts: sample.ts, count: candidate.count + 1} : {soc, ts: sample.ts, count: 1};\n                context.set(\"socCandidate\", candidate, MEM);\n                if (candidate.count < CFG.socRebaseConfirmations) return failure(\"soc_jump_rejected\");\n                reason = \"confirmed_soc_jump_interval_excluded\";\n            } else {\n                day.charge += dc;\n                day.discharge += dd;\n                day.delta += CFG.capacityKWh * (soc - prev.soc) / 100;\n                day.coveredMs += dt;\n                day.intervals++;\n                acceptedInterval = true;\n                reason = \"interval_accepted\";\n            }\n        }\n        if (!acceptedInterval) { day.gaps++; day.gapMs += dt; }\n    }\n    context.set(\"socCandidate\", null, MEM);\n    state.last = sample;\n    // One versioned object contains both totals and their matching baseline.\n    // localfilesystem must have cache:true. Its own flush interval limits I/O.\n    flow.set(STATE, state, FILE);\n    flow.set(\"batt_eff_last_completed_v3\", now, MEM);\n    const sum = key => state.days.reduce((total, d) => total + d[key], 0);\n    const charge = sum(\"charge\"), discharge = sum(\"discharge\"), delta = sum(\"delta\");\n    const rawPct = charge > 0 ? (discharge + delta) / charge * 100 : null;\n    const enough = charge >= CFG.minChargeKWh;\n    const plausible = rawPct !== null && finite(rawPct) && rawPct >= 0 && rawPct <= 100;\n    const valid = acceptedInterval && enough && plausible;\n    const eta = valid ? rounded(rawPct, 1) : null;\n    const quality = !acceptedInterval ? reason : !enough ? \"insufficient_charge_energy\" : !plausible ? \"efficiency_out_of_range\" : \"estimate_available\";\n    flow.set(\"sum_batt_la_7d\", rounded(charge), FILE);\n    flow.set(\"sum_batt_ela_7d\", rounded(discharge), FILE);\n    flow.set(\"la_ela_es\", eta, FILE);\n    const result = {\n        version: 3, valid, reason: quality, interval_status: reason,\n        timestamp: new Date(sample.ts).toISOString(),\n        eta_pct: eta, eta_raw_pct: rounded(rawPct, 3),\n        days_used: state.days.filter(d => d.intervals > 0).length,\n        window: \"today_and_previous_six_local_calendar_days\",\n        window_complete: false,\n        sum_charge_kwh_7d: rounded(charge), sum_discharge_kwh_7d: rounded(discharge),\n        delta_stored_energy_kwh: rounded(delta), losses_kwh: rounded(charge - discharge - delta),\n        capacity_kwh: CFG.capacityKWh, soc_now_raw_pct: soc, soc_now_eff_pct: soc,\n        soc_freshness_verified: socTs !== null,\n        reset_metadata_verified: sample.chargeReset !== null && sample.dischargeReset !== null,\n        covered_hours: rounded(sum(\"coveredMs\") / 3600000, 6),\n        excluded_intervals: sum(\"gaps\"), excluded_gap_hours: rounded(sum(\"gapMs\") / 3600000, 6),\n        interval_accepted: acceptedInterval,\n        daily_intervals: clone(state.days)\n    };\n    msg.payload = eta;\n    msg.result = result;\n    node.status({fill: valid ? \"green\" : \"yellow\", shape: valid ? \"dot\" : \"ring\",\n        text: valid ? `${eta}% estimate | ${result.days_used}d | ${result.covered_hours}h` : quality});\n    return [msg, clone(msg)];\n} catch (err) {\n    node.error(`Efficiency calculation stopped: ${err.message}`);\n    const out = {payload: null, result: {valid: false, reason: \"context_or_runtime_error\", detail: err.message,\n        timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}};\n    return [out, clone(out)];\n}\n",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 800,
+    "y": 260,
+    "wires": [
+      [
+        "0e16d9dcd078a8e9"
+      ],
+      [
+        "effdiagnostics03"
+      ]
+    ]
+  },
+  {
+    "id": "0e16d9dcd078a8e9",
+    "type": "ha-sensor",
+    "z": "577158dd0ea2615a",
+    "name": "Battery Efficiency Estimate",
+    "entityConfig": "bb523511b4c4476f",
+    "version": 0,
+    "state": "payload",
+    "stateType": "msg",
+    "attributes": [
+      {
+        "property": "quality",
+        "value": "result.reason",
+        "valueType": "msg"
+      },
+      {
+        "property": "valid",
+        "value": "result.valid",
+        "valueType": "msg"
+      },
+      {
+        "property": "last_measurement",
+        "value": "result.timestamp",
+        "valueType": "msg"
+      },
+      {
+        "property": "covered_hours",
+        "value": "result.covered_hours",
+        "valueType": "msg"
+      },
+      {
+        "property": "soc_freshness_verified",
+        "value": "result.soc_freshness_verified",
+        "valueType": "msg"
+      }
+    ],
+    "inputOverride": "allow",
+    "outputProperties": [],
+    "x": 1170,
+    "y": 220,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "4c54b454.60653c",
+    "type": "server",
+    "name": "Home Assistant",
+    "addon": true,
+    "rejectUnauthorizedCerts": true,
+    "ha_boolean": "",
+    "connectionDelay": false,
+    "cacheJson": true,
+    "heartbeat": false,
+    "heartbeatInterval": "",
+    "areaSelector": "friendlyName",
+    "deviceSelector": "friendlyName",
+    "entitySelector": "friendlyName",
+    "statusSeparator": "at:",
+    "statusYear": "hidden",
+    "statusMonth": "short",
+    "statusDay": "numeric",
+    "statusHourCycle": "h23",
+    "statusTimeFormat": "h:m:s",
+    "enableGlobalContextStore": true
+  },
+  {
+    "id": "bb523511b4c4476f",
+    "type": "ha-entity-config",
+    "server": "4c54b454.60653c",
+    "deviceConfig": "",
+    "name": "Battery Efficiency Estimate Sensor",
+    "version": 6,
+    "entityType": "sensor",
+    "haConfig": [
+      {
+        "property": "name",
+        "value": "Battery Efficiency Estimate"
+      },
+      {
+        "property": "icon",
+        "value": "mdi:battery-sync"
+      },
+      {
+        "property": "entity_picture",
+        "value": ""
+      },
+      {
+        "property": "entity_category",
+        "value": ""
+      },
+      {
+        "property": "device_class",
+        "value": ""
+      },
+      {
+        "property": "unit_of_measurement",
+        "value": "%"
+      },
+      {
+        "property": "state_class",
+        "value": ""
+      }
+    ],
+    "resend": false,
+    "debugEnabled": false
+  },
+  {
+    "id": "b4c87ebe49580577",
+    "type": "global-config",
+    "env": [],
+    "modules": {
+      "node-red-contrib-home-assistant-websocket": "0.80.3"
+    }
+  },
+  {
+    "id": "efftrigger000003",
+    "type": "inject",
+    "z": "577158dd0ea2615a",
+    "name": "Measure every 5 seconds",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "5",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 170,
+    "y": 160,
+    "wires": [
+      [
+        "effprepare000003"
+      ]
+    ]
+  },
+  {
+    "id": "effprepare000003",
+    "type": "function",
+    "z": "577158dd0ea2615a",
+    "name": "Capture SOC and Start Measurement Cycle",
+    "func": "// Node-RED Function body, two outputs: measurement requests / watchdog status.\n// Run on the same flow tab as the existing batt_level writer.\nconst now = Date.now();\nconst number = v => (typeof v === \"number\" && Number.isFinite(v)) ? v :\n    (typeof v === \"string\" && /^[+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?:e[+-]?\\d+)?$/i.test(v.trim())) ? Number(v) : null;\ntry {\n    const seq = (context.get(\"sequence\", \"memoryOnly\") || 0) + 1;\n    context.set(\"sequence\", seq, \"memoryOnly\");\n    const boot = context.get(\"boot\", \"memoryOnly\") || now;\n    context.set(\"boot\", boot, \"memoryOnly\");\n    // Capture the SOC once; both energy requests carry this same snapshot.\n    msg._eff = {\n        id: `${now}-${seq}`, ts: now,\n        soc: number(flow.get(\"batt_level\", \"memoryOnly\")),\n        socTs: number(flow.get(\"batt_level_ts\", \"memoryOnly\"))\n    };\n    msg.payload = null;\n    const completed = flow.get(\"batt_eff_last_completed_v3\", \"memoryOnly\") || boot;\n    let warning = null;\n    if (now - completed > 15000) {\n        flow.set(\"la_ela_es\", null, \"file\");\n        warning = {payload: null, result: {valid: false, reason: \"measurement_timeout\", timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}};\n        node.status({fill: \"red\", shape: \"ring\", text: \"No completed measurement cycle\"});\n    } else {\n        node.status({fill: \"blue\", shape: \"dot\", text: \"Requesting paired daily counters\"});\n    }\n    return [msg, warning];\n} catch (err) {\n    node.error(`Context configuration error: ${err.message}`);\n    return [null, {payload: null, result: {valid: false, reason: \"context_configuration_error\", timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}}];\n}\n",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 290,
+    "y": 380,
+    "wires": [
+      [
+        "2aa6785d888b744e",
+        "f95f0118d1ac8e2e"
+      ],
+      [
+        "0e16d9dcd078a8e9",
+        "effdiagnostics03"
+      ]
+    ]
+  },
+  {
+    "id": "effdiagnostics03",
+    "type": "debug",
+    "z": "577158dd0ea2615a",
+    "name": "Efficiency Diagnostics",
+    "active": false,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "result",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1170,
+    "y": 320,
+    "wires": []
+  },
+  {
+    "id": "effinstructions3",
+    "type": "comment",
+    "z": "577158dd0ea2615a",
+    "name": "Read README: same flow tab as batt_level writer; configure capacity and context stores",
+    "info": "Import on the existing flow tab that owns flow.batt_level. Configure memoryOnly and cached file stores. Select your Home Assistant server. Keep entity IDs matched to the function configuration. Existing batt_level writer is external to this export. Optional batt_level_ts must be updated only with an actual SOC reading. Disable the old estimator before deploying. See round-trip-efficiency/README.md.",
+    "x": 590,
+    "y": 80,
+    "wires": []
+  }
+]

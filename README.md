@@ -6,7 +6,9 @@ Node-RED controller project for SolarFlow battery systems, integrating Home Assi
 
 ## Project status
 
-This repository currently contains the initial project documentation and license. The Node-RED controller flow, configuration examples, and installation instructions have not yet been published here. There is no installable controller release in this repository yet.
+The repository includes a [seven-day SOC-adjusted battery efficiency monitoring flow](round-trip-efficiency/README.md), its English setup documentation, and automated regression tests. This monitoring utility does not issue battery control commands and has not yet been validated in a live installation.
+
+The main Node-RED charge/discharge controller has not yet been published here.
 
 ## Purpose
 
@@ -71,6 +73,7 @@ This project does not provide certified grid protection or replace the battery m
 
 | File | Purpose |
 | --- | --- |
+| [round-trip-efficiency](round-trip-efficiency/README.md) | SOC-adjusted efficiency monitoring flow and tests |
 | [LICENSE](LICENSE) | MIT license |
 | [NOTICE.md](NOTICE.md) | Independent-project and trademark notice |
 | [DISCLAIMER.md](DISCLAIMER.md) | Scope, operating responsibility, and warranty disclaimer |
@@ -87,3 +90,4 @@ Bug reports, documentation improvements, and contributions are welcome. See [CON
 Released under the [MIT License](LICENSE).
 
 Zendure, SolarFlow, and other product names belong to their respective owners and are used only to describe compatibility and interoperability. No affiliation or endorsement is implied. See [NOTICE.md](NOTICE.md).
+
