@@ -88,7 +88,7 @@ test('SOC operating limits do not invalidate physically valid SOC', () => {
     assert.equal(h.pair(5, 4, 20)[0].result.interval_status, 'baseline_initialized');
 });
 test('stale and future SOC timestamps rejected; missing timestamp explicit', () => {
-    for (const shift of [-15001, 1]) {
+    for (const shift of [-120001, 1]) {
         const h = harness(), m = h.messages(5, 4); m.forEach(x => x._eff.socTs += shift);
         h.fn(m[0]); assert.equal(h.fn(m[1])[0].result.reason, 'stale_or_future_soc');
     }
@@ -153,11 +153,10 @@ test('without reset metadata both counters must show rollover evidence', () => {
     assert.equal(h.pair(5, 0, 50, {last_reset: null})[0].result.reason, 'waiting_for_daily_counter_resets');
     h.advance(5000); assert.equal(h.pair(0, 0, 50, {last_reset: null})[0].result.reason, 'new_day_boundary_excluded');
 });
-test('intra-day reset and impossible counter jump are excluded', () => {
+test('confirmed intra-day reset excludes the interval and retains history', () => {
     const h = harness(); seed(h); grow(h); h.advance(5000);
-    assert.equal(h.pair(0, 0)[0].result.reason, 'counter_reset_interval_excluded');
-    h.advance(5000); const out = h.pair(100, 100)[0];
-    assert.equal(out.result.reason, 'counter_jump_interval_excluded');
+    const out = h.pair(0, 0, 50, {last_reset: new Date(h.time()).toISOString()})[0];
+    assert.equal(out.result.reason, 'counter_reset_interval_excluded');
     assert.equal(out.result.sum_charge_kwh_7d, .12);
 });
 test('zero throughput is unknown, not zero percent', () => {
@@ -371,4 +370,81 @@ test('legacy endpoint adjustment changes with the active window and expires natu
     h.setTime(new Date(2026,8,28,12).getTime());out=h.pair(0,0,42)[0];
     assert.equal(out.result.legacy_adjustment_kwh,0);assert.equal(out.result.legacy_days_in_window,0);
     assert.equal(out.result.estimate_basis,'measured_intervals');
+});
+
+test('minute updates at 2400 W retain all energy despite five-second polls', () => {
+    const h=harness();seed(h);let out;
+    for(let i=1;i<=120;i++) { h.advance(5000);out=h.pair(5+Math.floor(i/12)*.04,4)[0];assert.equal(out.result.interval_accepted,true); }
+    assert.equal(out.result.sum_charge_kwh_7d,.4);assert.equal(out.result.excluded_intervals,0);
+    assert.equal(out.result.energy_guard.burst_allowance_kwh,.196);
+});
+test('independent coarse charge and discharge updates retain exact totals', () => {
+    const h=harness();seed(h);let out;
+    for(let i=1;i<=180;i++) { h.advance(5000);out=h.pair(5+Math.floor(i/30)*.1,4+Math.floor(i/24)*.08)[0];assert.equal(out.result.interval_accepted,true); }
+    assert.equal(out.result.sum_charge_kwh_7d,.6);assert.equal(out.result.sum_discharge_kwh_7d,.56);
+    assert.equal(out.result.excluded_intervals,0);
+});
+test('repeated coarse jumps cannot renew a per-message tolerance', () => {
+    const h=harness();seed(h);h.advance(5000);h.pair(5.1,4);
+    h.advance(5000);h.pair(5.2,4);const baseline=h.stores.file.batt_eff_state_v3.last.ts;
+    h.advance(5000);const out=h.pair(5.3,4)[0];
+    assert.equal(out.result.reason,'counter_energy_pending');assert.equal(out.payload,null);
+    assert.equal(out.result.baseline_preserved,true);assert.equal(h.stores.file.batt_eff_state_v3.last.ts,baseline);
+    assert.ok(Math.abs(h.stores.file.batt_eff_state_v3.days[0].charge-.2)<1e-9);
+});
+test('deferred plausible delta is recovered without losing energy or SOC', () => {
+    const h=harness();seed(h);h.advance(5000);h.pair(5.19,4);
+    h.advance(5000);assert.equal(h.pair(5.29,4,50.1)[0].result.reason,'counter_energy_pending');
+    let out;for(let i=0;i<25;i++){h.advance(5000);out=h.pair(5.29,4,50.1)[0];}
+    assert.equal(out.result.sum_charge_kwh_7d,.29);assert.equal(out.result.delta_stored_energy_kwh,.009);
+    assert.equal(out.result.excluded_intervals,0);
+});
+test('persistent impossible jump stays bounded, recovers after correction, and is not a polling gap', () => {
+    const h=harness();seed(h);const baseline=h.stores.file.batt_eff_state_v3.last.ts;
+    for(let i=0;i<150;i++){h.advance(5000);const out=h.pair(105,4)[0];assert.equal(out.result.reason,'counter_energy_pending');}
+    assert.equal(h.stores.file.batt_eff_state_v3.last.ts,baseline);
+    h.advance(5000);const out=h.pair(5.1,4)[0];
+    assert.equal(out.result.sum_charge_kwh_7d,.1);assert.equal(out.result.excluded_intervals,0);
+    assert.ok(out.result.covered_hours>.2);
+});
+test('unconfirmed counter decrease waits and temporary stale value recovers', () => {
+    const h=harness();seed(h);grow(h);const baseline=h.stores.file.batt_eff_state_v3.last.ts;
+    h.advance(5000);assert.equal(h.pair(0,0)[0].result.reason,'counter_decrease_pending');
+    assert.equal(h.stores.file.batt_eff_state_v3.last.ts,baseline);
+    h.advance(5000);const out=h.pair(5.13,4.1)[0];
+    assert.equal(out.result.sum_charge_kwh_7d,.13);assert.equal(out.result.sum_discharge_kwh_7d,.1);
+});
+test('restart does not replenish consumed energy allowance or erase a pending baseline', () => {
+    const h=harness();seed(h);h.advance(5000);h.pair(5.19,4);
+    h.advance(5000);h.pair(5.29,4);const base=h.stores.file.batt_eff_state_v3.last.ts;
+    for(let i=0;i<3;i++){h.restart();h.advance(5000);assert.equal(h.pair(5.29,4)[0].result.reason,'counter_energy_pending');}
+    assert.equal(h.stores.file.batt_eff_state_v3.last.ts,base);
+    assert.ok(h.stores.file.batt_eff_state_v3.energyGuard.charge<.05);
+});
+test('real observation outage after pending counter still excludes the unobserved interval', () => {
+    const h=harness();seed(h);h.advance(5000);h.pair(105,4);h.advance(120001);
+    const out=h.pair(5.2,4)[0];assert.equal(out.result.reason,'measurement_gap_excluded');
+    assert.equal(out.result.sum_charge_kwh_7d,0);
+});
+test('revision 3.1 upgrade preserves migrated history and creates allowance once', () => {
+    const h=harness();installActualHistory(h);h.pair(1.3,.59,42);
+    delete h.stores.file.batt_eff_state_v3.energyGuard;
+    const migration=JSON.stringify(h.stores.file.batt_eff_state_v3.legacyMigration);
+    h.restart();h.advance(5000);const out=h.pair(1.4,.59,42)[0];
+    assert.equal(out.result.sum_charge_kwh_7d,21.2);assert.equal(out.result.calculation_revision,'3.2');
+    assert.equal(JSON.stringify(h.stores.file.batt_eff_state_v3.legacyMigration),migration);
+});
+test('invalid allowance settings and corrupt persisted guard fail without deleting data', () => {
+    const h=harness({source:source.replace('powerSafetyFactor: 1.20','powerSafetyFactor: -1')});
+    assert.equal(h.pair(5,4)[0].result.reason,'invalid_energy_guard_configuration');
+    const other=harness();seed(other);other.stores.file.batt_eff_state_v3.energyGuard.charge=-1;
+    other.advance(5000);assert.equal(other.pair(5,4)[0].result.reason,'invalid_persisted_state_requires_review');
+    assert.equal(other.stores.file.batt_eff_state_v3.energyGuard.charge,-1);
+});
+
+test('delayed SOC observation up to configured two-minute limit is accepted', () => {
+    for(const age of [60000,120000]) {
+        const h=harness();const m=h.messages(5,4);m.forEach(x=>x._eff.socTs-=age);
+        h.fn(m[0]);assert.equal(h.fn(m[1])[0].result.interval_status,'baseline_initialized');
+    }
 });

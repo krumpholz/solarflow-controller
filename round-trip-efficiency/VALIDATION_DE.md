@@ -13,7 +13,7 @@ Die Überarbeitung ergänzt zusammengehörige Messzyklen und eine versionierte I
 - Laufzeit: Node.js v24.19.0.
 - Zeitzone: Europe/Berlin.
 - Befehl im Stammverzeichnis des Repositorys: `TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs`.
-- Ergebnis: **44 Tests bestanden; 0 fehlgeschlagen**.
+- Ergebnis: **55 Tests bestanden; 0 fehlgeschlagen**.
 
 Die Tests führen die tatsächlichen Function-Codes mit simuliertem Node-RED-Kontext, Status-/Fehlerverarbeitung und steuerbarer Uhr aus. Geprüft werden:
 
@@ -53,8 +53,12 @@ Die Implementierung wurde in einer simulierten Ausführungsumgebung geprüft. Da
 
 ## Prüfung der deutschen Alternative
 
-Dieselben 44 Regressionstests bestehen sowohl für die englische als auch für die deutsche Fassung (88 Testausführungen). Für Deutsch: `EFFICIENCY_LANGUAGE=de TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs`. Zusätzlich bestehen drei Sprachversionsprüfungen mit `node --test round-trip-efficiency/tests/localization.test.cjs`: identischer ausführbarer Rechenkern, deutsche Diagnose-/Statusmeldung bei unverändertem technischem Code sowie gleiche Verbindungen und Entitätsreferenzen. Insgesamt 91 bestandene Testausführungen. Die Live-Prüfung steht weiterhin aus.
+Dieselben 55 Regressionstests bestehen sowohl für die englische als auch für die deutsche Fassung (110 Testausführungen). Für Deutsch: `EFFICIENCY_LANGUAGE=de TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs`. Zusätzlich bestehen drei Sprachversionsprüfungen mit `node --test round-trip-efficiency/tests/localization.test.cjs`: identischer ausführbarer Rechenkern, deutsche Diagnose-/Statusmeldung bei unverändertem technischem Code sowie gleiche Verbindungen und Entitätsreferenzen. Insgesamt 113 bestandene Testausführungen. Die Live-Prüfung steht weiterhin aus.
 
 ## Korrektur der übernommenen SOC-Bilanz (3.1)
 
 Drei zusätzliche Fälle prüfen historische SOC-Brüche, die Aktualisierung eines bereits migrierten Puffers ohne erneute Übernahme oder wiederholte Korrektur und das Herausfallen der Korrektur mit den Altdaten. Der konkrete Diagnosefall ergibt 70,8 % bei unveränderten Energiesummen; die gespeicherten Tagesdifferenzen bleiben unverändert. Die nicht erfasste SOC-Änderung beim Umstieg wird nicht nachträglich erfunden.
+
+## Regressionstests zu Meldeverzögerungen (3.2)
+
+Simuliert geprüft: minutenweise Zuwächse bei 2400 W, unabhängig aktualisierte grobe Lade-/Entladezähler, wiederholte überhöhte Zuwächse, vollständige spätere Übernahme, begrenzte Behandlung dauerhafter Sprünge, vorübergehend fallende Zähler, Erhalt beim Neustart, echte Abfrageausfälle, Upgrade des bereits migrierten Zustands, ungültige Einstellungen/Zustände und verzögerte SOC-Zeitstempel bis zur konfigurierten Grenze. Die Tests verwenden simulierte Node-RED-Kontexte und ersetzen keine Live-Prüfung mit HA/Gerät. Tatsächlicher Aktualisierungstakt und Zählerauflösung müssen an der Anlage geprüft werden.

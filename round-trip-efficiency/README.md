@@ -82,7 +82,7 @@ flow.set("batt_level_ts", Date.now(), "memoryOnly");
 
 Only refresh the timestamp when a real measurement arrives. Reading an old cached SOC every five seconds does not make it fresh. The preparation node copies both values once into the shared request cycle.
 
-With a timestamp, the calculation rejects SOC more than 15 seconds old or from the future. Without one, the result explicitly reports `soc_freshness_verified: false`. Set `requireSocTimestamp: true` to refuse unverified SOC entirely. The optional timestamp writer is not included because the original SOC acquisition flow was not supplied.
+With a timestamp, the calculation rejects SOC more than 120 seconds old or from the future. Without one, the result explicitly reports `soc_freshness_verified: false`. Set `requireSocTimestamp: true` to refuse unverified SOC entirely. The optional timestamp writer is not included because the original SOC acquisition flow was not supplied.
 
 Current State returns HA's last known entity state, not a guaranteed fresh device measurement. Cycle pairing coordinates requests; it does not make the underlying device measurements physically simultaneous. Unchanged energy counters can be legitimate, so `last_updated` alone is not used as a freshness timeout. Source availability and correct energy integration must be checked upstream. See the [Current State documentation](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/current-state.html).
 
@@ -114,11 +114,12 @@ SOC is quantized and may be recalibrated by the BMS. At 8.640 kWh, one percentag
 | Situation | Behavior |
 | --- | --- |
 | No v3 history | Import the existing v2 kWh ring and live day/snapshot once, if present; then establish the baseline for new intervals. Without legacy data, start from current counters and SOC. |
-| Restart on the same day, latest persisted sample at most 120 seconds old | Continue from the stored matching baseline, including increments since that sample. |
-| Longer gap | Preserve previous measured totals; exclude the gap's energy and SOC change; establish a new baseline. |
+| Restart on the same day, latest valid paired observation at most 120 seconds old | Continue from the stored matching baseline, including increments since that sample. |
+| More than 120 seconds without a valid paired observation | Preserve previous measured totals; exclude the gap's energy and SOC change; establish a new baseline. |
 | Local midnight | Preserve prior measured intervals; exclude the interval spanning the daily reset; begin at a new paired baseline. |
-| Counter decreases or its reset timestamp changes | Exclude that interval and rebaseline both counters and SOC together. |
-| Implausibly large energy increment | Exclude the interval and rebaseline; do not count a counter jump as physical energy. |
+| Reset timestamp changes | Exclude that interval and rebaseline both counters and SOC together. |
+| Counter decreases without reset evidence | Return Unknown and retain the accepted baseline while waiting for correction or verified reset. |
+| Energy increment exceeds the available allowance | Return Unknown and retain the baseline; accept the entire deferred increment once plausible, or wait for source correction. |
 | SOC jump beyond configured tolerance plus elapsed-time power allowance | Reject it without updating the energy baseline. Three consecutive coherent candidate pairs trigger rebaselining, excluding the jump interval. |
 | Capacity, entity IDs or runtime timezone changed | Preserve the previous v3 state in an archive key and start a new baseline. |
 
@@ -173,3 +174,29 @@ Migration is marked in the same persisted state as the imported totals, preventi
 
 MIT; see [LICENSE](../LICENSE). This is an independent community project, not affiliated with or endorsed by Zendure. See [NOTICE.md](../NOTICE.md) and [DISCLAIMER.md](../DISCLAIMER.md).
 
+
+## Delayed Home Assistant updates (calculation revision 3.2)
+
+Five-second polling does not mean the source meter updates every five seconds. Current State reads Home Assistant's last-known value. Integration sensors can update on source changes or their configured `max_sub_interval`; there is no universal HA update interval. See [Current State](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/current-state.html) and [HA Integral sensor](https://www.home-assistant.io/integrations/integration/).
+
+Defaults in the calculation Function:
+
+| Setting | Value | Meaning |
+| --- | --- | --- |
+| `maxPowerKW` | 2.4 | Existing charge/discharge plausibility limit; confirm discharge maximum for your installation. |
+| `powerSafetyFactor` | 1.20 | 20% allowance: checks replenish at 2.88 kW; no device power setting changes. |
+| `maxReportingDelayMs` | 120000 | Two-minute reporting allowance; configure for the actual source cadence. |
+| `counterStepKWh` | 0.1 | Conservative assumed counter resolution in kWh; configure from the actual entity state, not rounded UI display. |
+| `maxSocAgeMs` | 120000 | Maximum age of an available SOC observation timestamp. |
+
+Each energy direction gets a bounded allowance of `2.4 × 1.20 × 120 / 3600 + 0.1 = 0.196 kWh`. Accepted increments consume it; elapsed time replenishes it at 2.88 kW, capped at 0.196 kWh. The tolerance is **not added again on every poll**. Between baseline resets, cumulative accepted energy cannot exceed the initial allowance plus elapsed-time replenishment. Unchanged counter readings therefore permit subsequent coarse updates, while repeated excessive increments exhaust the allowance. It persists across normal restarts. A first upgrade or changed allowance configuration initializes the allowance once.
+
+A pending increment does not advance the accepted energy/SOC baseline. `counter_energy_pending` or `counter_decrease_pending` emits Unknown with `baseline_preserved: true`. Recovery includes the whole deferred difference. Continuing paired observations are distinct from an actual observation outage; only an outage longer than `maxIntervalMs` triggers gap handling. A persistent jump larger than the allowance is never legalized merely by waiting. Confirmed resets, day boundaries and confirmed SOC discontinuities still establish new baselines and explicitly exclude the unresolved interval.
+
+At 8.640 kWh, 2400 W corresponds to **0.463 SOC percentage points per minute**, or **0.556 with the reserve**. The SOC jump check adds the existing 2-point reporting/quantization tolerance to the elapsed-time limit. Three consecutive consistent readings can still establish a new baseline for a device SOC recalibration; they do not prove that the jump was physical charging. The optional SOC timestamp must reflect a real source observation, not be refreshed just because this calculation polls an unchanged cached state. Without it, freshness remains unverified.
+
+The defaults are tolerances, not measured guarantees about your installation. Energy and SOC may arrive at different times; temporary efficiency fluctuations remain possible. Check the actual source cadence and resolution. Increasing the allowances weakens anomaly detection. Already excluded energy from older revisions is not reconstructed by this upgrade.
+
+### Upgrade an existing 3.1 installation
+
+Replace only the body of the existing calculation Function with `battery-efficiency.js` (English) or `battery-efficiency_DE.js` (German), keep your capacity/entity configuration, and deploy the modified node. Retain the existing preparation node, wiring and context stores. Do not delete the state or reimport the legacy buffer. Both full flow exports also contain revision 3.2. Check diagnostics for `calculation_revision: "3.2"` and `energy_guard`. Existing history and its migration marker remain intact.

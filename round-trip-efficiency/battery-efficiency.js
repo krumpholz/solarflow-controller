@@ -12,14 +12,17 @@ const CFG = {
     dischargeEntity: "sensor.batterie_entlade_energie_pro_tag",
     capacityKWh: 8.640,             // INSTALLATION VALUE: 3 x 2.880 kWh.
     maxPowerKW: 2.4,                // Maximum charge/discharge power.
-    counterToleranceKWh: 0.02,      // Allow asynchronous/quantized reporting.
+    powerSafetyFactor: 1.20,       // Plausibility allowance, NOT a device power setting.
+    maxReportingDelayMs: 120000,   // Configurable reporting-lag allowance, not a HA guarantee.
+    counterStepKWh: 0.1,           // Conservative resolution allowance; use actual source resolution.
     minChargeKWh: 0.1,             // Do not divide by a near-zero throughput.
     cycleTimeoutMs: 4000,
     maxIntervalMs: 120000,          // Longer gaps start a new baseline.
-    maxSocAgeMs: 15000,
+    maxSocAgeMs: 120000,           // Allow delayed SOC reports; timestamp must reflect source observation.
     requireSocTimestamp: false,     // Set true after adding batt_level_ts.
     socStepTolerancePct: 2,
     socRebaseConfirmations: 3,
+    socConfirmationMaxGapMs: 15000, // Confirmation polls must remain consecutive.
     socConfirmationTolerancePct: 1
 };
 const MEM = "memoryOnly", FILE = "file";
@@ -42,10 +45,10 @@ function ordinal(date) {
     const parts = date.split("-").map(Number);
     return Date.UTC(parts[0], parts[1] - 1, parts[2]) / 86400000;
 }
-function failure(reason) {
+function failure(reason, details = {}) {
     flow.set("la_ela_es", null, FILE);
     node.status({fill: "yellow", shape: "ring", text: reason});
-    const out = {payload: null, result: {valid: false, reason, timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}};
+    const out = {payload: null, result: {valid: false, reason, timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false, ...details}};
     return [out, clone(out)];
 }
 function validSample(s) {
@@ -56,7 +59,11 @@ function validSample(s) {
 }
 function validState(s) {
     return s && s.version === 3 && s.unit === "kWh" && typeof s.fingerprint === "string" &&
-        (s.last === null || validSample(s.last)) && Array.isArray(s.days) && s.days.length <= 7 &&
+        (s.last === null || validSample(s.last)) &&
+        (!s.energyGuard || (finite(s.energyGuard.at) && s.energyGuard.at > 0 && (!s.last || s.energyGuard.at >= s.last.ts) &&
+            (s.energyGuard.pendingSince === undefined || (finite(s.energyGuard.pendingSince) && s.energyGuard.pendingSince <= s.energyGuard.at)) && finite(s.energyGuard.charge) && s.energyGuard.charge >= 0 &&
+            finite(s.energyGuard.discharge) && s.energyGuard.discharge >= 0 && typeof s.energyGuard.signature === "string")) &&
+        Array.isArray(s.days) && s.days.length <= 7 &&
         new Set(s.days.map(d => d.date)).size === s.days.length &&
         s.days.every(d => /^\d{4}-\d{2}-\d{2}$/.test(d.date) &&
             [d.charge, d.discharge, d.coveredMs, d.gaps, d.gapMs, d.intervals].every(v => finite(v) && v >= 0) &&
@@ -182,6 +189,10 @@ try {
     if (socTs === null && CFG.requireSocTimestamp) return failure("soc_timestamp_required");
     if (socTs !== null && (socTs > cycle.ts || cycle.ts - socTs > CFG.maxSocAgeMs)) return failure("stale_or_future_soc");
     if (!finite(CFG.capacityKWh) || CFG.capacityKWh <= 0) return failure("invalid_capacity");
+    if (!finite(CFG.maxPowerKW) || CFG.maxPowerKW <= 0 || !finite(CFG.powerSafetyFactor) || CFG.powerSafetyFactor < 1 ||
+        !finite(CFG.maxReportingDelayMs) || CFG.maxReportingDelayMs < 0 || !finite(CFG.counterStepKWh) || CFG.counterStepKWh < 0) {
+        return failure("invalid_energy_guard_configuration");
+    }
     const sample = {ts: cycle.ts, date: dateOf(cycle.ts), soc,
         charge: pending.charge.value, discharge: pending.discharge.value,
         chargeReset: pending.charge.reset, dischargeReset: pending.discharge.reset};
@@ -208,6 +219,34 @@ try {
         state.days.push(day);
     }
     state.days.sort((a, b) => a.date.localeCompare(b.date));
+    // A bounded allowance absorbs delayed/rounded counter updates. It refills
+    // only at the physical power limit plus reserve, not once per message.
+    // One allowance per direction; unused allowance cannot grow without limit.
+    const rateKWhPerMs = CFG.maxPowerKW * CFG.powerSafetyFactor / 3600000;
+    const burstKWh = rateKWhPerMs * CFG.maxReportingDelayMs + CFG.counterStepKWh;
+    const guardSignature = JSON.stringify([CFG.maxPowerKW, CFG.powerSafetyFactor, CFG.maxReportingDelayMs, CFG.counterStepKWh]);
+    let guard = state.energyGuard;
+    if (!guard || guard.signature !== guardSignature) {
+        guard = {at: prev ? prev.ts : sample.ts, charge: burstKWh, discharge: burstKWh, signature: guardSignature};
+    }
+    if (sample.ts < guard.at) return failure("non_increasing_sample_time");
+    const observationGapMs = sample.ts - guard.at;
+    guard.charge = Math.min(burstKWh, guard.charge + observationGapMs * rateKWhPerMs);
+    guard.discharge = Math.min(burstKWh, guard.discharge + observationGapMs * rateKWhPerMs);
+    guard.at = sample.ts;
+    state.energyGuard = guard;
+    function pendingEnergy(reason, dc, dd) {
+        // Persist only the allowance/observation time, NOT new counter or SOC
+        // endpoints. Recovery can therefore include the complete deferred delta.
+        guard.pendingSince = guard.pendingSince ?? sample.ts;
+        flow.set(STATE, state, FILE);
+        flow.set("batt_eff_last_completed_v3", now, MEM);
+        return failure(reason, {calculation_revision: "3.2", pending_since: guard.pendingSince,
+            deferred_charge_kwh: rounded(dc, 6), deferred_discharge_kwh: rounded(dd, 6),
+            energy_guard: {max_power_kw: CFG.maxPowerKW, safety_factor: CFG.powerSafetyFactor,
+                burst_allowance_kwh: rounded(burstKWh, 6), charge_available_kwh: rounded(guard.charge, 6),
+                discharge_available_kwh: rounded(guard.discharge, 6)}, baseline_preserved: true});
+    }
     let acceptedInterval = false;
     if (prev) {
         const dt = sample.ts - prev.ts;
@@ -218,26 +257,30 @@ try {
             const resetSeen = side => sample[`${side}Reset`] !== null || sample[side] < prev[side] || (prev[side] === 0 && sample[side] === 0);
             if (!resetSeen("charge") || !resetSeen("discharge")) return failure("waiting_for_daily_counter_resets");
             reason = "new_day_boundary_excluded";
-        } else if (dt > CFG.maxIntervalMs) {
+        } else if (observationGapMs > CFG.maxIntervalMs) {
             reason = "measurement_gap_excluded";
-        } else if (sample.chargeReset !== prev.chargeReset || sample.dischargeReset !== prev.dischargeReset || dc < 0 || dd < 0) {
+        } else if (sample.chargeReset !== prev.chargeReset || sample.dischargeReset !== prev.dischargeReset) {
             reason = "counter_reset_interval_excluded";
-        } else if (dc > CFG.maxPowerKW * dt / 3600000 + CFG.counterToleranceKWh || dd > CFG.maxPowerKW * dt / 3600000 + CFG.counterToleranceKWh) {
-            reason = "counter_jump_interval_excluded";
+        } else if (dc < -1e-9 || dd < -1e-9) {
+            return pendingEnergy("counter_decrease_pending", dc, dd);
+        } else if (dc > guard.charge + 1e-9 || dd > guard.discharge + 1e-9) {
+            return pendingEnergy("counter_energy_pending", dc, dd);
         } else {
             // Use a current endpoint, not a delayed ten-minute median.
-            const allowedStep = CFG.socStepTolerancePct + CFG.maxPowerKW * dt / 3600000 / CFG.capacityKWh * 100;
+            const allowedStep = CFG.socStepTolerancePct + CFG.maxPowerKW * CFG.powerSafetyFactor * dt / 3600000 / CFG.capacityKWh * 100;
             if (Math.abs(soc - prev.soc) > allowedStep) {
                 let candidate = context.get("socCandidate", MEM);
-                candidate = candidate && sample.ts > candidate.ts && sample.ts - candidate.ts <= CFG.maxSocAgeMs &&
+                candidate = candidate && sample.ts > candidate.ts && sample.ts - candidate.ts <= CFG.socConfirmationMaxGapMs &&
                     Math.abs(soc - candidate.soc) <= CFG.socConfirmationTolerancePct ?
                     {soc, ts: sample.ts, count: candidate.count + 1} : {soc, ts: sample.ts, count: 1};
                 context.set("socCandidate", candidate, MEM);
-                if (candidate.count < CFG.socRebaseConfirmations) return failure("soc_jump_rejected");
+                if (candidate.count < CFG.socRebaseConfirmations) return pendingEnergy("soc_jump_rejected", dc, dd);
                 reason = "confirmed_soc_jump_interval_excluded";
             } else {
-                day.charge += dc;
-                day.discharge += dd;
+                day.charge += Math.max(0, dc);
+                day.discharge += Math.max(0, dd);
+                guard.charge = Math.max(0, guard.charge - Math.max(0, dc));
+                guard.discharge = Math.max(0, guard.discharge - Math.max(0, dd));
                 day.delta += CFG.capacityKWh * (soc - prev.soc) / 100;
                 day.coveredMs += dt;
                 day.intervals++;
@@ -247,6 +290,8 @@ try {
         }
         if (!acceptedInterval) { day.gaps++; day.gapMs += dt; }
     }
+    if (!acceptedInterval) { guard.charge = burstKWh; guard.discharge = burstKWh; }
+    delete guard.pendingSince;
     context.set("socCandidate", null, MEM);
     state.last = sample;
     // One versioned object contains both totals and their matching baseline.
@@ -293,7 +338,11 @@ try {
     flow.set("sum_batt_ela_7d", rounded(discharge), FILE);
     flow.set("la_ela_es", eta, FILE);
     const result = {
-        version: 3, calculation_revision: "3.1", valid, reason: quality, interval_status: reason,
+        version: 3, calculation_revision: "3.2", valid, reason: quality, interval_status: reason,
+        energy_guard: {max_power_kw: CFG.maxPowerKW, safety_factor: CFG.powerSafetyFactor,
+            reporting_delay_ms: CFG.maxReportingDelayMs, counter_step_kwh: CFG.counterStepKWh,
+            burst_allowance_kwh: rounded(burstKWh, 6), charge_available_kwh: rounded(guard.charge, 6),
+            discharge_available_kwh: rounded(guard.discharge, 6)},
         estimate_basis: legacyDays.length ? "legacy_window_endpoints_plus_new_intervals" : "measured_intervals",
         historical_accuracy_verified: false,
         legacy_boundary_gaps: legacyBoundaryGaps,

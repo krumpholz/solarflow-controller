@@ -87,7 +87,7 @@ flow.set("batt_level_ts", Date.now(), "memoryOnly");
 
 Erneuere den Zeitstempel nur, wenn eine echte Messung eingeht. Einen alten zwischengespeicherten SOC alle fünf Sekunden auszulesen macht ihn nicht aktuell. Der Vorbereitungsknoten kopiert beide Werte einmal in den gemeinsamen Abfragezyklus.
 
-Mit Zeitstempel verwirft die Berechnung SOC-Werte, die älter als 15 Sekunden sind oder aus der Zukunft stammen. Ohne Zeitstempel meldet sie ausdrücklich `soc_freshness_verified: false`. Mit `requireSocTimestamp: true` werden Werte ohne überprüfbaren Zeitstempel vollständig abgelehnt. Der optionale Zeitstempel-Schreibknoten ist nicht enthalten, weil der ursprüngliche SOC-Erfassungsflow nicht bereitgestellt wurde.
+Mit Zeitstempel verwirft die Berechnung SOC-Werte, die älter als 120 Sekunden sind oder aus der Zukunft stammen. Ohne Zeitstempel meldet sie ausdrücklich `soc_freshness_verified: false`. Mit `requireSocTimestamp: true` werden Werte ohne überprüfbaren Zeitstempel vollständig abgelehnt. Der optionale Zeitstempel-Schreibknoten ist nicht enthalten, weil der ursprüngliche SOC-Erfassungsflow nicht bereitgestellt wurde.
 
 Current State liefert den zuletzt in HA bekannten Entitätszustand, nicht zwangsläufig eine frische Gerätemessung. Gemeinsame Abfragezyklen koordinieren die Abfragen, machen die zugrunde liegenden Messungen aber nicht physikalisch gleichzeitig. Unveränderte Energiezähler können korrekt sein; deshalb dient `last_updated` allein nicht als Altersgrenze. Verfügbarkeit der Quelle und korrekte Energieintegration müssen vorgelagert geprüft werden. Siehe die [Current-State-Dokumentation](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/current-state.html).
 
@@ -119,11 +119,12 @@ SOC-Werte sind in Stufen aufgelöst und können vom BMS neu kalibriert werden. B
 | Situation | Verhalten |
 | --- | --- |
 | Keine v3-Historie vorhanden | Vorhandenen v2-kWh-Ringpuffer und Live-Tagesstand/Snapshot einmalig übernehmen; anschließend einen Ausgangspunkt für neue Intervalle festlegen. Ohne Altdaten mit aktuellen Zählern und SOC beginnen. |
-| Neustart am selben Tag; letzte gespeicherte Messung höchstens 120 Sekunden alt | Vom zusammengehörigen gespeicherten Ausgangspunkt fortsetzen, einschließlich der Zählerzuwächse seit dieser Messung. |
-| Längere Lücke | Bisherige gemessene Summen behalten; Energie und SOC-Änderung der Lücke ausschließen; neuen Ausgangspunkt festlegen. |
+| Neustart am selben Tag; letztes gültiges abgefragtes Messpaar höchstens 120 Sekunden alt | Vom zusammengehörigen gespeicherten Ausgangspunkt fortsetzen, einschließlich der Zählerzuwächse seit dieser Messung. |
+| Mehr als 120 Sekunden ohne gültiges abgefragtes Messpaar | Bisherige gemessene Summen behalten; Energie und SOC-Änderung der Lücke ausschließen; neuen Ausgangspunkt festlegen. |
 | Lokale Mitternacht | Vorherige Messintervalle behalten; das Intervall über die Tagesrücksetzung ausschließen; mit einem neuen zusammengehörigen Messpaar beginnen. |
-| Zählerstand fällt oder Rücksetzungszeitstempel ändert sich | Das Intervall ausschließen und beide Zähler zusammen mit dem SOC neu als Ausgangspunkt übernehmen. |
-| Unplausibel großer Energiezuwachs | Intervall ausschließen und neuen Ausgangspunkt setzen; einen Zählersprung nicht als physikalische Energie zählen. |
+| Rücksetzungszeitstempel ändert sich | Das Intervall ausschließen und beide Zähler zusammen mit dem SOC neu als Ausgangspunkt übernehmen. |
+| Zählerstand fällt ohne Rücksetzungsnachweis | Unbekannt ausgeben und den akzeptierten Ausgangspunkt bis zur Korrektur oder bestätigten Rücksetzung behalten. |
+| Energiezuwachs überschreitet die verfügbare Toleranz | Unbekannt ausgeben und Ausgangspunkt behalten; den vollständigen zurückgestellten Zuwachs übernehmen, sobald er plausibel ist, oder auf eine Quellenkorrektur warten. |
 | SOC-Sprung über Toleranz plus zeitabhängigen Leistungszuschlag | Verwerfen, ohne den Ausgangspunkt der Energiebilanz zu verändern. Drei aufeinanderfolgende, übereinstimmende Kandidatenpaare lösen eine neue Ausgangsmessung aus; das Sprungintervall bleibt ausgeschlossen. |
 | Kapazität, Entitäts-IDs oder Laufzeit-Zeitzone ändern sich | Vorherigen v3-Zustand unter einem Archivschlüssel erhalten und einen neuen Ausgangspunkt festlegen. |
 
@@ -177,3 +178,29 @@ Die erfolgte Migration wird zusammen mit den übernommenen Summen im persistente
 ## Lizenz und Unabhängigkeit des Projekts
 
 MIT; siehe [LICENSE](../LICENSE). Dies ist ein unabhängiges Community-Projekt ohne Verbindung zu oder Unterstützung durch Zendure. Siehe [Marken- und Projekthinweise](../NOTICE_DE.md) sowie [Haftungs- und Betriebshinweise](../DISCLAIMER_DE.md).
+
+## Verzögerte Home-Assistant-Aktualisierungen (Berechnungsrevision 3.2)
+
+Eine Abfrage alle fünf Sekunden bedeutet nicht, dass der Quellzähler alle fünf Sekunden aktualisiert wird. Current State liefert den zuletzt in Home Assistant bekannten Zustand. Integralsensoren können bei Änderungen der Quelle oder nach ihrem eingestellten `max_sub_interval` aktualisieren. Es gibt keinen allgemeingültigen HA-Aktualisierungstakt. Siehe [Current State](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/current-state.html) und [HA-Integralsensor](https://www.home-assistant.io/integrations/integration/).
+
+Voreinstellungen in der Berechnungsfunktion:
+
+| Einstellung | Wert | Bedeutung |
+| --- | --- | --- |
+| `maxPowerKW` | 2.4 | Bisherige Plausibilitätsgrenze für Laden/Entladen; maximale Entladeleistung der eigenen Anlage prüfen. |
+| `powerSafetyFactor` | 1.20 | 20 % Reserve: Toleranz wächst mit 2,88 kW nach; verändert keine Geräteleistung. |
+| `maxReportingDelayMs` | 120000 | Zwei Minuten Meldetoleranz; auf den tatsächlichen Quelltakt abstimmen. |
+| `counterStepKWh` | 0.1 | Vorsichtig angenommene Zählerauflösung in kWh; anhand des tatsächlichen Entitätszustands prüfen, nicht anhand der gerundeten Oberfläche. |
+| `maxSocAgeMs` | 120000 | Höchstalter eines vorhandenen SOC-Beobachtungszeitstempels. |
+
+Jede Energierichtung erhält eine begrenzte Toleranz von `2,4 × 1,20 × 120 / 3600 + 0,1 = 0,196 kWh`. Akzeptierte Zuwächse verbrauchen diese Toleranz. Verstrichene Zeit füllt sie mit 2,88 kW wieder auf, höchstens bis 0,196 kWh. Die Toleranz wird **nicht bei jeder Abfrage erneut addiert**. Zwischen neuen Ausgangsmessungen kann die insgesamt akzeptierte Energie die anfängliche Toleranz plus den zeitabhängigen Zuwachs nicht überschreiten. Unveränderte Zählerstände erlauben dadurch spätere gröbere Aktualisierungen; wiederholt überhöhte Zuwächse verbrauchen die Toleranz. Der Zustand bleibt bei normalen Neustarts erhalten. Das erste Upgrade oder geänderte Toleranzeinstellungen initialisieren die Toleranz einmalig.
+
+Bei einem zurückgestellten Zuwachs bleiben die zuletzt akzeptierten Energie-/SOC-Ausgangswerte erhalten. `counter_energy_pending` oder `counter_decrease_pending` liefert Unbekannt mit `baseline_preserved: true`. Nach einer plausiblen Korrektur wird die vollständige Differenz übernommen. Weiter eintreffende zusammengehörige Abfragen sind von einem echten Abfrageausfall zu unterscheiden; erst ein Ausfall länger als `maxIntervalMs` löst die Lückenbehandlung aus. Ein dauerhaft über der Toleranz liegender Sprung wird durch bloßes Warten nicht gültig. Bestätigte Rücksetzungen, Tageswechsel und bestätigte SOC-Sprünge setzen weiterhin einen neuen Ausgangspunkt und schließen das ungeklärte Intervall ausdrücklich aus.
+
+Bei 8,640 kWh entsprechen 2400 W **0,463 SOC-Prozentpunkten pro Minute**, mit Reserve **0,556**. Die SOC-Sprungprüfung addiert die vorhandene Meldungs-/Rundungstoleranz von 2 Prozentpunkten zur zeitabhängigen Grenze. Drei aufeinanderfolgende übereinstimmende Werte können weiterhin einen neuen Ausgangspunkt für eine geräteseitige SOC-Neukalibrierung setzen; sie beweisen keine physikalische Ladung während des Sprungs. Der optionale SOC-Zeitstempel muss eine echte Quellenbeobachtung bezeichnen. Ihn nicht bloß deshalb erneuern, weil die Berechnung einen unveränderten zwischengespeicherten Zustand abfragt. Ohne Zeitstempel bleibt die Aktualität ungeprüft.
+
+Diese Voreinstellungen sind Toleranzen, keine gemessenen Garantien für deine Anlage. Energie und SOC können zeitversetzt eintreffen; vorübergehende Wirkungsgradschwankungen bleiben möglich. Tatsächlichen Quelltakt und Auflösung prüfen. Größere Toleranzen schwächen die Fehlererkennung. Bereits durch ältere Revisionen ausgeschlossene Energie wird durch dieses Upgrade nicht nachträglich rekonstruiert.
+
+### Bestehende Installation mit Revision 3.1 aktualisieren
+
+Nur den Inhalt der vorhandenen Berechnungsfunktion „Batterie Wirkungsgrad“ durch `battery-efficiency_DE.js` ersetzen, eigene Kapazitäts-/Entitätseinstellungen beibehalten und den geänderten Knoten deployen. Vorbereitungsknoten, Verbindungen und Kontextspeicher behalten. Den Zustand nicht löschen und den Altpuffer nicht erneut importieren. Beide vollständigen Flow-Exporte enthalten ebenfalls Revision 3.2. In der Diagnose `calculation_revision: "3.2"` und `energy_guard` prüfen. Vorhandene Historie und Übernahmemarkierung bleiben erhalten.

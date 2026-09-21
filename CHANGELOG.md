@@ -6,6 +6,8 @@
 
 ### Changed
 
+- Calculation revision 3.2: persistent bounded energy allowances for delayed/rounded HA updates (2400 W, 20% reserve, 120-second reporting allowance, 0.1 kWh assumed resolution). Hold anomalous increments without losing the accepted baseline; distinguish real observation outages, verify resets, allow SOC timestamps up to 120 seconds. Preserve existing history. 55 regression tests per language plus three localization checks passed.
+
 - Calculation revision 3.1 restores window-endpoint SOC correction for legacy history while preserving new intervals and existing migrated state. Explicit historical uncertainty diagnostics. 44 regression tests per language and three localization checks passed.
 
 - Preserve existing efficiency history through one-time v2 ring/live-day/snapshot migration, a full original-data backup, and duplicate/overlap protection.

@@ -13,7 +13,7 @@ The replacement adds paired measurement cycles and uses a versioned interval led
 - Runtime: Node.js v24.19.0.
 - Timezone: Europe/Berlin.
 - Command: `TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs` from the repository root.
-- Result: **44 tests passed; 0 failed**.
+- Result: **55 tests passed; 0 failed**.
 
 The tests execute the actual Function bodies with simulated Node-RED context, status/error handlers and a controlled clock. They cover:
 
@@ -54,8 +54,12 @@ This is a tested implementation in a simulated execution environment, not a hard
 
 ## German alternative validation
 
-The same 44 regression tests pass for both English and German (88 executions). For German: `EFFICIENCY_LANGUAGE=de TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs`. Three additional checks pass with `node --test round-trip-efficiency/tests/localization.test.cjs`: identical executable core, German diagnostic/status text with stable technical codes, and matching graph/entity references. Total: 91 passing test executions. Live validation remains outstanding.
+The same 55 regression tests pass for both English and German (110 executions). For German: `EFFICIENCY_LANGUAGE=de TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs`. Three additional checks pass with `node --test round-trip-efficiency/tests/localization.test.cjs`: identical executable core, German diagnostic/status text with stable technical codes, and matching graph/entity references. Total: 113 passing test executions. Live validation remains outstanding.
 
 ## Imported SOC balance correction (3.1)
 
 Three additional scenarios cover discontinuous legacy SOC boundaries, updating already-migrated state without remigration or compounding, and adjustment expiration. The reported diagnostic case yields 70.8% with unchanged energy sums and stored daily deltas. Unmeasured SOC change at handover is not invented.
+
+## Reporting-delay regression checks (3.2)
+
+Simulated checks cover minute-batched 2400 W increments, independent coarse charge/discharge updates, repeated excessive increments, full deferred recovery, bounded persistent anomalies, temporary decreasing counters, restart persistence, real observation outages, upgrade from existing migrated state, invalid settings/state, and delayed SOC timestamps at the configured boundary. These are simulated Node-RED contexts, not a live HA/device certification. Actual update cadence and counter resolution still need installation verification.
