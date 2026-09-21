@@ -98,8 +98,7 @@ function deutsch(text) {
     ]) {
         if (text.startsWith(en)) return de + deutsch(text.slice(en.length));
     }
-    return text.replace("% estimate |", "% geschätzt |")
-        .replace(/(\d+)d \|/, "$1 Tage |")
+    return text.replace(/(\d+)d \|/, "$1 Tage |")
         .replace(/([\d.]+)h$/, "$1 Std.");
 }
 // Nur die Anzeige übersetzen; Speicherwerte und Berechnungen unverändert lassen.

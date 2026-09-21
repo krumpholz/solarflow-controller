@@ -99,8 +99,8 @@ stored energy delta = capacity_kWh * (current SOC - previous SOC) / 100
 Within today and the previous six **local calendar days**, the flow sums accepted new intervals plus explicitly marked imported legacy records:
 
 ```text
-estimated efficiency (%) = 100 * (sum(discharge) + sum(stored energy delta)) / sum(charge)
-estimated losses (kWh)   = sum(charge) - sum(discharge) - sum(stored energy delta)
+calculated efficiency (%) = 100 * (sum(discharge) + sum(stored energy delta)) / sum(charge)
+calculated losses (kWh)    = sum(charge) - sum(discharge) - sum(stored energy delta)
 ```
 
 This is an SOC-adjusted energy-balance estimate. It assumes stored energy is approximately proportional to SOC and the configured capacity reflects the battery being measured. It does not measure separate charging and discharging efficiencies. With different start/end SOC, it is not equivalent to a complete AC-to-AC round-trip test. Confirm whether the source counters measure AC energy, DC energy, and any auxiliary consumption; the submitted flow does not establish those measurement boundaries.
@@ -108,6 +108,16 @@ This is an SOC-adjusted energy-balance estimate. It assumes stored energy is app
 Operating SOC limits are not physical measurement validity limits: a real SOC below a configured minimum may still be a valid reading. `batt_min_s` and `batt_max_s` are therefore no longer used to reject or clamp SOC. The nominal-capacity correction in the old formula already algebraically cancelled those limits.
 
 SOC is quantized and may be recalibrated by the BMS. At 8.640 kWh, one percentage point represents 0.0864 kWh in this model. The 0.1 kWh minimum charge threshold is only a numerical guard; it is not an accuracy guarantee. Low-throughput estimates can remain noisy or out of range. Longer measured periods generally reduce the relative effect of endpoint quantization, but gaps and repeated rebaselining add uncertainty.
+
+### Start with an incomplete buffer and status display
+
+A fresh installation first stores a paired counter/SOC baseline. Energy accumulated before this first observation is excluded because its matching initial SOC is unknown. Each later accepted interval contributes immediately. A numeric result is published as soon as the included charge energy reaches `minChargeKWh` (default 0.1 kWh), the calculated result is finite and within 0–100%, and the required SOC data are valid. No seven-day waiting period or full buffer is required. Until those conditions hold, the output is Unknown. Valid migrated history can provide a result on the first paired observation.
+
+For example, accepted intervals containing 1.0 kWh charge, 0.7 kWh discharge and a +0.1 kWh stored-energy change produce `100 × (0.7 + 0.1) / 1.0 = 80%`. A positive stored-energy change increases the numerator; a negative change reduces it. For imported history, the stored-energy term also includes the legacy window-endpoint adjustment described in the migration section; it is not a sum of uncorrected legacy daily SOC differences.
+
+The Function status displays the percentage, days used and covered hours, for example `80% | 1d | 2h`. There is no appended “estimate” label, regardless of buffer fill. Days used counts days with accepted intervals or imported records; it does not certify full days. Covered hours counts accepted new intervals and excludes unknown legacy coverage. The rolling calendar window remains marked `window_complete: false`. Yellow status with legacy data and diagnostic quality fields remain available.
+
+The concise display does not change the calculation's limitations: capacity/SOC proportionality, BMS recalibration, counter accuracy, asynchronous source updates and excluded intervals affect the result. It remains an SOC-based energy-balance estimate as explained above. The internal `estimate_available` / `legacy_estimate_available` codes are retained for compatibility.
 
 ## Gaps, resets and restart behavior
 

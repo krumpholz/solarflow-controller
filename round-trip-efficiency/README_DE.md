@@ -104,8 +104,8 @@ Speicherenergieänderung = capacity_kWh * (aktueller SOC - vorheriger SOC) / 100
 Für heute und die vorherigen sechs **lokalen Kalendertage** summiert der Flow akzeptierte neue Intervalle und ausdrücklich gekennzeichnete übernommene Altdaten:
 
 ```text
-Geschätzter Wirkungsgrad (%) = 100 * (Summe Entladeenergie + Summe Speicherenergieänderung) / Summe Ladeenergie
-Geschätzte Verluste (kWh)    = Summe Ladeenergie - Summe Entladeenergie - Summe Speicherenergieänderung
+Berechneter Wirkungsgrad (%) = 100 * (Summe Entladeenergie + Summe Speicherenergieänderung) / Summe Ladeenergie
+Berechnete Verluste (kWh)    = Summe Ladeenergie - Summe Entladeenergie - Summe Speicherenergieänderung
 ```
 
 Das ist eine SOC-korrigierte Schätzung aus der Energiebilanz. Sie setzt voraus, dass die gespeicherte Energie annähernd proportional zum SOC ist und die eingestellte Kapazität zur gemessenen Batterie passt. Separate Lade- und Entladewirkungsgrade werden nicht ermittelt. Bei unterschiedlichen Anfangs- und End-SOC ist das Ergebnis nicht mit einem vollständigen AC-zu-AC-Zyklustest gleichzusetzen. Prüfe, ob die verwendeten Zähler AC-Energie, DC-Energie und gegebenenfalls Hilfsverbräuche erfassen; aus dem bereitgestellten Flow gehen diese Messgrenzen nicht hervor.
@@ -113,6 +113,16 @@ Das ist eine SOC-korrigierte Schätzung aus der Energiebilanz. Sie setzt voraus,
 Betriebliche SOC-Grenzen sind keine physikalischen Gültigkeitsgrenzen der Messung: Ein tatsächlicher SOC unterhalb eines eingestellten Minimums kann trotzdem korrekt sein. `batt_min_s` und `batt_max_s` werden deshalb nicht mehr zum Verwerfen oder Begrenzen des SOC verwendet. In der bisherigen Formel kürzten sich diese Grenzen bei der Kapazitätskorrektur bereits rechnerisch heraus.
 
 SOC-Werte sind in Stufen aufgelöst und können vom BMS neu kalibriert werden. Bei 8,640 kWh entspricht ein Prozentpunkt in diesem Modell 0,0864 kWh. Die Mindestladeenergie von 0,1 kWh ist nur eine rechnerische Untergrenze und keine Genauigkeitsgarantie. Bei geringem Energiedurchsatz können Schätzwerte schwanken oder außerhalb des gültigen Bereichs liegen. Längere Messzeiträume reduzieren im Allgemeinen den relativen Einfluss der SOC-Auflösung an den Intervallgrenzen. Lücken und wiederholtes Festlegen neuer Ausgangspunkte erhöhen jedoch die Unsicherheit.
+
+### Start mit unvollständigem Puffer und Statusanzeige
+
+Eine neue Installation speichert zunächst ein zusammengehöriges Energiezähler-/SOC-Messpaar als Ausgangspunkt. Energie vor dieser ersten Beobachtung wird ausgeschlossen, weil der passende Anfangs-SOC unbekannt ist. Jedes spätere akzeptierte Intervall geht unmittelbar in die Berechnung ein. Ein Zahlenwert wird ausgegeben, sobald die berücksichtigte Ladeenergie `minChargeKWh` erreicht (standardmäßig 0,1 kWh), das Ergebnis endlich und im Bereich 0–100 % liegt und die erforderlichen SOC-Daten gültig sind. Es gibt keine siebentägige Wartezeit; der Puffer muss nicht vollständig gefüllt sein. Bis diese Bedingungen erfüllt sind, wird Unbekannt ausgegeben. Gültige übernommene Historie kann bereits beim ersten zusammengehörigen Messpaar einen Wert liefern.
+
+Beispiel: Akzeptierte Intervalle mit 1,0 kWh Ladeenergie, 0,7 kWh Entladeenergie und +0,1 kWh Speicherenergieänderung ergeben `100 × (0,7 + 0,1) / 1,0 = 80 %`. Eine positive Speicherenergieänderung erhöht den Zähler der Formel, eine negative verringert ihn. Bei übernommenen Altdaten enthält dieser Term zusätzlich die im Migrationsabschnitt beschriebene Korrektur anhand der historischen Fenstergrenzen; es werden nicht einfach die unkorrigierten historischen SOC-Tagesdifferenzen summiert.
+
+Der Function-Status zeigt Prozentwert, verwendete Tage und erfasste Stunden, beispielsweise `80% | 1 Tage | 2 Std.`. Der nachgestellte Zusatz „geschätzt“ entfällt unabhängig vom Füllstand. Verwendete Tage sind Tage mit akzeptierten Intervallen oder übernommenen Datensätzen, keine Bestätigung vollständiger Tage. Die Stunden zählen akzeptierte neue Intervalle; unbekannte historische Zeitabdeckung bleibt ausgenommen. Das gleitende Kalenderfenster bleibt mit `window_complete: false` gekennzeichnet. Der gelbe Status bei Altdaten und die Qualitätsangaben in der Diagnose bleiben verfügbar.
+
+Die kompakte Anzeige ändert nichts an den Aussagegrenzen: Kapazitäts-/SOC-Proportionalität, BMS-Neukalibrierungen, Zählergenauigkeit, zeitversetzte Quellenaktualisierungen und ausgeschlossene Intervalle beeinflussen das Ergebnis. Es bleibt die oben erläuterte SOC-basierte Schätzung aus der Energiebilanz. Die internen Codes `estimate_available` / `legacy_estimate_available` bleiben aus Kompatibilitätsgründen erhalten.
 
 ## Lücken, Rücksetzungen und Neustarts
 

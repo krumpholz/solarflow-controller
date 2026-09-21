@@ -369,7 +369,7 @@ try {
     msg.payload = eta;
     msg.result = result;
     node.status({fill: valid && !legacyDays.length ? "green" : "yellow", shape: valid ? "dot" : "ring",
-        text: valid ? `${eta}% estimate | ${result.days_used}d | ${result.covered_hours}h` : quality});
+        text: valid ? `${eta}% | ${result.days_used}d | ${result.covered_hours}h` : quality});
     return [msg, clone(msg)];
 } catch (err) {
     node.error(`Efficiency calculation stopped: ${err.message}`);

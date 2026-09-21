@@ -6,6 +6,8 @@
 
 ### Geändert
 
+- Nachgestellten Zusatz „geschätzt“ im Function-Status beider Sprachversionen entfernt; Berechnung, Start mit Teilpuffer und Aussagegrenzen erläutert. Berechnungsrevision bleibt 3.2.
+
 - Berechnungsrevision 3.2: dauerhaft gespeicherte, begrenzte Energietoleranz für verzögerte/gerundete HA-Aktualisierungen (2400 W, 20 % Reserve, 120 Sekunden Meldetoleranz, angenommene Auflösung 0,1 kWh). Auffällige Zuwächse ohne Verlust des Ausgangspunkts zurückstellen; echte Abfrageausfälle unterscheiden, Rücksetzungen prüfen, SOC-Zeitstempel bis 120 Sekunden zulassen. Vorhandene Historie bleibt erhalten. 55 Regressionstests je Sprache und drei Sprachprüfungen bestanden.
 
 - Berechnungsrevision 3.1: Historische SOC-Korrektur wieder anhand der Fenstergrenzen; neue Intervalle bleiben unverändert. Vorhandener migrierter Puffer wird weiterverwendet. Historische Unsicherheiten werden ausdrücklich angezeigt. 44 Regressionstests je Sprache und drei Sprachprüfungen bestanden.

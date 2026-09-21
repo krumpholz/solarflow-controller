@@ -73,8 +73,7 @@ function deutsch(text) {
     ]) {
         if (text.startsWith(en)) return de + deutsch(text.slice(en.length));
     }
-    return text.replace("% estimate |", "% geschätzt |")
-        .replace(/(\d+)d \|/, "$1 Tage |")
+    return text.replace(/(\d+)d \|/, "$1 Tage |")
         .replace(/([\d.]+)h$/, "$1 Std.");
 }
 // Nur die Anzeige übersetzen; Speicherwerte und Berechnungen unverändert lassen.
@@ -445,7 +444,7 @@ try {
     msg.payload = eta;
     msg.result = result;
     node.status({fill: valid && !legacyDays.length ? "green" : "yellow", shape: valid ? "dot" : "ring",
-        text: valid ? `${eta}% estimate | ${result.days_used}d | ${result.covered_hours}h` : quality});
+        text: valid ? `${eta}% | ${result.days_used}d | ${result.covered_hours}h` : quality});
     return [msg, clone(msg)];
 } catch (err) {
     node.error(`Efficiency calculation stopped: ${err.message}`);
