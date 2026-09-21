@@ -2,36 +2,30 @@
 
 **English** | [Deutsch](CHANGELOG_DE.md)
 
-## Unreleased
+Revision numbers below refer to the efficiency calculation, not the separately maintained BLE firmware. The persistent state schema remains version 3.
 
-### Changed
+## 3.3
 
-- Revision 3.3 publication candidate: remove automatic v2 history import; new installations start empty while existing v3 state stays compatible. Replace personal-history regression fixtures with synthetic state. Rewrite bilingual setup guides with external variables, HA input sensor creation, SOC acquisition, output integration requirements and final deploy checks; add optional HA energy-helper YAML. 47 regression tests per language and three localization checks pass.
+- New installations start from their first valid paired measurement; automatic v2 history import removed.
+- Existing v3 state remains compatible, including evaluation of previously stored historical records until they expire.
+- English and German flows, setup guides, external-variable reference and optional HA energy-sensor YAML.
+- Concise Function status without an appended estimate label; calculation assumptions are documented in the README.
+- Repository overview and supporting documentation describe the supplied monitoring component and its actual requirements.
 
-- Remove the appended estimate label from Function status in both languages; document calculation, partial-buffer startup and interpretation. Calculation revision remains 3.2.
+## 3.2
 
-- Calculation revision 3.2: persistent bounded energy allowances for delayed/rounded HA updates (2400 W, 20% reserve, 120-second reporting allowance, 0.1 kWh assumed resolution). Hold anomalous increments without losing the accepted baseline; distinguish real observation outages, verify resets, allow SOC timestamps up to 120 seconds. Preserve existing history. 55 regression tests per language plus three localization checks passed.
+- Persistent, bounded allowances for delayed and rounded HA energy updates.
+- Defaults: 2.4 kW, 20% reserve, 120-second reporting allowance and 0.1 kWh resolution allowance.
+- Defer anomalous counter increments without advancing the accepted baseline; distinguish observation outages and confirmed resets.
+- SOC timestamp age allowance of 120 seconds.
 
-- Calculation revision 3.1 restores window-endpoint SOC correction for legacy history while preserving new intervals and existing migrated state. Explicit historical uncertainty diagnostics. 44 regression tests per language and three localization checks passed.
+## 3.1
 
-- Preserve existing efficiency history through one-time v2 ring/live-day/snapshot migration, a full original-data backup, and duplicate/overlap protection.
-- Extend the regression suite to 41 passing tests, including restart-safe migration.
+- Window-endpoint SOC adjustment for already imported history, preserving newly measured interval accounting.
+- Explicit diagnostics for historical SOC discontinuities and uncertainty.
 
-### Added
+## Initial v3 implementation
 
-- Separate German flow alternative with original node names, translated status/error messages and reproducible generation from the English core; 85 passing test executions across both languages and localization checks.
-
-- Full German translations of the project overview, setup and migration guide, validation report, and supporting project documentation, with reciprocal language links.
-
-- Version 3 of the SOC-adjusted efficiency monitoring utility: paired measurements, interval-based energy/SOC accounting, automatic persistent state, conservative reset/gap handling, and explicit invalid results.
-- Importable English Node-RED monitoring flow, setup instructions, and simulated-context regression tests.
-- Preserved the original text-file download path with the updated Function body; a complete flow upgrade is required.
-
-- Initial English README describing project scope and current publication status.
-- MIT license, matching the license choice of the related BLE controller.
-- Independent-project, trademark, and operating-responsibility notices.
-- Contribution guidance and exclusions for local secrets and generated files.
-
-The controller flow has not yet been published in this repository.
-
-
+- Paired cycles, aligned energy/SOC intervals and automatic persistent state.
+- English/German interfaces and documentation; MIT license and independent-project notices.
+- The initial v2 import path was removed in revision 3.3.

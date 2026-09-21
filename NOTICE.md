@@ -10,6 +10,5 @@ This project is not an official Zendure product, firmware release, or support ch
 
 Compatibility depends on the battery hardware, firmware, measurement sources, and communication integration used. Vendor firmware or integration updates may change device behavior.
 
-The related ESPHome SolarFlow BLE Controller is maintained separately:
-https://github.com/krumpholz/esphome-solarflow-ble
+The related [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) is maintained separately.
 

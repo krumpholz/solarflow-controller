@@ -4,7 +4,7 @@
 
 Node-RED monitoring flow for battery energy efficiency. It reads daily energy counters and state of charge (SOC), calculates an energy balance and publishes a percentage to Home Assistant. It sends no battery control commands.
 
-**Publication candidate: calculation revision 3.3.** Automated simulated-context tests are provided. Earlier revisions have received limited live feedback; final deployment acceptance remains pending. The percentage is a calculated SOC-based estimate, not a certified round-trip measurement.
+**Calculation revision: 3.3.**
 
 ## What is created automatically?
 
@@ -77,6 +77,8 @@ return msg;
 ```
 
 Set that timestamp only on receipt of a real current measurement; for delayed messages use a trustworthy source observation timestamp instead. Repeatedly reading an old cached HA state does not make it fresh. A state-change-only event may not arrive when SOC stays constant, so it cannot by itself prove periodic source freshness. If freshness cannot be established, supply only `batt_level`, clear any stale `batt_level_ts`, and leave `requireSocTimestamp: false`; diagnostics then explicitly report unverified freshness. With a timestamp present, readings older than `maxSocAgeMs` (120 seconds) or in the future are rejected even in optional mode. Scale tenths-of-percent only if that is actually the source unit. Repopulate the memory values after a Node-RED restart.
+
+`soc_freshness_verified` checks the presence and allowed age of the supplied timestamp; it cannot verify how the external writer generated it. If `batt_level_ts` is set with `Date.now()` after a Current State poll, `true` confirms only a recent poll, not a fresh BLE/device measurement. Use a trustworthy source observation timestamp to establish device freshness.
 
 ## Context storage and installation
 
@@ -161,8 +163,6 @@ Revision 3.3 has **no automatic v2 migration** and never reads the old ring/live
 
 For an existing 3.2 deployment, back up the flow/context, replace only the body of the calculation Function with [battery-efficiency.js](battery-efficiency.js) or [battery-efficiency_DE.js](battery-efficiency_DE.js), preserve your CFG values and deploy the modified node. Do not delete state or reimport a second flow for this update. Schema `version: 3` stays compatible; diagnostics identify `calculation_revision: "3.3"`.
 
-For the final deployment check, capture diagnostics after deployment, after a real charge-counter increase, after a discharge increase, after midnight and after a controlled restart. Check input values against included increments, `interval_status`, `excluded_intervals`, `energy_guard`, SOC freshness and persistence. A known measurement gap may legitimately exclude an interval; investigate unexpected exclusions. Share logs without credentials. The final live acceptance is pending.
+## Files
 
-## Files and verification
-
-Function sources: [calculation](battery-efficiency.js), [preparation](prepare-cycle.js); German equivalents have `_DE` suffixes. The existing [text download](function%20node%20-%20Round-Trip%20Efficiency.txt) matches the English calculation. `build-german-flow.py` generates the German interface from the identical executable core. [VALIDATION.md](VALIDATION.md) documents test scope. This flow has no embedded user energy history.
+Function sources: [calculation](battery-efficiency.js), [preparation](prepare-cycle.js); German equivalents have `_DE` suffixes. The existing [text download](function%20node%20-%20Round-Trip%20Efficiency.txt) matches the English calculation. `build-german-flow.py` generates the German interface from the identical executable core. This flow has no embedded user energy history.

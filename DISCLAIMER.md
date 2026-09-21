@@ -1,18 +1,13 @@
-# Disclaimer
+# Scope and warranty
 
 **English** | [Deutsch](DISCLAIMER_DE.md)
 
-This is an unofficial community project for automated battery and grid-power control.
+SolarFlow Controller is an unofficial community project. It is not affiliated with, sponsored by, certified by, or endorsed by Zendure. Product names and trademarks belong to their respective owners.
 
-It is not affiliated with, sponsored by, certified by, or endorsed by Zendure. Product names and trademarks belong to their respective owners.
+The component currently supplied in this repository calculates battery efficiency. It reads measurements and publishes a Home Assistant sensor; it does not issue charging, discharging, power-limit or operating-mode commands.
 
-Controller software can send charging, discharging, power-limit, and operating-mode commands to an energy-storage system. Users are responsible for verifying that configured limits and modes are appropriate for their own hardware, installation, electrical system, local rules, and vendor requirements.
+The result depends on energy-counter accuracy, measurement boundaries, configured battery capacity, SOC estimation, BMS recalibration, source timing and excluded intervals. It is not a certified efficiency measurement and does not guarantee a particular energy saving or self-consumption level. The component README explains its formula and data handling.
 
-The controller does not replace manufacturer protection functions, the battery management system, or certified grid protection. A grid-power target does not guarantee zero import or export, uninterrupted power, or a particular level of self-consumption.
+Users are responsible for matching inputs, units, capacity, power limits, timezone and persistent storage to their installation. The monitoring flow does not replace manufacturer protection functions, the battery management system or certified grid protection. Any separate automation that uses its output must handle Unknown and unavailable data appropriately.
 
-Incorrect measurements, stale data, communication failures, firmware changes, or conflicting automations may cause unexpected behavior. Verify startup, shutdown, communication loss, and recovery in the actual installation. Stopping the controller does not necessarily clear the last command accepted by the battery.
-
-The repository's initial documentation does not constitute a tested controller release. Compatibility and validation must be assessed for the specific published version and installation.
-
-The software is provided without warranty. See [LICENSE](LICENSE).
-
+The software is provided without warranty under the [MIT License](LICENSE).

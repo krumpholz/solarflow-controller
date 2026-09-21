@@ -4,7 +4,7 @@
 
 Node-RED-Auswertung für den Batterie-Wirkungsgrad. Der Flow liest Tagesenergiezähler und Ladezustand (SOC), berechnet eine Energiebilanz und veröffentlicht einen Prozentwert in Home Assistant. Er sendet keine Steuerbefehle an die Batterie.
 
-**Veröffentlichungskandidat: Berechnungsrevision 3.3.** Automatisierte Tests mit simulierten Kontexten sind vorhanden. Für frühere Revisionen liegen einzelne Rückmeldungen aus dem laufenden Betrieb vor; der abschließende Deploy-Test steht noch aus. Der Prozentwert ist eine berechnete SOC-basierte Schätzung, keine zertifizierte Roundtrip-Messung.
+**Berechnungsrevision: 3.3.**
 
 ## Was wird automatisch angelegt?
 
@@ -77,6 +77,8 @@ return msg;
 ```
 
 Den Zeitstempel nur beim Eingang einer echten aktuellen Messung setzen; für verzögert eintreffende Nachrichten stattdessen einen verlässlichen Quellenzeitstempel verwenden. Wiederholtes Lesen eines alten HA-Zustands macht ihn nicht frisch. Ein Ereignis nur bei Zustandsänderung bleibt bei konstantem SOC möglicherweise aus und beweist allein keine regelmäßige Quellenaktualisierung. Ist die Aktualität nicht nachweisbar, nur `batt_level` bereitstellen, einen alten `batt_level_ts` entfernen und `requireSocTimestamp: false` beibehalten. Die Diagnose meldet dann ausdrücklich ungeprüfte Aktualität. Bei vorhandenem Zeitstempel werden Werte älter als `maxSocAgeMs` (120 Sekunden) oder aus der Zukunft auch im optionalen Modus abgelehnt. Zehntelprozent nur umrechnen, wenn dies tatsächlich die Quelleneinheit ist. Nach einem Node-RED-Neustart die Speicherwerte neu aus der Quelle befüllen.
+
+`soc_freshness_verified` prüft Vorhandensein und zulässiges Alter des übergebenen Zeitstempels; die Berechnung kann dessen Erzeugung im externen Schreibknoten nicht überprüfen. Wird `batt_level_ts` nach einer Current-State-Abfrage mit `Date.now()` gesetzt, bestätigt `true` nur eine kürzliche Abfrage, keine frische BLE-/Gerätemessung. Für Geräteaktualität ist ein verlässlicher Quellenbeobachtungszeitstempel erforderlich.
 
 ## Kontextspeicher und Einbau
 
@@ -161,8 +163,6 @@ Revision 3.3 hat **keine automatische v2-Übernahme** und liest die alten Ring-/
 
 Für ein vorhandenes 3.2-System Flow/Kontext sichern und nur den Inhalt der Berechnungsfunktion „Batterie Wirkungsgrad“ durch [battery-efficiency_DE.js](battery-efficiency_DE.js) oder [battery-efficiency.js](battery-efficiency.js) ersetzen. Eigene CFG-Werte beibehalten und geänderten Knoten deployen. Zustand nicht löschen und für dieses Update keinen zweiten Flow importieren. Schema `version: 3` bleibt kompatibel; die Diagnose zeigt `calculation_revision: "3.3"`.
 
-Für den abschließenden Deploy-Test Diagnosen direkt nach Deploy, nach echtem Ladezählerzuwachs, nach Entladezuwachs, nach Mitternacht und nach kontrolliertem Neustart aufnehmen. Eingabewerte mit berücksichtigten Zuwächsen vergleichen sowie `interval_status`, `excluded_intervals`, `energy_guard`, SOC-Aktualität und Persistenz prüfen. Bei bekannter Messlücke kann ein Intervall berechtigt ausgeschlossen werden; unerwartete Ausschlüsse untersuchen. Logs ohne Zugangsdaten teilen. Der abschließende Live-Test steht noch aus.
+## Dateien
 
-## Dateien und Prüfung
-
-Funktionsquellen: [Berechnung](battery-efficiency.js), [Vorbereitung](prepare-cycle.js); deutsche Gegenstücke tragen `_DE`. Der vorhandene [Textdownload](function%20node%20-%20Round-Trip%20Efficiency.txt) entspricht der englischen Berechnung. `build-german-flow.py` erzeugt die deutsche Oberfläche aus dem identischen ausführbaren Rechenkern. [VALIDATION_DE.md](VALIDATION_DE.md) beschreibt den Prüfumfang. Der Flow enthält keine persönlichen Energieverlaufsdaten.
+Funktionsquellen: [Berechnung](battery-efficiency.js), [Vorbereitung](prepare-cycle.js); deutsche Gegenstücke tragen `_DE`. Der vorhandene [Textdownload](function%20node%20-%20Round-Trip%20Efficiency.txt) entspricht der englischen Berechnung. `build-german-flow.py` erzeugt die deutsche Oberfläche aus dem identischen ausführbaren Rechenkern. Der Flow enthält keine persönlichen Energieverlaufsdaten.

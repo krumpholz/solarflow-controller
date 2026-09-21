@@ -1,94 +1,49 @@
-# SolarFlow – Dynamische Batterie- und Netzleistungsregelung
+# SolarFlow Controller
 
 [English](README.md) | **Deutsch**
 
-Node-RED-Regelungsprojekt für SolarFlow-Batteriesysteme. Es verbindet Messwerte und Batterie-Steuerungsentitäten aus Home Assistant, um Laden, Entladen und Netzleistung zu regeln.
+Node-RED-Werkzeuge für SolarFlow-Batteriesysteme und Home Assistant.
 
 > Unabhängiges, inoffizielles Community-Projekt. Es besteht keine Verbindung zu Zendure; das Projekt wird von Zendure weder gesponsert noch zertifiziert oder unterstützt.
 
-## Projektstand
+## Verfügbarer Bestandteil
 
-Das Repository enthält einen [Flow zur SOC-korrigierten Wirkungsgradschätzung über sieben Tage](round-trip-efficiency/README_DE.md), die Einbauanleitung auf Deutsch und Englisch sowie automatisierte Regressionstests. Dieses Auswertungswerkzeug sendet keine Steuerbefehle an die Batterie. Die Fassung ist als Veröffentlichungskandidat vorbereitet; der abschließende Deploy-Test steht noch aus.
+Das Repository enthält einen **Flow für den SOC-korrigierten Batterie-Wirkungsgrad über sieben Tage**, auf Deutsch und Englisch. Er berechnet eine Energiebilanz aus täglichen Lade-/Entladezählern und dem Ladezustand der Batterie, speichert seinen Messzustand über Neustarts hinweg und veröffentlicht einen Prozentwert in Home Assistant.
 
-Die eigentliche Node-RED-Lade-/Entladeregelung wurde hier noch nicht veröffentlicht.
+**Hier beginnen:** [Einbau und Berechnung](round-trip-efficiency/README_DE.md) · [Deutscher Flow](round-trip-efficiency/flow_DE.json) · [Englischer Flow](round-trip-efficiency/flow.json)
 
-## Ziel
+Der enthaltene Flow wertet den Wirkungsgrad aus und sendet keine Batterie-Steuerbefehle. Eine Lade-/Entlade- und Netzleistungsregelung ist in diesem Repository nicht enthalten.
 
-Die Regelung soll den PV-Eigenverbrauch erhöhen und die gemessene Netzleistung nahe einem einstellbaren Zielwert um null halten. Im Mittelpunkt steht ein stabiler Betrieb bei wechselnder Hauslast und Solarerzeugung.
+## Voraussetzungen
 
-Zum vorgesehenen Funktionsumfang gehören:
+- Home Assistant und Node-RED mit den Home-Assistant-Websocket-Knoten.
+- Getrennte tägliche Lade- und Entladeenergiezähler in kWh.
+- Batterie-SOC in Prozent, auf demselben Node-RED-Flow-Tab bereitgestellt.
+- Eingestellte Batteriekapazität, Leistungsgrenzen, Zeitzone und dauerhafte Kontextspeicher.
+- Die Node-RED-Begleitintegration in Home Assistant für den Ergebnissensor.
 
-- Laden mit verfügbarem PV-Überschuss.
-- Entladen zur Deckung des Hausverbrauchs innerhalb eingestellter Leistungs- und SOC-Grenzen.
-- Ein einstellbares Netzleistungsfenster mit stabilem Haltezustand.
-- Begrenzte Leistungsrampen und bestätigte Richtungswechsel zur Verringerung von Schwingungen.
-- Reaktion auf plötzliche Lastanstiege und fallende PV-Leistung.
-- Prüfung des Messwertalters und Überwachung des angeforderten gegenüber dem gemeldeten Batteriemodus.
+Die [Komponentenanleitung](round-trip-efficiency/README_DE.md) nennt alle externen Eingaben und erklärt das Erstellen der Energiesensoren, die SOC-Bereitstellung und die Ausgabe. Eingabesensoren werden beim Flow-Import nicht angelegt. Neuinstallationen beginnen mit dem ersten gültigen Messpaar; ein vollständig gefüllter Siebentagepuffer ist für die erste Ausgabe nicht erforderlich.
 
-Diese Punkte beschreiben den Projektumfang. Das Verhalten einer konkreten Version, Standardwerte, unterstützte Hardware und Prüfergebnisse werden zusammen mit dem veröffentlichten Regelungsflow dokumentiert. Netzleistung nahe null ist ein Regelungsziel, keine Garantie für vollständig vermiedenen Bezug oder Einspeisung.
+## Zugehöriges BLE-Projekt
 
-## Systemübersicht
+Der [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) stellt eine separate lokale Kommunikationsschnittstelle bereit. Firmware und Einbauanleitung werden dort gepflegt. Die Wirkungsgrad-Auswertung kann dessen Messwerte oder eine andere geeignete Quelle mit passenden Einheiten und Messgrenzen verwenden.
 
-| Bestandteil | Aufgabe |
+## Umfang und Einordnung
+
+Das Ergebnis verwendet gemessene Energiezähler und eine kapazitätsbasierte SOC-Korrektur. SOC-Auflösung, BMS-Neukalibrierung, Quellenzeitversatz und fehlende Intervalle beeinflussen die Genauigkeit. Es handelt sich nicht um eine zertifizierte AC-zu-AC-Roundtrip-Messung. Siehe Berechnungsanleitung und [Hinweise zu Umfang und Gewährleistung](DISCLAIMER_DE.md).
+
+## Wegweiser durch das Repository
+
+| Ablage | Inhalt |
 | --- | --- |
-| Netzzähler und PV-Messungen | Liefern die Rückmeldung für den Regelkreis. |
-| Home Assistant | Stellt Messwerte und Batterie-Steuerungsentitäten bereit. |
-| Node-RED | Führt die Regelung aus und berechnet Leistungs- und Modusanforderungen. |
-| Kommunikationsintegration der Batterie | Übermittelt Anforderungen und meldet den Gerätezustand zurück. |
-| SolarFlow-Batteriesystem | Führt unterstützte Befehle innerhalb seiner Gerätegrenzen aus. |
-
-Der zugehörige [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) stellt eine lokale BLE-Kommunikationsschnittstelle bereit. Dieses Repository enthält die übergeordnete Energieregelung. Die BLE-Firmware wird in ihrem eigenen Repository gepflegt.
-
-## Vorgesehene Umgebung
-
-- Node-RED und Home Assistant.
-- Netz-, PV- und Batterieleistungsmessungen mit bekannten Einheiten und Vorzeichen.
-- Rückmeldung von Ladezustand und Betriebszustand der Batterie.
-- Eine kompatible Schnittstelle für Lade-/Entladegrenzen und Betriebsarten.
-
-Die genauen Abhängigkeiten, Entitätszuordnungen, unterstützten Versionen und Importanweisungen für die Regelung folgen mit deren erster Flow-Veröffentlichung. Bei bestehenden Anlagen müssen Entitäten und Parameter individuell geprüft werden.
-
-## Vorzeichen der Leistung
-
-Für die Regelung ist folgende vereinheitlichte Konvention vorgesehen:
-
-| Messwert | Positiv | Negativ |
-| --- | --- | --- |
-| Netzleistung | Netzbezug | Netzeinspeisung |
-| Batterieleistung | Laden | Entladen |
-
-PV-Erzeugung wird als nichtnegative Leistung in Watt angegeben. Datenquellen können andere Vorzeichen verwenden. Prüfe und vereinheitliche die Werte vor dem Aktivieren der Regelung.
-
-## Betriebshinweise
-
-Lies die [Haftungs- und Betriebshinweise](DISCLAIMER_DE.md), bevor du später veröffentlichten Regelungscode einsetzt.
-
-- Herstellerschutzfunktionen und Hardwaregrenzen müssen wirksam bleiben.
-- Prüfe Messrichtung, Einheiten, Zeitstempel, Leistungsgrenzen und SOC-Grenzen deiner Anlage.
-- Vermeide widersprüchliche Befehle mehrerer Automationen oder Anwendungen.
-- Prüfe Start, Kommunikationsausfall, veraltete Messwerte und Wiederanlauf vor unbeaufsichtigtem Betrieb.
-- Das Deaktivieren einer Automation oder ein Kommunikationsausfall setzt den zuletzt von der Batterie angenommenen Befehl nicht zwangsläufig zurück.
-
-Das Projekt stellt keinen zertifizierten Netzschutz bereit und ersetzt kein Batteriemanagementsystem.
-
-## Dateien im Repository
-
-| Datei | Inhalt |
-| --- | --- |
-| [round-trip-efficiency](round-trip-efficiency/README_DE.md) | Wirkungsgrad-Auswertung, Voraussetzungen, Einbau und Tests |
-| [LICENSE](LICENSE) | MIT-Lizenz im englischen Original |
-| [NOTICE_DE.md](NOTICE_DE.md) | Unabhängigkeit des Projekts und Markenhinweise |
-| [DISCLAIMER_DE.md](DISCLAIMER_DE.md) | Einsatzbereich, Betriebsverantwortung und Gewährleistungsausschluss |
-| [CONTRIBUTING_DE.md](CONTRIBUTING_DE.md) | Hinweise zur Mitarbeit und zu Fehlermeldungen |
+| [round-trip-efficiency](round-trip-efficiency/README_DE.md) | Flow, Funktionsquellen, Einbau und Berechnungsbeschreibung |
+| [Energiesensor-Beispiel](round-trip-efficiency/examples/home-assistant-energy.yaml) | Optionale HA-Konfiguration von vorzeichenbehafteter Batterieleistung zu kWh-Tageszählern |
 | [CHANGELOG_DE.md](CHANGELOG_DE.md) | Änderungshistorie |
-| [.gitignore](.gitignore) | Ausschluss üblicher lokaler Zugangsdaten und erzeugter Dateien |
+| [CONTRIBUTING_DE.md](CONTRIBUTING_DE.md) | Fehlermeldungen, Mitarbeit und Entwicklerhinweise |
+| [NOTICE_DE.md](NOTICE_DE.md) | Unabhängigkeit und Markenhinweise |
+| [DISCLAIMER_DE.md](DISCLAIMER_DE.md) | Umfang, Messgrenzen und Gewährleistung |
+| [LICENSE](LICENSE) | MIT-Lizenz |
 
-## Mitarbeit
+## Lizenz
 
-Fehlermeldungen, Verbesserungen der Dokumentation und Beiträge sind willkommen. Siehe [CONTRIBUTING_DE.md](CONTRIBUTING_DE.md). Entferne Zugangsdaten und persönliche Anlagendaten aus allen geteilten Flows und Protokollen.
-
-## Lizenz und Unabhängigkeit
-
-Veröffentlicht unter der [MIT-Lizenz](LICENSE).
-
-Zendure, SolarFlow und andere Produktnamen gehören ihren jeweiligen Rechteinhabern. Sie werden ausschließlich zur Beschreibung der Kompatibilität und des Zusammenspiels verwendet. Eine Verbindung zum Hersteller oder dessen Unterstützung wird nicht behauptet. Siehe [NOTICE_DE.md](NOTICE_DE.md).
+Veröffentlicht unter der [MIT-Lizenz](LICENSE). Produktnamen gehören den jeweiligen Rechteinhabern und beschreiben ausschließlich die Kompatibilität. Siehe [NOTICE_DE.md](NOTICE_DE.md).

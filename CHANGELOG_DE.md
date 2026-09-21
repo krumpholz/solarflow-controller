@@ -2,32 +2,30 @@
 
 [English](CHANGELOG.md) | **Deutsch**
 
-## Noch nicht als Release veröffentlicht
+Die folgenden Revisionen beziehen sich auf die Wirkungsgradberechnung, nicht auf die separat gepflegte BLE-Firmware. Das dauerhafte Zustandsschema bleibt Version 3.
 
-### Geändert
+## 3.3
 
-- Veröffentlichungskandidat Revision 3.3: automatische v2-Historienübernahme entfernt; Neuinstallationen beginnen leer, vorhandener v3-Zustand bleibt kompatibel. Persönliche Historie in Regressionstests durch synthetischen Zustand ersetzt. Zweisprachige Einbauanleitungen mit externen Variablen, HA-Eingabesensoren, SOC-Erfassung, Ausgabeintegration und abschließenden Deploy-Prüfungen überarbeitet; optionales YAML für Energie-Helfer ergänzt. 47 Regressionstests je Sprache und drei Sprachprüfungen bestanden.
+- Neuinstallationen beginnen mit dem ersten gültigen Messpaar; automatische v2-Historienübernahme entfernt.
+- Bestehender v3-Zustand bleibt kompatibel, einschließlich Auswertung bereits gespeicherter historischer Datensätze bis zu deren Ablauf.
+- Deutsche und englische Flows, Einbauanleitungen, Übersicht externer Variablen und optionales YAML für HA-Energiesensoren.
+- Kompakter Function-Status ohne nachgestelltes „geschätzt“; Berechnungsannahmen stehen in der README.
+- Repository-Übersicht und Begleitdokumentation beschreiben die enthaltene Auswertung und ihre tatsächlichen Voraussetzungen.
 
-- Nachgestellten Zusatz „geschätzt“ im Function-Status beider Sprachversionen entfernt; Berechnung, Start mit Teilpuffer und Aussagegrenzen erläutert. Berechnungsrevision bleibt 3.2.
+## 3.2
 
-- Berechnungsrevision 3.2: dauerhaft gespeicherte, begrenzte Energietoleranz für verzögerte/gerundete HA-Aktualisierungen (2400 W, 20 % Reserve, 120 Sekunden Meldetoleranz, angenommene Auflösung 0,1 kWh). Auffällige Zuwächse ohne Verlust des Ausgangspunkts zurückstellen; echte Abfrageausfälle unterscheiden, Rücksetzungen prüfen, SOC-Zeitstempel bis 120 Sekunden zulassen. Vorhandene Historie bleibt erhalten. 55 Regressionstests je Sprache und drei Sprachprüfungen bestanden.
+- Dauerhaft gespeicherte, begrenzte Toleranzen für verzögerte und gerundete HA-Energieaktualisierungen.
+- Vorgaben: 2,4 kW, 20 % Reserve, 120 Sekunden Meldetoleranz und 0,1 kWh Auflösungstoleranz.
+- Auffällige Zählerzuwächse ohne Fortschreiben des akzeptierten Ausgangspunkts zurückstellen; Abfrageausfälle und bestätigte Rücksetzungen unterscheiden.
+- Zulässiges SOC-Zeitstempelalter von 120 Sekunden.
 
-- Berechnungsrevision 3.1: Historische SOC-Korrektur wieder anhand der Fenstergrenzen; neue Intervalle bleiben unverändert. Vorhandener migrierter Puffer wird weiterverwendet. Historische Unsicherheiten werden ausdrücklich angezeigt. 44 Regressionstests je Sprache und drei Sprachprüfungen bestanden.
+## 3.1
 
-- Vorhandene Wirkungsgrad-Historie bleibt durch einmalige Übernahme des v2-Ringpuffers, Live-Tagesstands und Snapshots erhalten. Ergänzt wurden eine vollständige Sicherung der Originaldaten sowie Schutz vor Doppelzählungen und Überschneidungen.
-- Regressionstests auf 41 bestandene Tests erweitert, einschließlich einmaliger Migration trotz Neustart.
+- SOC-Korrektur anhand der Fenstergrenzen bereits übernommener Historie; neue Messintervalle behalten ihre Bilanzierung.
+- Ausdrückliche Diagnose historischer SOC-Grenzdifferenzen und Unsicherheit.
 
-### Hinzugefügt
+## Erste v3-Implementierung
 
-- Separate deutsche Flow-Alternative mit ursprünglichen Knotennamen, deutschen Status-/Fehlermeldungen und reproduzierbarer Erzeugung aus dem englischen Rechenkern; 85 erfolgreiche Testausführungen über beide Sprachen und zusätzliche Sprachprüfungen.
-
-- Vollständige deutsche Zweitfassungen der Projektbeschreibung, Einbau- und Migrationsanleitung, des Prüfberichts und der übrigen Projektdokumentation, jeweils mit gegenseitigen Sprachverweisen.
-- Version 3 der SOC-korrigierten Wirkungsgrad-Auswertung: zusammengehörige Messpaare, intervallbasierte Energie-/SOC-Bilanz, automatische persistente Speicherung, vorsichtiger Umgang mit Rücksetzungen und Lücken sowie ausdrücklich als ungültig markierte Ergebnisse.
-- Importierbarer englischer Node-RED-Auswertungsflow, Einbauanleitung und Regressionstests mit simuliertem Kontext.
-- Bisheriger Downloadpfad der Textdatei mit aktualisiertem Function-Code beibehalten; der vollständige Flow muss aktualisiert werden.
-- Anfängliche englische README mit Projektumfang und aktuellem Veröffentlichungsstand.
-- MIT-Lizenz entsprechend der Lizenzwahl des zugehörigen BLE-Controllers.
-- Hinweise zur Unabhängigkeit, zu Markenrechten und zur Betriebsverantwortung.
-- Hinweise zur Mitarbeit sowie Ausschlüsse für lokale Zugangsdaten und erzeugte Dateien.
-
-Der eigentliche Regelungsflow wurde in diesem Repository noch nicht veröffentlicht.
+- Zusammengehörige Messzyklen, passende Energie-/SOC-Intervalle und automatischer dauerhafter Zustand.
+- Deutsche/englische Oberflächen und Dokumentation; MIT-Lizenz und Hinweise zur Unabhängigkeit.
+- Der anfängliche v2-Import wurde mit Revision 3.3 entfernt.

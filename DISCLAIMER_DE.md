@@ -1,17 +1,13 @@
-# Haftungs- und Betriebshinweise
+# Umfang und Gewährleistung
 
 [English](DISCLAIMER.md) | **Deutsch**
 
-Dies ist ein inoffizielles Community-Projekt zur automatischen Batterie- und Netzleistungsregelung.
+SolarFlow Controller ist ein inoffizielles Community-Projekt. Es besteht keine Verbindung zu Zendure; das Projekt wird von Zendure weder gesponsert noch zertifiziert oder unterstützt. Produktnamen und Marken gehören den jeweiligen Rechteinhabern.
 
-Es besteht keine Verbindung zu Zendure; das Projekt wird von Zendure weder gesponsert noch zertifiziert oder unterstützt. Produktnamen und Marken gehören ihren jeweiligen Rechteinhabern.
+Der derzeit in diesem Repository enthaltene Bestandteil berechnet den Batterie-Wirkungsgrad. Er liest Messwerte und veröffentlicht einen Home-Assistant-Sensor; er sendet keine Lade-, Entlade-, Leistungsgrenzen- oder Betriebsmodusbefehle.
 
-Regelungssoftware kann Lade-, Entlade-, Leistungsgrenzen- und Betriebsmodusbefehle an ein Energiespeichersystem senden. Nutzer sind dafür verantwortlich zu prüfen, ob die eingestellten Grenzen und Betriebsarten zur eigenen Hardware, Anlage, Elektroinstallation, den örtlichen Vorgaben und den Herstelleranforderungen passen.
+Das Ergebnis hängt von Zählergenauigkeit, Messgrenzen, eingestellter Batteriekapazität, SOC-Schätzung, BMS-Neukalibrierung, Quellenzeitversatz und ausgeschlossenen Intervallen ab. Es ist keine zertifizierte Wirkungsgradmessung und garantiert weder eine bestimmte Energieeinsparung noch einen bestimmten Eigenverbrauch. Formel und Datenbehandlung stehen in der Komponentenanleitung.
 
-Die Regelung ersetzt weder Herstellerschutzfunktionen noch das Batteriemanagementsystem oder einen zertifizierten Netzschutz. Ein Netzleistungsziel garantiert weder vollständig vermiedenen Bezug oder Einspeisung noch unterbrechungsfreie Versorgung oder einen bestimmten Eigenverbrauchsanteil.
+Nutzer sind dafür verantwortlich, Eingaben, Einheiten, Kapazität, Leistungsgrenzen, Zeitzone und dauerhaften Speicher auf ihre Anlage abzustimmen. Die Auswertung ersetzt weder Herstellerschutzfunktionen noch Batteriemanagement oder zertifizierten Netzschutz. Separate Automationen, die das Ergebnis verwenden, müssen Unbekannt und nicht verfügbare Daten angemessen behandeln.
 
-Falsche Messwerte, veraltete Daten, Kommunikationsausfälle, Firmwareänderungen oder widersprüchliche Automationen können unerwartetes Verhalten verursachen. Prüfe Start, Stopp, Kommunikationsausfall und Wiederanlauf in der tatsächlichen Anlage. Das Stoppen der Regelung löscht den zuletzt von der Batterie angenommenen Befehl nicht zwangsläufig.
-
-Die anfängliche Dokumentation des Repositorys stellt keine geprüfte Regelungsversion dar. Kompatibilität und Validierung müssen für die konkret veröffentlichte Version und die jeweilige Anlage beurteilt werden.
-
-Die Software wird ohne Gewährleistung bereitgestellt. Siehe den unveränderten englischen Lizenztext unter [LICENSE](LICENSE).
+Die Software wird ohne Gewährleistung gemäß der [MIT-Lizenz](LICENSE) bereitgestellt.
