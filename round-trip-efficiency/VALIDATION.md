@@ -1,5 +1,7 @@
 # Validation
 
+**English** | [Deutsch](VALIDATION_DE.md)
+
 ## Scope
 
 Reviewed against the supplied full Node-RED export, which declares `node-red-contrib-home-assistant-websocket` 0.80.3. That export contains the daily charge/discharge reads and HA output sensor but not the trigger or SOC acquisition writer.
@@ -48,3 +50,4 @@ Persistent totals and the matching baseline are stored as one object. Restart te
 - Capacity accuracy, SOC quantization, BMS recalibration and resulting measurement uncertainty.
 
 This is a tested implementation in a simulated execution environment, not a hardware acceptance test or proof of measurement accuracy. Commission the complete flow using the README and observe diagnostics before relying on the displayed estimate.
+

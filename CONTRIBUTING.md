@@ -1,5 +1,7 @@
 # Contributing
 
+**English** | [Deutsch](CONTRIBUTING_DE.md)
+
 Contributions to SolarFlow Controller are welcome.
 
 ## Issues
@@ -25,3 +27,4 @@ Preserve the independent-project notice and existing copyright notices. Contribu
 Review the complete exported JSON before committing it. Remove credentials, installation-specific server settings, private URLs, and identifiers. Use clearly marked placeholders where configuration is required.
 
 Do not include live Node-RED credential files or runtime state.
+

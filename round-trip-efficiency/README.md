@@ -1,5 +1,7 @@
 # Seven-Day SOC-Adjusted Battery Efficiency Estimate
 
+**English** | [Deutsch](README_DE.md)
+
 A Node-RED monitoring flow that estimates battery energy efficiency from daily charging/discharging counters and state of charge (SOC). It does not send battery control commands.
 
 **Status:** reviewed implementation with automated simulated-context tests. Not yet validated in a live Home Assistant/Node-RED installation. This is an estimate, not a certified round-trip efficiency measurement.
@@ -28,7 +30,7 @@ The original export included two independent Current State nodes, the calculatio
 - Totals and their matching baseline are kept together in one automatically persisted state object.
 - A gap or reset starts a new segment. Its unmeasured energy and SOC change are both excluded.
 - Out-of-range estimates are reported as diagnostics; the HA sensor becomes Unknown instead of showing a clipped 0% or 100%.
-- Comments, node names, status messages and documentation are in English. Existing German entity IDs and compatibility context keys remain unchanged so their references still work.
+- Comments, node names and status messages are in English; documentation is available in English and German. Existing German entity IDs and compatibility context keys remain unchanged so their references still work.
 
 ## Installation and upgrade
 
@@ -157,3 +159,4 @@ Migration is marked in the same persisted state as the imported totals, preventi
 ## License and project independence
 
 MIT; see [LICENSE](../LICENSE). This is an independent community project, not affiliated with or endorsed by Zendure. See [NOTICE.md](../NOTICE.md) and [DISCLAIMER.md](../DISCLAIMER.md).
+

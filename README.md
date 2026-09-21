@@ -1,12 +1,14 @@
 # SolarFlow – Dynamic Battery and Grid Power Controller
 
+**English** | [Deutsch](README_DE.md)
+
 Node-RED controller project for SolarFlow battery systems, integrating Home Assistant measurements and battery controls to manage charging, discharging, and grid power.
 
 > Independent, unofficial community project. Not affiliated with, sponsored by, certified by, or endorsed by Zendure.
 
 ## Project status
 
-The repository includes a [seven-day SOC-adjusted battery efficiency monitoring flow](round-trip-efficiency/README.md), its English setup documentation, and automated regression tests. This monitoring utility does not issue battery control commands and has not yet been validated in a live installation.
+The repository includes a [seven-day SOC-adjusted battery efficiency monitoring flow](round-trip-efficiency/README.md), its English and German setup documentation, and automated regression tests. This monitoring utility does not issue battery control commands and has not yet been validated in a live installation.
 
 The main Node-RED charge/discharge controller has not yet been published here.
 
@@ -90,4 +92,5 @@ Bug reports, documentation improvements, and contributions are welcome. See [CON
 Released under the [MIT License](LICENSE).
 
 Zendure, SolarFlow, and other product names belong to their respective owners and are used only to describe compatibility and interoperability. No affiliation or endorsement is implied. See [NOTICE.md](NOTICE.md).
+
 

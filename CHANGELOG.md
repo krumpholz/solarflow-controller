@@ -1,5 +1,7 @@
 # Changelog
 
+**English** | [Deutsch](CHANGELOG_DE.md)
+
 ## Unreleased
 
 ### Changed
@@ -8,6 +10,8 @@
 - Extend the regression suite to 41 passing tests, including restart-safe migration.
 
 ### Added
+
+- Full German translations of the project overview, setup and migration guide, validation report, and supporting project documentation, with reciprocal language links.
 
 - Version 3 of the SOC-adjusted efficiency monitoring utility: paired measurements, interval-based energy/SOC accounting, automatic persistent state, conservative reset/gap handling, and explicit invalid results.
 - Importable English Node-RED monitoring flow, setup instructions, and simulated-context regression tests.
@@ -19,4 +23,5 @@
 - Contribution guidance and exclusions for local secrets and generated files.
 
 The controller flow has not yet been published in this repository.
+
 

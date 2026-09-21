@@ -1,5 +1,7 @@
 # Disclaimer
 
+**English** | [Deutsch](DISCLAIMER_DE.md)
+
 This is an unofficial community project for automated battery and grid-power control.
 
 It is not affiliated with, sponsored by, certified by, or endorsed by Zendure. Product names and trademarks belong to their respective owners.
@@ -13,3 +15,4 @@ Incorrect measurements, stale data, communication failures, firmware changes, or
 The repository's initial documentation does not constitute a tested controller release. Compatibility and validation must be assessed for the specific published version and installation.
 
 The software is provided without warranty. See [LICENSE](LICENSE).
+
