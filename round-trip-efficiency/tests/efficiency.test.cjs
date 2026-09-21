@@ -335,3 +335,40 @@ test('completed ring day beats stale snapshot; previous-day live record retained
     h.stores.memoryOnly.batt_eff_today_live=oldDay('2026-09-19',3,2.4);
     assert.equal(h.pair(0,0)[0].result.sum_charge_kwh_7d,8);
 });
+function installActualHistory(h) {
+    legacy(h,[oldDay('2026-09-15',7.8,2.68,60,82),oldDay('2026-09-16',1.4,3.32,82,56),
+        oldDay('2026-09-17',4.3,2.04,88,78),oldDay('2026-09-18',2.3,2.7,78,67),
+        oldDay('2026-09-19',3.2,3.29,72,57),oldDay('2026-09-20',.8,1.95,57,37)]);
+    h.stores.memoryOnly.batt_eff_today_live=oldDay('2026-09-21',1.3,.59,37,41);
+    h.setTime(new Date(2026,8,21,12,47).getTime());
+}
+test('actual user history retains endpoint estimate without inventing handover SOC', () => {
+    const h=harness();installActualHistory(h);const out=h.pair(1.3,.59,42)[0];
+    assert.equal(out.result.sum_charge_kwh_7d,21.1);assert.equal(out.result.sum_discharge_kwh_7d,16.57);
+    assert.equal(out.payload,70.8);assert.equal(out.result.legacy_adjustment_kwh,3.1968);
+    assert.equal(out.result.delta_stored_energy_kwh,-1.642);
+    assert.deepEqual(Array.from(out.result.legacy_boundary_gaps,g=>g.difference_pct_points),[32,5]);
+    assert.equal(out.result.reason,'legacy_estimate_available');
+    assert.equal(out.result.historical_accuracy_verified,false);
+    assert.ok(Math.abs(h.stores.file.batt_eff_state_v3.days.reduce((n,d)=>n+d.delta,0)+4.8384)<1e-9);
+});
+test('existing migrated v3 state is corrected without remigration or compounded adjustment', () => {
+    const h=harness();installActualHistory(h);h.pair(1.3,.59,42);
+    const before=JSON.stringify(h.stores.file.batt_eff_state_v3.days);
+    h.restart();h.advance(5000);let out=h.pair(1.3,.59,42)[0];
+    assert.equal(out.payload,70.8);assert.equal(out.result.legacy_adjustment_kwh,3.1968);
+    h.advance(5000);out=h.pair(1.3,.59,42)[0];assert.equal(out.payload,70.8);
+    const after=h.stores.file.batt_eff_state_v3.days;
+    assert.deepEqual(Array.from(after,d=>d.delta),JSON.parse(before).map(d=>d.delta));
+    h.advance(60000);out=h.pair(1.34,.61,43)[0];
+    assert.equal(out.result.legacy_adjustment_kwh,3.1968);
+    assert.equal(out.result.delta_stored_energy_kwh,-1.555);
+});
+test('legacy endpoint adjustment changes with the active window and expires naturally', () => {
+    const h=harness();installActualHistory(h);h.pair(1.3,.59,42);
+    h.setTime(new Date(2026,8,24,12).getTime());let out=h.pair(0,0,42)[0];
+    assert.equal(out.result.legacy_adjustment_kwh,.432); // only 67 -> 72 remains
+    h.setTime(new Date(2026,8,28,12).getTime());out=h.pair(0,0,42)[0];
+    assert.equal(out.result.legacy_adjustment_kwh,0);assert.equal(out.result.legacy_days_in_window,0);
+    assert.equal(out.result.estimate_basis,'measured_intervals');
+});

@@ -6,6 +6,8 @@
 
 ### Geändert
 
+- Berechnungsrevision 3.1: Historische SOC-Korrektur wieder anhand der Fenstergrenzen; neue Intervalle bleiben unverändert. Vorhandener migrierter Puffer wird weiterverwendet. Historische Unsicherheiten werden ausdrücklich angezeigt. 44 Regressionstests je Sprache und drei Sprachprüfungen bestanden.
+
 - Vorhandene Wirkungsgrad-Historie bleibt durch einmalige Übernahme des v2-Ringpuffers, Live-Tagesstands und Snapshots erhalten. Ergänzt wurden eine vollständige Sicherung der Originaldaten sowie Schutz vor Doppelzählungen und Überschneidungen.
 - Regressionstests auf 41 bestandene Tests erweitert, einschließlich einmaliger Migration trotz Neustart.
 

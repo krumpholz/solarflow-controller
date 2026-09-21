@@ -254,21 +254,50 @@ try {
     flow.set(STATE, state, FILE);
     flow.set("batt_eff_last_completed_v3", now, MEM);
     const sum = key => state.days.reduce((total, d) => total + d[key], 0);
-    const charge = sum("charge"), discharge = sum("discharge"), delta = sum("delta");
+    const charge = sum("charge"), discharge = sum("discharge");
+    const legacyDays = state.days.filter(d => d.legacy);
+    const legacySocMissing = legacyDays.some(d => !d.legacySocKnown ||
+        !finite(d.legacySocStart) || !finite(d.legacySocEnd) ||
+        d.legacySocStart < 0 || d.legacySocStart > 100 || d.legacySocEnd < 0 || d.legacySocEnd > 100);
+    // Preserve the original first/last-SOC method for imported history only.
+    // Do not rewrite the stored per-day deltas: they also include NEW intervals.
+    // Recompute the legacy adjustment as days expire, never compound it.
+    let legacyAdjustment = 0;
+    const legacyBoundaryGaps = [];
+    if (!legacySocMissing && legacyDays.length > 0) {
+        const individualLegacyDelta = legacyDays.reduce((total, d) =>
+            total + CFG.capacityKWh * (d.legacySocEnd - d.legacySocStart) / 100, 0);
+        const legacyWindowDelta = CFG.capacityKWh *
+            (legacyDays[legacyDays.length - 1].legacySocEnd - legacyDays[0].legacySocStart) / 100;
+        legacyAdjustment = legacyWindowDelta - individualLegacyDelta;
+        for (let i = 1; i < legacyDays.length; i++) {
+            const before = legacyDays[i - 1], after = legacyDays[i];
+            const socGap = after.legacySocStart - before.legacySocEnd;
+            if (socGap !== 0 || ordinal(after.date) - ordinal(before.date) !== 1) {
+                legacyBoundaryGaps.push({from_date: before.date, to_date: after.date,
+                    previous_end_soc_pct: before.legacySocEnd, next_start_soc_pct: after.legacySocStart,
+                    difference_pct_points: socGap});
+            }
+        }
+    }
+    const delta = sum("delta") + legacyAdjustment;
     const rawPct = charge > 0 ? (discharge + delta) / charge * 100 : null;
     const enough = charge >= CFG.minChargeKWh;
-    const legacySocMissing = state.days.some(d => d.legacy && !d.legacySocKnown);
     const plausible = rawPct !== null && finite(rawPct) && rawPct >= 0 && rawPct <= 100;
     const valid = (acceptedInterval || (migrated && !prev)) && enough && plausible && !legacySocMissing;
     const eta = valid ? rounded(rawPct, 1) : null;
     const quality = legacySocMissing ? "legacy_soc_boundaries_missing" :
         !(acceptedInterval || (migrated && !prev)) ? reason : !enough ? "insufficient_charge_energy" :
-        !plausible ? "efficiency_out_of_range" : "estimate_available";
+        !plausible ? "efficiency_out_of_range" : legacyDays.length ? "legacy_estimate_available" : "estimate_available";
     flow.set("sum_batt_la_7d", rounded(charge), FILE);
     flow.set("sum_batt_ela_7d", rounded(discharge), FILE);
     flow.set("la_ela_es", eta, FILE);
     const result = {
-        version: 3, valid, reason: quality, interval_status: reason,
+        version: 3, calculation_revision: "3.1", valid, reason: quality, interval_status: reason,
+        estimate_basis: legacyDays.length ? "legacy_window_endpoints_plus_new_intervals" : "measured_intervals",
+        historical_accuracy_verified: false,
+        legacy_boundary_gaps: legacyBoundaryGaps,
+        legacy_adjustment_kwh: legacySocMissing ? null : rounded(legacyAdjustment, 6),
         timestamp: new Date(sample.ts).toISOString(),
         eta_pct: eta, eta_raw_pct: legacySocMissing ? null : rounded(rawPct, 3),
         days_used: state.days.filter(d => d.intervals > 0 || d.legacy).length,
@@ -290,7 +319,7 @@ try {
     };
     msg.payload = eta;
     msg.result = result;
-    node.status({fill: valid ? "green" : "yellow", shape: valid ? "dot" : "ring",
+    node.status({fill: valid && !legacyDays.length ? "green" : "yellow", shape: valid ? "dot" : "ring",
         text: valid ? `${eta}% estimate | ${result.days_used}d | ${result.covered_hours}h` : quality});
     return [msg, clone(msg)];
 } catch (err) {

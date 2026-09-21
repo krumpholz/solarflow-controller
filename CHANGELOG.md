@@ -6,6 +6,8 @@
 
 ### Changed
 
+- Calculation revision 3.1 restores window-endpoint SOC correction for legacy history while preserving new intervals and existing migrated state. Explicit historical uncertainty diagnostics. 44 regression tests per language and three localization checks passed.
+
 - Preserve existing efficiency history through one-time v2 ring/live-day/snapshot migration, a full original-data backup, and duplicate/overlap protection.
 - Extend the regression suite to 41 passing tests, including restart-safe migration.
 

@@ -46,6 +46,7 @@ const DE_TEXTE = {
     "insufficient_charge_energy": "Ladeenergie für Berechnung noch zu gering",
     "efficiency_out_of_range": "Wirkungsgrad außerhalb des gültigen Bereichs",
     "estimate_available": "Wirkungsgradschätzung verfügbar",
+    "legacy_estimate_available": "Schätzung mit übernommener Historie – historische Genauigkeit ungeprüft",
     "context_or_runtime_error": "Kontext- oder Ausführungsfehler",
     "measurement_timeout": "Zeitüberschreitung bei der Messung",
     "context_configuration_error": "Fehler in der Kontextkonfiguration",
