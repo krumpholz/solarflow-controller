@@ -104,3 +104,66 @@ test('DST import respects actual local day duration rather than assuming 24 hour
  const time=new Date(2026,9,25,23,50).getTime();const r=rig({time});r.flow.set('batt_eff_state_v3',v3(time,[day('2026-10-25')]),'file');r.tick();
  const d=r.state().migration.records[0];close(d.end-d.start,time-new Date(2026,9,25).getTime());
 });
+
+for (const lang of ['','_DE']) {
+ const code=fs.readFileSync(path.join(ROOT,`battery-efficiency${lang}.js`),'utf8');
+ test(lang+' repeated failures form one persisted episode with the original cause',()=>{
+  let r=rig({code});r.tick();let o;
+  for(let i=0;i<20;i++)o=result(r.tick({source:'esp'}));
+  assert.equal(o.recent_exclusions.length,1);assert.equal(o.recent_exclusions[0].open,true);
+  assert.equal(o.exclusion_counts_by_reason.battery_fallback_excluded,1);
+  r=rig({code,time:r.now,data:new Map(JSON.parse(JSON.stringify([...r.data])))});
+  o=result(r.tick());const e=o.recent_exclusions[0];assert.equal(e.open,false);assert.equal(e.excluded_ms,42000);
+  assert.equal(e.excluded_intervals,1);assert.equal(e.causes.battery_fallback_excluded.observations,20);
+  assert.equal(e.causes.measurement_gap_excluded,undefined);
+  assert.equal(e.causes.battery_fallback_excluded.last_values.battery_source,'esp');
+  if(lang)assert.equal(e.ursachen[0].grund,'ESP-Ersatzwert ausgeschlossen');
+ });
+ test(lang+' ten-entry ring evicts oldest but retains lifetime cause counts',()=>{
+  const r=rig({code});r.tick();let o;
+  for(let i=0;i<12;i++){r.tick({p:3000+i});o=result(r.tick());}
+  assert.equal(o.recent_exclusions.length,10);assert.equal(o.recent_exclusions[0].id,12);
+  assert.equal(o.recent_exclusions[9].id,3);assert.equal(o.exclusion_counts_by_reason.invalid_battery_power,12);
+  assert.equal(o.recent_exclusions[0].causes.invalid_battery_power.last_values.max_absolute_power_w,2880);
+ });
+ test(lang+' confirmed SOC jump aggregates three intervals with exact duration and limits',()=>{
+  const r=rig({code});r.tick({soc:50});r.tick({soc:80});r.tick({soc:80});const o=result(r.tick({soc:80}));
+  const e=o.recent_exclusions[0];assert.equal(e.open,false);assert.equal(e.excluded_intervals,3);
+  assert.equal(e.excluded_ms,6000);assert.equal(e.resolution,'confirmed_soc_jump_excluded');
+  assert.equal(o.exclusion_counts_by_reason.soc_jump_pending,1);
+  const v=e.causes.soc_jump_pending.first_values;close(v.allowed_change_pct_points,2+2.88*2/3600/8.64*100);
+  assert.equal(v.previous_soc_pct,50);assert.equal(v.current_soc_pct,80);
+ });
+ test(lang+' mixed causes within one gap are kept separately without double counting its time',()=>{
+  const r=rig({code});r.tick();r.tick({source:'esp'});r.tick({p:3000});const o=result(r.tick());
+  const e=o.recent_exclusions[0];assert.equal(o.recent_exclusions.length,1);assert.equal(e.excluded_ms,6000);
+  assert.equal(Object.keys(e.causes).length,2);assert.equal(o.exclusion_counts_by_reason.invalid_battery_power,1);
+ });
+ test(lang+' upgrade of existing v4 keeps energy and records old exclusion totals without invented causes',()=>{
+  const r=rig({code});r.tick();r.tick();const s=r.state();delete s.exclusionLog;s.excludedIntervals=7;s.excludedMs=62896;
+  const before=JSON.stringify(s.buckets);r.boot();r.tick({id:s.last.id});
+  assert.equal(JSON.stringify(s.buckets),before);assert.equal(s.exclusionLog.previous_intervals,7);
+  assert.equal(s.exclusionLog.previous_ms,62896);assert.equal(s.exclusionLog.events.length,0);
+  const o=result(r.tick());assert.equal(o.excluded_intervals,7);assert.equal(o.recent_exclusions.length,0);
+ });
+ test(lang+' transient SOC spike closes at the excluded endpoint, not the next accepted interval',()=>{
+  const r=rig({code});r.tick();r.tick({soc:80});const end=r.now;const o=result(r.tick());
+  const e=o.recent_exclusions[0];assert.equal(e.excluded_ms,2000);assert.equal(e.end_ts,end);
+  assert.equal(e.open,false);assert.equal(e.resolution,'valid_measurement_resumed');
+ });
+ test(lang+' missing snapshot carries measured age and configured limit',()=>{
+  const r=rig({code});r.tick();const ts=r.now;const o=result(r.tick({dt:8000,ts}));
+  const v=o.recent_exclusions[0].causes.missing_or_stale_snapshot.last_values;
+  assert.equal(v.age_ms,8000);assert.equal(v.max_age_ms,6500);
+ });
+ test(lang+' long gap and migration each record their actual interval',()=>{
+  const r=rig({code});r.flow.set('batt_eff_state_v3',v3(r.now,[day(local(r.now))]),'file');
+  const first=result(r.tick());assert.equal(first.recent_exclusions[0].excluded_ms,2000);
+  const out=result(r.tick({dt:20000}));assert.equal(out.recent_exclusions[0].causes.measurement_gap_excluded.last_values.interval_ms,20000);
+  assert.equal(out.recent_exclusions[0].excluded_ms,20000);
+ });
+ test(lang+' diagnostic copies cannot mutate the persistent ring',()=>{
+  const r=rig({code});r.tick();const out=r.tick({p:3000});out[0].result.recent_exclusions[0].excluded_ms=999;
+  assert.equal(r.state().exclusionLog.events[0].excluded_ms,0);assert.equal(out[1].result.recent_exclusions[0].excluded_ms,0);
+ });
+}

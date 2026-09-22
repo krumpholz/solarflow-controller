@@ -4,6 +4,7 @@ R=Path(__file__).resolve().parent
 spec=importlib.util.spec_from_file_location('de',R.parent/'round-trip-efficiency/build-german-flow.py')
 de=importlib.util.module_from_spec(spec);spec.loader.exec_module(de)
 de.TEXT.update({
+ 'valid_measurement_resumed':'Gültige Messung wieder aufgenommen',
  'invalid_configuration':'Ungültige Konfiguration',
  'invalid_v4_state_or_configuration':'V4-Puffer oder Konfiguration ungültig – bitte prüfen',
  'expired_soc_capture':'SOC-Aufnahme abgelaufen',
@@ -21,7 +22,7 @@ de.TEXT.update({
  'v3_configuration_mismatch':'V3-Kapazität, Entitäten oder Zeitzone stimmen nicht überein'
 })
 de.HEADER='''/*
- * Batterie Wirkungsgrad – gleitende 168 Stunden, Version 4.0.
+ * Batterie Wirkungsgrad – gleitende 168 Stunden, Version 4.1.
  * Deutsche Oberfläche, identischer englischer Rechenkern. MIT-Lizenz.
  * Kapazität und Leistung oben im CFG des Rechenkerns prüfen.
  * Snapshot-Werte aus dem Standard-Flow-Speicher, SOC aus memoryOnly.
@@ -33,7 +34,18 @@ de.HEADER='''/*
  */
 '''
 source=(R/'battery-efficiency.js').read_text()
-(R/'battery-efficiency_DE.js').write_text(de.localize(source))
+localized=de.localize(source).replace('return ausgabe;', """
+if (Array.isArray(ausgabe)) {
+    for (const nachricht of ausgabe) {
+        for (const ereignis of nachricht?.result?.recent_exclusions || []) {
+            ereignis.ursachen = Object.keys(ereignis.causes).map(code => ({code, grund:deutsch(code)}));
+            if (ereignis.resolution) ereignis.abschluss = deutsch(ereignis.resolution);
+        }
+    }
+}
+return ausgabe;
+""")
+(R/'battery-efficiency_DE.js').write_text(localized)
 # A copy of the existing capture node, with v4 wording and heartbeat key.
 prepare=(R.parent/'round-trip-efficiency/prepare-cycle.js').read_text().replace('measurement requests / watchdog status','snapshot trigger / watchdog status').replace('both energy requests carry this same snapshot','the calculation uses this SOC snapshot').replace('batt_eff_last_completed_v3','batt_eff_last_completed_v4').replace('Requesting paired daily counters','Reading battery power snapshot')
 de.TEXT['Reading battery power snapshot']='Batterieleistung aus Snapshot wird gelesen'

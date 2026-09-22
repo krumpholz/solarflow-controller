@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1 — Persistent exclusion diagnostics
+
+- Keep the last ten exclusion episodes, grouped across repeated failures, with measured values and validation limits.
+- Retain lifetime episode counters per cause and distinguish prior exclusions without known causes.
+- Extend existing V4 state without resetting energy or migration history.
+
 ## 4.0 — Rolling power integration
 
 - Add `rolling-efficiency/` with signed-power integration over a rolling 168-hour window.

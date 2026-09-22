@@ -1,4 +1,4 @@
-# Batterie-Wirkungsgrad aus Leistung – Version 4.0
+# Batterie-Wirkungsgrad aus Leistung – Version 4.1
 
 [English](README.md) | **Deutsch**
 
@@ -118,3 +118,24 @@ Die bisherigen Eingabesensoren `sensor.batterie_lade_energie_pro_tag` und `senso
 [MIT-Lizenz](../LICENSE) · [Markenhinweis](../NOTICE_DE.md) · [Messgrenzen und Gewährleistung](../DISCLAIMER_DE.md)
 
 Quellen: [Node-RED-Dateikontext](https://nodered.org/docs/api/context/store/localfilesystem), [HA-Sensor-Knoten](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/sensor.html), [Node-RED-Begleitintegration](https://github.com/zachowj/hass-node-red).
+
+## Ausschlussdiagnose ab Version 4.1
+
+Zum Update genügt der vollständige Austausch von **Batterie Wirkungsgrad**. Verdrahtung, Kapazität und vorhandenen Kontext beibehalten. Alternativ zum Snapshot-Diagnoseausgang kann wie beim Regler der bestehende 2-Sekunden-Takt nach dessen 1-Sekunden-Verzögerung den SOC-Vorbereitungsknoten auslösen. Diese feste Verzögerung garantiert keine abgeschlossenen Abfragen; die Snapshot-Prüfungen bleiben deshalb aktiv.
+
+`recent_exclusions` enthält bis zu zehn zusammenhängende Ausschlussereignisse, neuestes zuerst, einschließlich eines noch offenen Ereignisses. Die Liste wird in `batt_eff_state_v4` im Store `file` gespeichert und auf erfolgreichen sowie fehlerhaften Berechnungsausgaben mitgeliefert. Doppelte gültige Snapshots erzeugen weiterhin keine neue Nachricht. Ein noch nicht vorhandener Messausgangspunkt kann noch kein auszuschließendes Intervall besitzen; entsprechende Startfehler stehen im normalen `reason`.
+
+| Feld | Bedeutung |
+| --- | --- |
+| `id`, `started_at`, `last_seen_at`, `ended_at` | Ereigniskennung und UTC-Zeiten; `end_ts`/`ended_at` ist der letzte tatsächlich verbuchte Ausschluss-Endpunkt |
+| `open` | Fehler noch offen; endgültige Lückendauer steht gegebenenfalls erst bei Wiederaufnahme fest |
+| `excluded_intervals`, `excluded_ms` | Bereits verbuchte Ausschlüsse dieses Ereignisses; keine hochgerechnete Ausfallzeit |
+| `causes` | Technische Ursachen mit Anzahl der Beobachtungen und ersten/letzten Werten samt Prüfgrenzen |
+| `ursachen` | Deutsche Erklärung je Ursache in der deutschen Fassung |
+| `resolution`, `abschluss` | Abschlussstatus, etwa bestätigter SOC-Sprung oder Wiederaufnahme gültiger Messungen |
+
+Wiederholte Fehler bis zur Wiederaufnahme bilden ein Ereignis. Ändert sich innerhalb der Lücke die Ursache, bleiben alle auftretenden Ursachen mit ihren ersten und letzten Messwerten erhalten. Die Ursache `battery_fallback_excluded` wird bei Wiederaufnahme nicht durch den allgemeinen Status `measurement_gap_excluded` ersetzt. Drei Bestätigungen eines SOC-Sprungs bleiben ein Ereignis mit drei ausgeschlossenen Intervallen. Ereigniszähler und Intervallzähler sind daher verschieden.
+
+`exclusion_counts_by_reason` zählt Ereignisse **je Ursache seit Aufzeichnungsbeginn**; dieselbe Ursache erhöht den Zähler innerhalb eines Ereignisses nur einmal. Ein Ereignis mit mehreren Ursachen zählt einmal bei jeder dieser Ursachen. Diese Summen bleiben auch erhalten, wenn ältere Einträge aus der Zehnerliste fallen. Beobachtungszahlen innerhalb eines Ereignisses zählen dagegen die tatsächlichen Fehleraufrufe, auch wiederholte Abfragen desselben fehlerhaften Snapshots.
+
+Das Update ergänzt ausschließlich Diagnosefelder im bestehenden V4-Zustand. Energiehistorie, Übernahmemarker und bisherige Ausschlusszähler bleiben erhalten. `exclusion_log_since` benennt den Aufzeichnungsbeginn, `exclusions_before_logging` den vorherigen Bestand ohne rekonstruierbare Ursachen. Die Ursachen früherer Ausschlüsse werden nicht erfunden. Die Speicherung unterliegt demselben Dateispeicher-Schreibintervall wie der Energiepuffer. Fehlende oder defekte Kontextspeicher können naturgemäß auch die dauerhafte Fehleraufzeichnung verhindern.

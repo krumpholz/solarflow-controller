@@ -1,4 +1,4 @@
-# Battery efficiency from power – version 4.0
+# Battery efficiency from power – version 4.1
 
 **English** | [Deutsch](README_DE.md)
 
@@ -122,3 +122,24 @@ The old `sensor.batterie_lade_energie_pro_tag` and `sensor.batterie_entlade_ener
 - [Node-RED Companion Integration](https://github.com/zachowj/hass-node-red)
 
 [MIT license](../LICENSE) · [Trademark notice](../NOTICE.md) · [Scope and warranty](../DISCLAIMER.md)
+
+## Exclusion diagnostics from version 4.1
+
+Upgrade by replacing the complete calculation Function body. Keep wiring, capacity and existing context. As an alternative to the snapshot diagnostic output, the regulator's existing two-second trigger after its one-second delay can trigger SOC capture. A fixed delay cannot guarantee completed requests; snapshot validation therefore remains active.
+
+`recent_exclusions` contains up to ten contiguous exclusion episodes, newest first, including an open episode. It is persisted inside `batt_eff_state_v4` in `file` and included in successful and failed calculation outputs. Duplicate valid snapshots still emit no message. Without an initial measurement baseline there is no interval to exclude; startup errors remain in the ordinary `reason` field.
+
+| Field | Meaning |
+| --- | --- |
+| `id`, `started_at`, `last_seen_at`, `ended_at` | Episode identifier and UTC times; `end_ts`/`ended_at` is the last accounted excluded endpoint |
+| `open` | Unresolved episode; final gap duration may only be known on recovery |
+| `excluded_intervals`, `excluded_ms` | Accounted exclusions within this episode, never an extrapolated outage duration |
+| `causes` | Technical cause codes with observation counts and first/latest values and limits |
+| `ursachen` | German cause descriptions in the German version |
+| `resolution`, `abschluss` | Closing status; German text is added by the German version |
+
+Repeated failures until recovery form one episode. Different causes within the same gap retain their first/latest details. Recovery does not replace the original fallback cause with a generic gap code. Three SOC jump confirmations remain one episode containing three excluded intervals. Episode counts therefore differ from interval counts.
+
+`exclusion_counts_by_reason` counts episodes per cause since logging began: each cause contributes once per episode. An episode with multiple causes contributes to each cause's counter. Counters survive eviction of older ring entries. Observation counts within an episode instead count actual failure invocations, including repeated polls of the same invalid snapshot.
+
+The update adds diagnostic fields to existing V4 state while retaining energy history, migration markers and exclusion totals. `exclusion_log_since` records logging start; `exclusions_before_logging` records prior totals whose causes cannot be reconstructed. Filesystem durability is the same as for the energy buffer. Missing or damaged context stores can also prevent persistent error logging.

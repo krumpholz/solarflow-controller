@@ -1,5 +1,11 @@
 # Änderungshistorie
 
+## 4.1 — Dauerhafte Ausschlussdiagnose
+
+- Letzte zehn Ausschlussereignisse mit Messwerten und Prüfgrenzen speichern; Wiederholungen zusammenfassen.
+- Ereignisse je Ursache dauerhaft zählen und frühere Ausschlüsse ohne bekannte Ursache getrennt ausweisen.
+- Vorhandenen V4-Zustand ohne Rücksetzen von Energiehistorie oder Übernahme erweitern.
+
 ## 4.0 — Gleitende Leistungsintegration
 
 - `rolling-efficiency/` ergänzt die Leistungsintegration über gleitende 168 Stunden.

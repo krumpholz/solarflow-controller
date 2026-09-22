@@ -1,5 +1,5 @@
 /*
- * Batterie Wirkungsgrad – gleitende 168 Stunden, Version 4.0.
+ * Batterie Wirkungsgrad – gleitende 168 Stunden, Version 4.1.
  * Deutsche Oberfläche, identischer englischer Rechenkern. MIT-Lizenz.
  * Kapazität und Leistung oben im CFG des Rechenkerns prüfen.
  * Snapshot-Werte aus dem Standard-Flow-Speicher, SOC aus memoryOnly.
@@ -50,6 +50,7 @@ const DE_TEXTE = {
     "skipped_configuration_change": "Wegen Konfigurationsänderung nicht erneut übernommen",
     "No completed measurement cycle": "Kein abgeschlossener Messzyklus",
     "Requesting paired daily counters": "Zusammengehörige Tageszähler werden abgefragt",
+    "valid_measurement_resumed": "Gültige Messung wieder aufgenommen",
     "invalid_configuration": "Ungültige Konfiguration",
     "invalid_v4_state_or_configuration": "V4-Puffer oder Konfiguration ungültig – bitte prüfen",
     "expired_soc_capture": "SOC-Aufnahme abgelaufen",
