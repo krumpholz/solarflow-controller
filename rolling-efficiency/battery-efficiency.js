@@ -1,0 +1,277 @@
+/*
+ * Rolling 168-hour SOC-adjusted battery efficiency, revision 4.0.
+ * Node-RED Function body, TWO outputs: HA state / diagnostics. MIT license.
+ * Reads the supplied V1.3 snapshot builder's flow context; no energy sensors.
+ * Minute aggregates bound persistence size. The oldest partial minute is
+ * weighted by overlap; intra-minute timing at the window edge is approximate.
+ * v3 daily aggregates are imported once, time-weighted, never rewritten.
+ */
+const CFG = {
+    capacityKWh: 8.640,
+    maxPowerKW: 2.4,
+    powerSafetyFactor: 1.20,
+    minChargeKWh: 0.1,
+    maxSnapshotAgeMs: 6500,
+    maxIntervalMs: 10000,
+    maxSocAgeMs: 120000,
+    requireSocTimestamp: false,
+    socStepTolerancePct: 2,
+    socRebaseConfirmations: 3,
+    socConfirmationTolerancePct: 1,
+    socConfirmationMaxGapMs: 15000,
+    importV3: true,
+    chargeEntityV3: "sensor.batterie_lade_energie_pro_tag",
+    dischargeEntityV3: "sensor.batterie_entlade_energie_pro_tag"
+};
+const MEM = "memoryOnly", FILE = "file", KEY = "batt_eff_state_v4";
+const HOUR = 3600000, WINDOW = 168 * HOUR, BUCKET = 60000;
+const now = Date.now();
+const finite = v => typeof v === "number" && Number.isFinite(v);
+const copy = x => JSON.parse(JSON.stringify(x));
+const round = (x, n = 6) => finite(x) ? Number(x.toFixed(n)) : null;
+function number(x) {
+    if (finite(x)) return x;
+    if (typeof x !== "string" || !/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(x.trim())) return null;
+    const v = Number(x); return finite(v) ? v : null;
+}
+function localDate(ts) {
+    const d = new Date(ts);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function dayStart(s) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) throw Error("invalid_v3_state");
+    const [y,m,d] = s.split("-").map(Number), ts = new Date(y,m-1,d).getTime();
+    if (localDate(ts) !== s) throw Error("invalid_v3_state");
+    return ts;
+}
+function overlap(start, end, from, to) {
+    return Math.max(0, Math.min(end,to)-Math.max(start,from));
+}
+// Integrate a linear signed power trace, splitting exactly at its zero crossing.
+function energy(p0, p1, ms) {
+    const scale = ms / 3600000000;
+    if (p0 >= 0 && p1 >= 0) return [(p0+p1)*0.5*scale, 0];
+    if (p0 <= 0 && p1 <= 0) return [0, -(p0+p1)*0.5*scale];
+    const f = Math.abs(p0)/(Math.abs(p0)+Math.abs(p1));
+    const a = Math.abs(p0)*f*0.5*scale, b = Math.abs(p1)*(1-f)*0.5*scale;
+    return p0 > 0 ? [a,b] : [b,a];
+}
+function migrate(old, timestamp) {
+    const empty = {at:timestamp, status:CFG.importV3 ? "no_v3_data" : "disabled", records:[], source_last_ts:null};
+    if (!CFG.importV3 || old == null) return empty;
+    if (old.version !== 3 || old.unit !== "kWh" || !Array.isArray(old.days) || old.days.length > 7 ||
+        new Set(old.days.map(d=>d.date)).size !== old.days.length) throw Error("invalid_v3_state");
+    const fp = JSON.parse(old.fingerprint);
+    if (!Array.isArray(fp) || fp[0] !== CFG.capacityKWh || fp[1] !== CFG.chargeEntityV3 || fp[2] !== CFG.dischargeEntityV3 ||
+        fp[3] !== Intl.DateTimeFormat().resolvedOptions().timeZone) throw Error("v3_configuration_mismatch");
+    if (!old.last) {
+        if (old.days.length) throw Error("invalid_v3_state");
+        return empty;
+    }
+    const cut = old.last.ts;
+    if (!finite(cut) || cut <= 0 || cut > timestamp || old.last.date !== localDate(cut) ||
+        !finite(old.last.soc) || old.last.soc < 0 || old.last.soc > 100 ||
+        ![old.last.charge,old.last.discharge].every(v=>finite(v)&&v>=0)) throw Error("invalid_v3_cutover");
+    const sorted = copy(old.days).sort((a,b)=>a.date.localeCompare(b.date));
+    let previousLegacy = null;
+    const records = [];
+    for (const d of sorted) {
+        const start = dayStart(d.date), next = new Date(start); next.setDate(next.getDate()+1);
+        const end = Math.min(next.getTime(),cut);
+        if (start > cut || ![d.charge,d.discharge,d.coveredMs,d.gaps,d.gapMs,d.intervals].every(v=>finite(v)&&v>=0) || !finite(d.delta)) throw Error("invalid_v3_state");
+        let delta = d.delta, known = true;
+        if (d.legacy) {
+            known = d.legacySocKnown === true && [d.legacySocStart,d.legacySocEnd].every(v=>finite(v)&&v>=0&&v<=100);
+            if (previousLegacy) {
+                known = known && previousLegacy.known;
+                if (known) delta += CFG.capacityKWh*(d.legacySocStart-previousLegacy.end)/100;
+            }
+            previousLegacy = {end:d.legacySocEnd, known};
+        }
+        if (end <= start) {
+            if (d.charge || d.discharge || d.delta) throw Error("invalid_v3_state");
+            continue;
+        }
+        records.push({date:d.date,start,end,charge:d.charge,discharge:d.discharge,delta,known});
+    }
+    // Source stays untouched, including v2 provenance already carried by v3.
+    return {at:timestamp,status:"imported",source_last_ts:cut,records,
+        original_dates:sorted.map(d=>d.date),coverage_known:false,
+        distribution:"uniform_within_each_local_day",source_legacy_migration:old.legacyMigration || null};
+}
+function validState(s, signature) {
+    if (!s || s.version!==4 || s.unit!=="kWh" || s.signature!==signature || !finite(s.created) ||
+        !Array.isArray(s.buckets) || s.buckets.length>10082 || !s.migration || !Array.isArray(s.migration.records) ||
+        s.migration.records.length>7 || !finite(s.excludedMs) || s.excludedMs<0 || !Number.isInteger(s.excludedIntervals) || s.excludedIntervals<0 || typeof s.blocked!=="boolean") return false;
+    if (s.candidate && (![s.candidate.ts,s.candidate.soc].every(finite) ||
+        !Number.isInteger(s.candidate.count) || s.candidate.count<1)) return false;
+    let lastEnd = 0;
+    for (const b of s.buckets) {
+        if (!Array.isArray(b) || b.length!==7 || !b.every(finite) || b[0]<lastEnd || b[1]<=b[0] || b[1]-b[0]>BUCKET ||
+            b[2]<0 || b[3]<0 || b[5]<0 || b[5]>b[1]-b[0]+0.001 || b[6]<0) return false;
+        lastEnd=b[1];
+    }
+    for (const d of s.migration.records) if (![d.start,d.end,d.charge,d.discharge,d.delta].every(finite) ||
+        d.end<=d.start || d.charge<0 || d.discharge<0 || typeof d.known!=="boolean") return false;
+    const p=s.last;
+    if (p && (![p.ts,p.power,p.soc].every(finite) || p.soc<0 || p.soc>100 || typeof p.id!=="string")) return false;
+    return true;
+}
+let state;
+function save() { flow.set(KEY,state,FILE); }
+function fail(reason, detail, block = true) {
+    try {
+        if (state && state.last && block) { state.blocked=true; save(); }
+        flow.set("la_ela_es",null,FILE);
+    } catch (error) { detail = error.message; }
+    node.status({fill:"yellow",shape:"ring",text:reason});
+    const out={payload:null,result:{version:4,calculation_revision:"4.0",valid:false,reason,
+        timestamp:new Date(now).toISOString(),detail,covered_hours:null,soc_freshness_verified:false}};
+    return [out,copy(out)];
+}
+try {
+    if (![CFG.capacityKWh,CFG.maxPowerKW,CFG.minChargeKWh].every(v=>finite(v)&&v>0) ||
+        !finite(CFG.powerSafetyFactor) || CFG.powerSafetyFactor<1) return fail("invalid_configuration");
+    const signature=JSON.stringify([CFG.capacityKWh,"snapshot-p_batterie-positive-charge",BUCKET,WINDOW]);
+    const saved=flow.get(KEY,FILE);
+    // Validate the buffer when loaded/replaced; always check its signature. Runtime owns
+    // this object; never run two calculation nodes writing the same state key.
+    if (saved != null) {
+        if (saved.signature!==signature || context.get("validatedState",MEM)!==saved) {
+            if (!validState(saved,signature)) return fail("invalid_v4_state_or_configuration");
+            context.set("validatedState",saved,MEM);
+        }
+        state=saved;
+    }
+    const cycle=msg._eff;
+    if (cycle && (!finite(cycle.ts) || cycle.ts>now || now-cycle.ts>CFG.maxSnapshotAgeMs)) return fail("expired_soc_capture");
+    const soc=number(cycle ? cycle.soc : flow.get("batt_level",MEM));
+    const socTs=number(cycle ? cycle.socTs : flow.get("batt_level_ts",MEM));
+    const captureTs=cycle ? cycle.ts : now;
+    if (soc===null || soc<0 || soc>100) return fail("invalid_soc");
+    if (socTs===null && CFG.requireSocTimestamp) return fail("soc_timestamp_required");
+    if (socTs!==null && (socTs>captureTs || captureTs-socTs>CFG.maxSocAgeMs)) return fail("stale_or_future_soc");
+    // The supplied builder writes these keys synchronously to its DEFAULT store.
+    const id=flow.get("snapshot_last_ok_cycleId");
+    const ts=number(flow.get("snapshot_last_ok_ts"));
+    const trigger=number(flow.get("snapshot_last_ok_triggerTs"));
+    const source=flow.get("snapshot_last_battery_source");
+    const fresh=flow.get("snapshot_last_battery_fresh");
+    const power=number(flow.get("p_batterie"));
+    const quality=flow.get("snapshot_last_ok_quality");
+    if (typeof id!=="string" || !id || ts===null || trigger===null || trigger>ts || ts>now ||
+        now-ts>CFG.maxSnapshotAgeMs || ts-trigger>CFG.maxSnapshotAgeMs ||
+        !["excellent","good","borderline"].includes(quality)) return fail("missing_or_stale_snapshot");
+    if (source!=="fresh" || fresh!==true) return fail("battery_fallback_excluded");
+    if (power===null || Math.abs(power)>CFG.maxPowerKW*1000*CFG.powerSafetyFactor) return fail("invalid_battery_power");
+    if (!state) {
+        const migration=migrate(flow.get("batt_eff_state_v3",FILE),ts);
+        state={version:4,unit:"kWh",signature,created:ts,last:null,blocked:false,buckets:[],migration,
+            excludedIntervals:0,excludedMs:0,candidate:null};
+        // Keep the original v3 buffer as the rollback checkpoint. No import is
+        // attempted again once this v4 state exists, even after all old days expire.
+        context.set("validatedState",state,MEM);
+    }
+    const prev=state.last;
+    if (prev && (id===prev.id || ts<=prev.ts)) return null;
+    const sample={id,ts,power,soc};
+    let reason="baseline_initialized",accepted=false;
+    if (prev) {
+        const dt=ts-prev.ts;
+        if (state.blocked || dt>CFG.maxIntervalMs) reason="measurement_gap_excluded";
+        else {
+            const allowed=CFG.socStepTolerancePct + CFG.maxPowerKW*CFG.powerSafetyFactor*dt/HOUR/CFG.capacityKWh*100;
+            if (Math.abs(soc-prev.soc)>allowed) {
+                const c=state.candidate;
+                state.candidate=c && ts>c.ts && ts-c.ts<=CFG.socConfirmationMaxGapMs && Math.abs(soc-c.soc)<=CFG.socConfirmationTolerancePct ?
+                    {ts,soc,count:c.count+1} : {ts,soc,count:1};
+                // Do not join a later recovered sample across a rejected interval.
+                // Rebase immediately in time, retaining the old SOC until confirmed.
+                state.last={id,ts,power,soc:prev.soc};
+                state.excludedIntervals++; state.excludedMs+=dt;
+                if (state.candidate.count<CFG.socRebaseConfirmations) {
+                    save(); return fail("soc_jump_pending", undefined, false);
+                }
+                reason="confirmed_soc_jump_excluded";
+                // This interval has already been counted as excluded.
+                state.excludedIntervals--; state.excludedMs-=dt;
+            } else {
+                accepted=true; reason="interval_accepted";
+                const ds=CFG.capacityKWh*(soc-prev.soc)/100;
+                for (let a=prev.ts;a<ts;) {
+                    const end=Math.min(ts,(Math.floor(a/BUCKET)+1)*BUCKET);
+                    const f0=(a-prev.ts)/dt,f1=(end-prev.ts)/dt;
+                    const [ch,dis]=energy(prev.power+(power-prev.power)*f0,prev.power+(power-prev.power)*f1,end-a);
+                    let b=state.buckets[state.buckets.length-1];
+                    if (!b || Math.floor(b[0]/BUCKET)!==Math.floor(a/BUCKET)) {
+                        b=[a,end,0,0,0,0,0]; state.buckets.push(b);
+                    }
+                    b[1]=end;b[2]+=ch;b[3]+=dis;b[4]+=ds*(end-a)/dt;b[5]+=end-a;b[6]++;
+                    a=end;
+                }
+            }
+        }
+        if (!accepted) {state.excludedIntervals++;state.excludedMs+=dt;}
+    } else if (state.migration.source_last_ts!==null && ts>state.migration.source_last_ts) {
+        state.excludedIntervals++;state.excludedMs+=ts-state.migration.source_last_ts;
+        reason="migration_baseline_initialized";
+    }
+    state.last=sample;state.blocked=false;state.candidate=null;
+    const from=ts-WINDOW;
+    while (state.buckets.length && state.buckets[0][1]<=from) state.buckets.shift();
+    state.migration.records=state.migration.records.filter(d=>d.end>from);
+    let charge=0,discharge=0,delta=0,covered=0,partial=false;
+    for (const b of state.buckets) {
+        const f=overlap(b[0],b[1],from,ts)/(b[1]-b[0]);
+        charge+=b[2]*f;discharge+=b[3]*f;delta+=b[4]*f;covered+=b[5]*f;
+        if (f>0 && f<1) partial=true;
+    }
+    let importedCharge=0,importedDischarge=0,importedDelta=0,legacyMissing=false;
+    for (const d of state.migration.records) {
+        const f=overlap(d.start,d.end,from,ts)/(d.end-d.start);
+        importedCharge+=d.charge*f;importedDischarge+=d.discharge*f;importedDelta+=d.delta*f;
+        if (f>0 && !d.known) legacyMissing=true;
+    }
+    charge+=importedCharge;discharge+=importedDischarge;delta+=importedDelta;
+    const raw=charge>0 ? 100*(discharge+delta)/charge : null;
+    const enough=charge+1e-12>=CFG.minChargeKWh;
+    const plausible=finite(raw) && raw>=0 && raw<=100;
+    const hasImported=state.migration.records.length>0;
+    const valid=enough && plausible && !legacyMissing && (accepted || (hasImported && !prev));
+    const resultReason=legacyMissing ? "legacy_soc_boundaries_missing" : !enough ? "insufficient_charge_energy" :
+        !plausible ? "efficiency_out_of_range" : valid ? "calculation_available" : reason;
+    const eta=valid ? round(raw,1) : null;
+    save();
+    // Also keep the original SOC capture node's watchdog compatible.
+    flow.set("batt_eff_last_completed_v3",now,MEM);
+    flow.set("batt_eff_last_completed_v4",now,MEM);
+    flow.set("sum_batt_la_7d",round(charge,3),FILE);
+    flow.set("sum_batt_ela_7d",round(discharge,3),FILE);
+    flow.set("la_ela_es",eta,FILE);
+    const result={version:4,calculation_revision:"4.0",valid,reason:resultReason,interval_status:reason,
+        timestamp:new Date(ts).toISOString(),eta_pct:eta,eta_raw_pct:round(raw,3),
+        window:"rolling_168_hours",window_start:new Date(from).toISOString(),window_end:new Date(ts).toISOString(),
+        window_complete:!hasImported && covered>=WINDOW-1,days_used:round(covered/86400000,3),
+        sum_charge_kwh_7d:round(charge),sum_discharge_kwh_7d:round(discharge),delta_stored_energy_kwh:round(delta),
+        losses_kwh:round(charge-discharge-delta),capacity_kwh:CFG.capacityKWh,
+        soc_now_raw_pct:soc,soc_now_eff_pct:soc,soc_freshness_verified:socTs!==null,
+        power_w:power,battery_source:source,snapshot_cycle_id:id,snapshot_age_ms:now-ts,
+        integration_interval_ms:prev ? ts-prev.ts : null,integration_method:"linear_signed_power_zero_crossing",
+        power_time_basis:"snapshot_completion",soc_time_basis:"latest_at_capture",
+        covered_hours:round(covered/HOUR),interval_accepted:accepted,
+        excluded_intervals:state.excludedIntervals,excluded_gap_hours:round(state.excludedMs/HOUR),
+        exclusion_scope:"since_v4_start",bucket_seconds:BUCKET/1000,buffer_buckets:state.buckets.length,
+        boundary_weighting:"uniform_within_oldest_partial_minute",partial_boundary_bucket:partial,
+        legacy_days_in_window:state.migration.records.length,legacy_soc_boundaries_missing:legacyMissing,
+        legacy_migration:{status:state.migration.status,at:state.migration.at,source:"batt_eff_state_v3",
+            source_last_ts:state.migration.source_last_ts,distribution:state.migration.distribution || null},
+        imported_charge_kwh:round(importedCharge),imported_discharge_kwh:round(importedDischarge),
+        imported_delta_kwh:round(importedDelta),historical_accuracy_verified:false};
+    const out={payload:eta,result};
+    node.status({fill:valid && !hasImported ? "green":"yellow",shape:valid?"dot":"ring",
+        text:valid?`${eta}% | 168h | ${round(covered/HOUR,2)}h`:resultReason});
+    return [out,copy(out)];
+} catch(err) {
+    node.error(`Efficiency calculation stopped: ${err.message}`);
+    return fail("context_or_runtime_error",err.message);
+}

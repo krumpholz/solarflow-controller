@@ -39,3 +39,10 @@ node --test round-trip-efficiency/tests/localization.test.cjs
 ```
 
 Englische Funktionsquellen bearbeiten und ihre Kopien in `flow.json` sowie im Textdownload der Berechnung synchronisieren. Mit `python round-trip-efficiency/build-german-flow.py` deutsche Quellen und Export neu erzeugen. Beide Sprachversionen und das bestehende Zustandsschema erhalten, sofern keine ausdrückliche Kompatibilitätsänderung dokumentiert wird. Simulationen zertifizieren keine Messgenauigkeit.
+
+## V4 Entwicklung
+
+```sh
+python rolling-efficiency/build.py
+TZ=Europe/Berlin node --test rolling-efficiency/tests/*.test.cjs
+```

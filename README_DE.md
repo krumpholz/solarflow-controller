@@ -6,6 +6,12 @@ Node-RED-Werkzeuge für SolarFlow-Batteriesysteme und Home Assistant.
 
 > Unabhängiges, inoffizielles Community-Projekt. Es besteht keine Verbindung zu Zendure; das Projekt wird von Zendure weder gesponsert noch zertifiziert oder unterstützt.
 
+## Leistungsintegration mit gleitendem Fenster (V4)
+
+Die neue [168-Stunden-Berechnung aus Leistung](rolling-efficiency/README_DE.md) nutzt den vorhandenen Regler-Snapshot, übernimmt einen V3-Puffer mit ausdrücklich dokumentierter Übergangsnäherung und liefert bereits vor Ablauf von sieben Tagen Ergebnisse. [Deutscher Flow](rolling-efficiency/flow_DE.json) · [Englischer Flow](rolling-efficiency/flow.json).
+
+Die veröffentlichte Fassung mit Tageszählern bleibt unten und als [v3.3.0](https://github.com/krumpholz/solarflow-controller/releases/tag/v3.3.0) verfügbar. Die nachstehenden Eingabevoraussetzungen gelten für V3; V4 verwendet die [Snapshot-Eingaben](rolling-efficiency/README_DE.md#erforderliche-externe-werte).
+
 ## Verfügbarer Bestandteil
 
 Das Repository enthält einen **Flow für den SOC-korrigierten Batterie-Wirkungsgrad über sieben Tage**, auf Deutsch und Englisch. Er berechnet eine Energiebilanz aus täglichen Lade-/Entladezählern und dem Ladezustand der Batterie, speichert seinen Messzustand über Neustarts hinweg und veröffentlicht einen Prozentwert in Home Assistant.

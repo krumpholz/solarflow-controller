@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.0 — Rolling power integration
+
+- Add `rolling-efficiency/` with signed-power integration over a rolling 168-hour window.
+- Split direction changes and minute boundaries; disclose proportional weighting of the oldest partial minute.
+- Import compatible V3 state once, including existing legacy SOC corrections, with proportional expiration of historical daily totals.
+- Preserve the V3 buffer and the existing output sensor contract.
+- Provide English/German Function bodies, flows and setup documentation.
+
+
 **English** | [Deutsch](CHANGELOG_DE.md)
 
 Revision numbers below refer to the efficiency calculation, not the separately maintained BLE firmware. The persistent state schema remains version 3.

@@ -1,5 +1,14 @@
 # Änderungshistorie
 
+## 4.0 — Gleitende Leistungsintegration
+
+- `rolling-efficiency/` ergänzt die Leistungsintegration über gleitende 168 Stunden.
+- Richtungswechsel und Minutengrenzen getrennt integrieren; anteilige Gewichtung der ältesten angeschnittenen Minute ausweisen.
+- Passenden V3-Zustand einmalig einschließlich vorhandener Legacy-SOC-Korrekturen übernehmen; historische Tagessummen zeitanteilig auslaufen lassen.
+- V3-Puffer und vorhandene Schnittstelle zum Ausgabesensor erhalten.
+- Funktionscode, Flows und Anleitung auf Deutsch und Englisch bereitstellen.
+
+
 [English](CHANGELOG.md) | **Deutsch**
 
 Die folgenden Revisionen beziehen sich auf die Wirkungsgradberechnung, nicht auf die separat gepflegte BLE-Firmware. Das dauerhafte Zustandsschema bleibt Version 3.

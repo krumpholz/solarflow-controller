@@ -6,6 +6,12 @@ Node-RED tools for SolarFlow battery systems and Home Assistant.
 
 > Independent, unofficial community project. Not affiliated with, sponsored by, certified by, or endorsed by Zendure.
 
+## Rolling power integration (V4)
+
+The new [168-hour power-based calculation](rolling-efficiency/README.md) uses the existing regulator snapshot, retains a V3 buffer through an explicitly documented migration and starts calculating before seven days are available. [English flow](rolling-efficiency/flow.json) · [German flow](rolling-efficiency/flow_DE.json).
+
+The released counter-based version remains available below and as [v3.3.0](https://github.com/krumpholz/solarflow-controller/releases/tag/v3.3.0). The input requirements below refer to that V3 component; V4 uses the [snapshot contract](rolling-efficiency/README.md#external-input-contract).
+
 ## Available component
 
 The repository provides a **seven-day SOC-adjusted battery efficiency flow**, in English and German. It calculates an energy balance from daily charging/discharging counters and battery state of charge, retains its measurement state across restarts, and publishes a percentage to Home Assistant.
