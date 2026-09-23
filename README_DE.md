@@ -4,6 +4,14 @@
 
 Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v4.0.0** berechnet eine SOC-korrigierte Energiebilanz über gleitende 168 Stunden aus gemessener Batterieleistung. Dieses Repository enthält die Auswertung; der anlagenspezifische Regler und Snapshot-Builder sind nicht enthalten.
 
+## Unterstützung
+
+Wenn dir dieses Projekt hilft, kannst du die Pflege und Weiterentwicklung unterstützen:
+
+[![Auf Ko-fi unterstützen](https://img.shields.io/badge/Support-Ko--fi-ff5f5f?logo=ko-fi&logoColor=white)](https://ko-fi.com/krumpholzopensource)
+
+Deine Unterstützung hilft dabei, das Projekt zu pflegen, zu testen, zu dokumentieren und frei verfügbar zu halten.
+
 ## Einstieg
 
 1. Die [Installations- und Berechnungsanleitung](rolling-efficiency/README_DE.md) lesen.

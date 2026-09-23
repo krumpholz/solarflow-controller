@@ -4,6 +4,14 @@
 
 Node-RED battery efficiency monitoring for SolarFlow installations. **Release v4.0.0** calculates an SOC-adjusted energy balance over a rolling 168-hour window from measured battery power. This repository supplies the monitoring component; the installation-specific regulator and snapshot builder are not included.
 
+## Support this project
+
+If this project helps you, you can support its maintenance and further development:
+
+[![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-ff5f5f?logo=ko-fi&logoColor=white)](https://ko-fi.com/krumpholzopensource)
+
+Your support helps maintain, test and document this project and keep it freely available.
+
 ## Get started
 
 1. Read the [installation and calculation guide](rolling-efficiency/README.md).
