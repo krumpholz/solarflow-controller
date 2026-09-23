@@ -1,0 +1,218 @@
+[
+  {
+    "id": "v4e46be25028e13f5d",
+    "type": "function",
+    "z": "577158dd0ea2615a",
+    "name": "Rolling 168-Hour Battery Efficiency",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 800,
+    "y": 260,
+    "wires": [
+      [
+        "v40e16d9dcd078a8e9"
+      ],
+      [
+        "v4effdiagnostics03"
+      ]
+    ]
+  },
+  {
+    "id": "v40e16d9dcd078a8e9",
+    "type": "ha-sensor",
+    "z": "577158dd0ea2615a",
+    "name": "Battery Efficiency",
+    "entityConfig": "v4bb523511b4c4476f",
+    "version": 0,
+    "state": "payload",
+    "stateType": "msg",
+    "attributes": [
+      {
+        "property": "quality",
+        "value": "result.reason",
+        "valueType": "msg"
+      },
+      {
+        "property": "valid",
+        "value": "result.valid",
+        "valueType": "msg"
+      },
+      {
+        "property": "last_measurement",
+        "value": "result.timestamp",
+        "valueType": "msg"
+      },
+      {
+        "property": "covered_hours",
+        "value": "result.covered_hours",
+        "valueType": "msg"
+      },
+      {
+        "property": "soc_freshness_verified",
+        "value": "result.soc_freshness_verified",
+        "valueType": "msg"
+      }
+    ],
+    "inputOverride": "allow",
+    "outputProperties": [],
+    "x": 1170,
+    "y": 220,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "v44c54b454.60653c",
+    "type": "server",
+    "name": "Home Assistant",
+    "addon": true,
+    "rejectUnauthorizedCerts": true,
+    "ha_boolean": "",
+    "connectionDelay": false,
+    "cacheJson": true,
+    "heartbeat": false,
+    "heartbeatInterval": "",
+    "areaSelector": "friendlyName",
+    "deviceSelector": "friendlyName",
+    "entitySelector": "friendlyName",
+    "statusSeparator": "at:",
+    "statusYear": "hidden",
+    "statusMonth": "short",
+    "statusDay": "numeric",
+    "statusHourCycle": "h23",
+    "statusTimeFormat": "h:m:s",
+    "enableGlobalContextStore": true
+  },
+  {
+    "id": "v4bb523511b4c4476f",
+    "type": "ha-entity-config",
+    "server": "v44c54b454.60653c",
+    "deviceConfig": "",
+    "name": "Battery Efficiency Sensor",
+    "version": 6,
+    "entityType": "sensor",
+    "haConfig": [
+      {
+        "property": "name",
+        "value": "Battery Efficiency"
+      },
+      {
+        "property": "icon",
+        "value": "mdi:battery-sync"
+      },
+      {
+        "property": "entity_picture",
+        "value": ""
+      },
+      {
+        "property": "entity_category",
+        "value": ""
+      },
+      {
+        "property": "device_class",
+        "value": ""
+      },
+      {
+        "property": "unit_of_measurement",
+        "value": "%"
+      },
+      {
+        "property": "state_class",
+        "value": ""
+      }
+    ],
+    "resend": false,
+    "debugEnabled": false
+  },
+  {
+    "id": "v4b4c87ebe49580577",
+    "type": "global-config",
+    "env": [],
+    "modules": {
+      "node-red-contrib-home-assistant-websocket": "0.80.3"
+    }
+  },
+  {
+    "id": "v4effprepare000003",
+    "type": "function",
+    "z": "577158dd0ea2615a",
+    "name": "Capture SOC and Start Measurement Cycle",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 290,
+    "y": 380,
+    "wires": [
+      [
+        "v4e46be25028e13f5d"
+      ],
+      [
+        "v40e16d9dcd078a8e9",
+        "v4effdiagnostics03"
+      ]
+    ],
+    "outputLabels": [
+      "Evaluate snapshot",
+      "Missing measurement / diagnostics"
+    ]
+  },
+  {
+    "id": "v4effdiagnostics03",
+    "type": "debug",
+    "z": "577158dd0ea2615a",
+    "name": "Efficiency Diagnostics",
+    "active": false,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "result",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1170,
+    "y": 320,
+    "wires": []
+  },
+  {
+    "id": "v4effinstructions3",
+    "type": "comment",
+    "z": "577158dd0ea2615a",
+    "name": "Connect snapshot diagnostic output to SOC capture; read README",
+    "info": "Same flow tab as snapshot and SOC writer. Connect output 11 of the V1.3 snapshot builder to SOC capture. Set capacity and stores. Disable the old efficiency writer. No input energy sensors required. See rolling-efficiency/README.md.",
+    "x": 590,
+    "y": 80,
+    "wires": []
+  },
+  {
+    "id": "v4efftrigger000003",
+    "type": "inject",
+    "z": "577158dd0ea2615a",
+    "name": "Snapshot watchdog every 2 seconds",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "2",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 170,
+    "y": 160,
+    "wires": [
+      [
+        "v4effprepare000003"
+      ]
+    ]
+  }
+]

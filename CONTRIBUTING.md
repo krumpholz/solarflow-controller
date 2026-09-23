@@ -2,48 +2,17 @@
 
 **English** | [Deutsch](CONTRIBUTING_DE.md)
 
-Contributions to SolarFlow Controller are welcome.
+Keep calculation changes in `rolling-efficiency/battery-efficiency.js` and capture changes in `rolling-efficiency/prepare-cycle.js`. `flow-template.json` supplies node configuration without embedded code; `localize.py` and `build.py` generate the German wrappers and both import flows. Do not edit generated Function code independently.
 
-## Issues
-
-For a reproducible problem, include:
-
-- The repository commit and calculation revision.
-- Node-RED, Home Assistant, and relevant integration versions.
-- Battery model and firmware version.
-- Expected and actual behavior.
-- A short, sanitized diagnostic log, the relevant charge/discharge counter states, SOC and timestamps.
-
-Include units, sign conventions, and sampling intervals. Do not publish passwords, access tokens, private keys, device identifiers, or personal network details.
-
-## Changes
-
-Keep changes focused and explain their effect on calculation, state compatibility and input handling. Use synthetic data in examples and regression fixtures.
-
-Preserve the independent-project notice and existing copyright notices. Contributions are provided under this repository's MIT license.
-
-## Sharing Node-RED flows
-
-Review the complete exported JSON before committing it. Remove credentials, installation-specific server settings, private URLs, and identifiers. Use clearly marked placeholders where configuration is required.
-
-Do not include live Node-RED credential files or runtime state.
-
-
-## Developer maintenance
-
-The regression sources live in `round-trip-efficiency/tests/`. Run from the repository root with Node.js:
+From the repository root:
 
 ```sh
-TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs
-EFFICIENCY_LANGUAGE=de TZ=Europe/Berlin node --test round-trip-efficiency/tests/efficiency.test.cjs
-node --test round-trip-efficiency/tests/localization.test.cjs
+python3 rolling-efficiency/build.py
+node --test rolling-efficiency/tests/*.test.cjs
 ```
 
-Edit the English Function sources and synchronize their copies in `flow.json` and the calculation text download. Run `python round-trip-efficiency/build-german-flow.py` to regenerate the German sources and export. Preserve both languages and the existing state schema unless an explicit compatibility change is documented. Simulation coverage does not certify measurement accuracy.
+Keep both READMEs and release notes consistent. Preserve persisted-state compatibility and test any migration changes. Explain changes to integration, exclusion boundaries, SOC handling, or time weighting. Generated files must match their sources and the build must be reproducible.
 
-## V4 development
+Include a minimal reproduction for bugs, with configuration, software versions and sanitized diagnostics. Never commit credentials, personal live buffers, installation exports or raw operational logs. Regression fixtures contain synthetic data.
 
-```sh
-python rolling-efficiency/build.py
-TZ=Europe/Berlin node --test rolling-efficiency/tests/*.test.cjs
-```
+Contributions are provided under the [MIT License](LICENSE). See [project notice](NOTICE.md).

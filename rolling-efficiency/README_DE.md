@@ -1,8 +1,10 @@
-# Batterie-Wirkungsgrad aus Leistung – Version 4.1
+# Batterie-Wirkungsgrad aus Leistung – Release v4.0.0
+
+Release **v4.0.0** verwendet Revisionsnummer **4.1** in der Diagnose und Pufferschema **4**. Bestehende V4.0/V4.1-Puffer werden weiterverwendet.
 
 [English](README.md) | **Deutsch**
 
-Gleitende 168-Stunden-Energiebilanz aus dem vorzeichenbehafteten Leistungswert des Snapshot-Builders `1.3-SOLAR-G-ESP-BATT-FALLBACK`. Keine Tageszähler als Eingabe erforderlich. Zwei Funktionsausgänge: Wirkungsgrad und Diagnose. Die bestehende Fassung mit Tageszählern bleibt unter [round-trip-efficiency](../round-trip-efficiency/README_DE.md) verfügbar.
+Gleitende 168-Stunden-Energiebilanz aus dem vorzeichenbehafteten Leistungswert des Snapshot-Builders `1.3-SOLAR-G-ESP-BATT-FALLBACK`. Keine Tageszähler als Eingabe erforderlich. Zwei Funktionsausgänge: Wirkungsgrad und Diagnose. Die bestehende Fassung mit Tageszählern bleibt unter [Release v3.3.0](https://github.com/krumpholz/solarflow-controller/tree/v3.3.0/round-trip-efficiency) verfügbar.
 
 ## Bestehende Installation umstellen
 
@@ -119,7 +121,7 @@ Die bisherigen Eingabesensoren `sensor.batterie_lade_energie_pro_tag` und `senso
 
 Quellen: [Node-RED-Dateikontext](https://nodered.org/docs/api/context/store/localfilesystem), [HA-Sensor-Knoten](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/sensor.html), [Node-RED-Begleitintegration](https://github.com/zachowj/hass-node-red).
 
-## Ausschlussdiagnose ab Version 4.1
+## Ausschlussdiagnose
 
 Zum Update genügt der vollständige Austausch von **Batterie Wirkungsgrad**. Verdrahtung, Kapazität und vorhandenen Kontext beibehalten. Alternativ zum Snapshot-Diagnoseausgang kann wie beim Regler der bestehende 2-Sekunden-Takt nach dessen 1-Sekunden-Verzögerung den SOC-Vorbereitungsknoten auslösen. Diese feste Verzögerung garantiert keine abgeschlossenen Abfragen; die Snapshot-Prüfungen bleiben deshalb aktiv.
 

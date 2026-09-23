@@ -2,54 +2,39 @@
 
 **English** | [Deutsch](README_DE.md)
 
-Node-RED tools for SolarFlow battery systems and Home Assistant.
+Node-RED battery efficiency monitoring for SolarFlow installations. **Release v4.0.0** calculates an SOC-adjusted energy balance over a rolling 168-hour window from measured battery power. This repository supplies the monitoring component; the installation-specific regulator and snapshot builder are not included.
 
-> Independent, unofficial community project. Not affiliated with, sponsored by, certified by, or endorsed by Zendure.
+## Get started
 
-## Rolling power integration (V4)
+1. Read the [installation and calculation guide](rolling-efficiency/README.md).
+2. Provide the documented power snapshot and SOC context variables on the same flow tab. Power must be in watts: positive for charging, negative for discharging.
+3. Configure battery capacity, power limits and persistent context storage. Import [flow.json](rolling-efficiency/flow.json), select your Home Assistant server and connect the snapshot trigger.
+4. Run only one efficiency calculation. Existing users should follow the upgrade instructions before replacing nodes.
 
-The new [168-hour power-based calculation](rolling-efficiency/README.md) uses the existing regulator snapshot, retains a V3 buffer through an explicitly documented migration and starts calculating before seven days are available. [English flow](rolling-efficiency/flow.json) · [German flow](rolling-efficiency/flow_DE.json).
+The flow requires Node-RED, `node-red-contrib-home-assistant-websocket`, and the Home Assistant Node-RED Companion integration for the output sensor. Importing a flow does not create its input measurements or the external snapshot builder. Daily charge/discharge energy sensors are no longer required. New installations begin calculating once enough valid charge energy is available; they do not wait seven days.
 
-The released counter-based version remains available below and as [v3.3.0](https://github.com/krumpholz/solarflow-controller/releases/tag/v3.3.0). The input requirements below refer to that V3 component; V4 uses the [snapshot contract](rolling-efficiency/README.md#external-input-contract).
+## Included
 
-## Available component
+- Separate charge/discharge energy integration using actual sample times and signed power.
+- Rolling minute buffer, SOC correction, power/freshness checks and exclusion of uncertain intervals.
+- Persistent history and one-time migration of compatible V3 buffers without modifying the original.
+- Diagnostics with the latest ten exclusion episodes and their causes.
+- Equivalent [English](rolling-efficiency/flow.json) and [German](rolling-efficiency/flow_DE.json) flows and instructions.
 
-The repository provides a **seven-day SOC-adjusted battery efficiency flow**, in English and German. It calculates an energy balance from daily charging/discharging counters and battery state of charge, retains its measurement state across restarts, and publishes a percentage to Home Assistant.
+Release v4.0.0 contains calculation revision 4.1 and buffer schema 4. These numbers describe different things. Existing V4 buffers remain compatible.
 
-**Start here:** [Installation and calculation guide](round-trip-efficiency/README.md) · [English flow](round-trip-efficiency/flow.json) · [German flow](round-trip-efficiency/flow_DE.json)
+## Upgrading from v3.3.0
 
-The supplied flow monitors efficiency; it sends no battery control commands. A charge/discharge and grid-power regulator is not included in this repository.
+Replace daily-counter requests with the snapshot input path described in the [guide](rolling-efficiency/README.md). Preserve the flow tab, context stores, capacity and existing buffer. Imported daily history is distributed uniformly within each historical day and expires progressively. It cannot reconstruct past two-second measurements.
 
-## Requirements
+The old counter-based files are preserved in [v3.3.0](https://github.com/krumpholz/solarflow-controller/tree/v3.3.0/round-trip-efficiency); the current tree contains the power-based implementation only.
 
-- Home Assistant and Node-RED with the Home Assistant websocket nodes.
-- Separate daily charge and discharge energy counters in kWh.
-- Battery SOC in percent, supplied on the same Node-RED flow tab.
-- Configured battery capacity, power limits, timezone and persistent context stores.
-- The Home Assistant Node-RED companion integration for the result sensor.
+See [release notes](RELEASE_NOTES.md), [change history](CHANGELOG.md) and [contributing](CONTRIBUTING.md).
 
-The [component guide](round-trip-efficiency/README.md) lists every external input and explains how to create the energy sensors, supply SOC and configure the output. Input sensors are not created by importing the flow. New installations start from their first valid measurement pair and do not require a full seven-day buffer before displaying a result.
+## Scope and license
 
-## Related BLE project
+The result is a calculated SOC-adjusted energy balance, not a certified full-cycle efficiency measurement. SOC quantization, BMS recalibration, timing and excluded data affect accuracy. See the detailed [calculation limitations](rolling-efficiency/README.md) and [scope and warranty](DISCLAIMER.md).
 
-The [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) provides a separate local communication interface. Its firmware and installation instructions are maintained in that repository. This efficiency flow can use measurements from it or another suitable source with matching units and measurement boundaries.
+Independent community project; no affiliation with or endorsement by Zendure. See [project notice](NOTICE.md). The [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) is maintained separately.
 
-## Scope and interpretation
-
-The result uses measured energy counters and a capacity-based SOC correction. SOC resolution, BMS recalibration, source timing and missing intervals affect accuracy. It is not a certified AC-to-AC round-trip measurement. See the calculation guide and [scope and warranty notes](DISCLAIMER.md).
-
-## Repository guide
-
-| Location | Contents |
-| --- | --- |
-| [round-trip-efficiency](round-trip-efficiency/README.md) | Flow, Function sources, setup and calculation documentation |
-| [Energy sensor example](round-trip-efficiency/examples/home-assistant-energy.yaml) | Optional HA configuration from signed battery power to daily kWh counters |
-| [CHANGELOG.md](CHANGELOG.md) | Revision history |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Issues, contributions and developer instructions |
-| [NOTICE.md](NOTICE.md) | Independent-project and trademark notice |
-| [DISCLAIMER.md](DISCLAIMER.md) | Scope, measurement limitations and warranty |
-| [LICENSE](LICENSE) | MIT license |
-
-## License
-
-Released under the [MIT License](LICENSE). Product names belong to their respective owners and describe compatibility only. See [NOTICE.md](NOTICE.md).
+[MIT License](LICENSE) · [German license explanation](LICENSE_DE.md)

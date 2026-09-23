@@ -2,54 +2,39 @@
 
 [English](README.md) | **Deutsch**
 
-Node-RED-Werkzeuge für SolarFlow-Batteriesysteme und Home Assistant.
+Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v4.0.0** berechnet eine SOC-korrigierte Energiebilanz über gleitende 168 Stunden aus gemessener Batterieleistung. Dieses Repository enthält die Auswertung; der anlagenspezifische Regler und Snapshot-Builder sind nicht enthalten.
 
-> Unabhängiges, inoffizielles Community-Projekt. Es besteht keine Verbindung zu Zendure; das Projekt wird von Zendure weder gesponsert noch zertifiziert oder unterstützt.
+## Einstieg
 
-## Leistungsintegration mit gleitendem Fenster (V4)
+1. Die [Installations- und Berechnungsanleitung](rolling-efficiency/README_DE.md) lesen.
+2. Die dokumentierten Snapshot- und SOC-Kontextvariablen auf demselben Flow-Tab bereitstellen. Leistung in Watt: positiv beim Laden, negativ beim Entladen.
+3. Batteriekapazität, Leistungsgrenzen und dauerhaften Kontextspeicher konfigurieren. [flow_DE.json](rolling-efficiency/flow_DE.json) importieren, den Home-Assistant-Server auswählen und den Snapshot-Auslöser anschließen.
+4. Nur eine Wirkungsgradberechnung betreiben. Bei bestehenden Installationen zuerst die Umstiegsanleitung beachten.
 
-Die neue [168-Stunden-Berechnung aus Leistung](rolling-efficiency/README_DE.md) nutzt den vorhandenen Regler-Snapshot, übernimmt einen V3-Puffer mit ausdrücklich dokumentierter Übergangsnäherung und liefert bereits vor Ablauf von sieben Tagen Ergebnisse. [Deutscher Flow](rolling-efficiency/flow_DE.json) · [Englischer Flow](rolling-efficiency/flow.json).
+Benötigt werden Node-RED, `node-red-contrib-home-assistant-websocket` und für den Ausgabesensor die Node-RED-Companion-Integration in Home Assistant. Ein Flow-Import erzeugt weder die Eingabemesswerte noch den externen Snapshot-Builder. Tageszähler für Lade- und Entladeenergie sind nicht mehr erforderlich. Neue Installationen rechnen, sobald genügend gültige Ladeenergie vorhanden ist; sieben Tage Wartezeit sind nicht erforderlich.
 
-Die veröffentlichte Fassung mit Tageszählern bleibt unten und als [v3.3.0](https://github.com/krumpholz/solarflow-controller/releases/tag/v3.3.0) verfügbar. Die nachstehenden Eingabevoraussetzungen gelten für V3; V4 verwendet die [Snapshot-Eingaben](rolling-efficiency/README_DE.md#erforderliche-externe-werte).
+## Enthalten
 
-## Verfügbarer Bestandteil
+- Getrennte Integration von Lade- und Entladeenergie mit tatsächlichen Messzeitabständen und vorzeichenbehafteter Leistung.
+- Gleitender Minutenpuffer, SOC-Korrektur, Leistungs- und Aktualitätsprüfungen sowie Ausschluss unklarer Intervalle.
+- Dauerhafte Historie und einmalige Übernahme kompatibler V3-Puffer ohne Veränderung des Originals.
+- Diagnose der letzten zehn Ausschlussereignisse mit Ursachen.
+- Gleichwertige [deutsche](rolling-efficiency/flow_DE.json) und [englische](rolling-efficiency/flow.json) Flows und Anleitungen.
 
-Das Repository enthält einen **Flow für den SOC-korrigierten Batterie-Wirkungsgrad über sieben Tage**, auf Deutsch und Englisch. Er berechnet eine Energiebilanz aus täglichen Lade-/Entladezählern und dem Ladezustand der Batterie, speichert seinen Messzustand über Neustarts hinweg und veröffentlicht einen Prozentwert in Home Assistant.
+Release v4.0.0 enthält Berechnungsrevision 4.1 und Pufferschema 4. Diese Nummern bezeichnen unterschiedliche Dinge. Vorhandene V4-Puffer bleiben kompatibel.
 
-**Hier beginnen:** [Einbau und Berechnung](round-trip-efficiency/README_DE.md) · [Deutscher Flow](round-trip-efficiency/flow_DE.json) · [Englischer Flow](round-trip-efficiency/flow.json)
+## Umstieg von v3.3.0
 
-Der enthaltene Flow wertet den Wirkungsgrad aus und sendet keine Batterie-Steuerbefehle. Eine Lade-/Entlade- und Netzleistungsregelung ist in diesem Repository nicht enthalten.
+Die Tageszählerabfragen durch den Snapshot-Eingangspfad aus der [Anleitung](rolling-efficiency/README_DE.md) ersetzen. Flow-Tab, Kontextspeicher, Kapazität und bestehenden Puffer beibehalten. Übernommene Tageshistorie wird innerhalb des jeweiligen historischen Tages gleichmäßig verteilt und läuft schrittweise aus. Vergangene Zwei-Sekunden-Messungen lassen sich daraus nicht rekonstruieren.
 
-## Voraussetzungen
+Die alte Fassung mit Tageszählern bleibt in [v3.3.0](https://github.com/krumpholz/solarflow-controller/tree/v3.3.0/round-trip-efficiency) erhalten; der aktuelle Dateibaum enthält ausschließlich die leistungsbasierte Umsetzung.
 
-- Home Assistant und Node-RED mit den Home-Assistant-Websocket-Knoten.
-- Getrennte tägliche Lade- und Entladeenergiezähler in kWh.
-- Batterie-SOC in Prozent, auf demselben Node-RED-Flow-Tab bereitgestellt.
-- Eingestellte Batteriekapazität, Leistungsgrenzen, Zeitzone und dauerhafte Kontextspeicher.
-- Die Node-RED-Begleitintegration in Home Assistant für den Ergebnissensor.
+Siehe [Release-Hinweise](RELEASE_NOTES_DE.md), [Änderungsverlauf](CHANGELOG_DE.md) und [Mitwirken](CONTRIBUTING_DE.md).
 
-Die [Komponentenanleitung](round-trip-efficiency/README_DE.md) nennt alle externen Eingaben und erklärt das Erstellen der Energiesensoren, die SOC-Bereitstellung und die Ausgabe. Eingabesensoren werden beim Flow-Import nicht angelegt. Neuinstallationen beginnen mit dem ersten gültigen Messpaar; ein vollständig gefüllter Siebentagepuffer ist für die erste Ausgabe nicht erforderlich.
+## Umfang und Lizenz
 
-## Zugehöriges BLE-Projekt
+Das Ergebnis ist eine berechnete SOC-korrigierte Energiebilanz und keine zertifizierte Wirkungsgradmessung vollständiger Zyklen. SOC-Auflösung, BMS-Neukalibrierung, Zeitversatz und ausgeschlossene Daten beeinflussen die Genauigkeit. Siehe [Berechnungsgrenzen](rolling-efficiency/README_DE.md) und [Umfang und Gewährleistung](DISCLAIMER_DE.md).
 
-Der [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) stellt eine separate lokale Kommunikationsschnittstelle bereit. Firmware und Einbauanleitung werden dort gepflegt. Die Wirkungsgrad-Auswertung kann dessen Messwerte oder eine andere geeignete Quelle mit passenden Einheiten und Messgrenzen verwenden.
+Unabhängiges Community-Projekt ohne Verbindung zu oder Unterstützung durch Zendure. Siehe [Projekthinweise](NOTICE_DE.md). Der [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) wird separat gepflegt.
 
-## Umfang und Einordnung
-
-Das Ergebnis verwendet gemessene Energiezähler und eine kapazitätsbasierte SOC-Korrektur. SOC-Auflösung, BMS-Neukalibrierung, Quellenzeitversatz und fehlende Intervalle beeinflussen die Genauigkeit. Es handelt sich nicht um eine zertifizierte AC-zu-AC-Roundtrip-Messung. Siehe Berechnungsanleitung und [Hinweise zu Umfang und Gewährleistung](DISCLAIMER_DE.md).
-
-## Wegweiser durch das Repository
-
-| Ablage | Inhalt |
-| --- | --- |
-| [round-trip-efficiency](round-trip-efficiency/README_DE.md) | Flow, Funktionsquellen, Einbau und Berechnungsbeschreibung |
-| [Energiesensor-Beispiel](round-trip-efficiency/examples/home-assistant-energy.yaml) | Optionale HA-Konfiguration von vorzeichenbehafteter Batterieleistung zu kWh-Tageszählern |
-| [CHANGELOG_DE.md](CHANGELOG_DE.md) | Änderungshistorie |
-| [CONTRIBUTING_DE.md](CONTRIBUTING_DE.md) | Fehlermeldungen, Mitarbeit und Entwicklerhinweise |
-| [NOTICE_DE.md](NOTICE_DE.md) | Unabhängigkeit und Markenhinweise |
-| [DISCLAIMER_DE.md](DISCLAIMER_DE.md) | Umfang, Messgrenzen und Gewährleistung |
-| [LICENSE](LICENSE) | MIT-Lizenz |
-
-## Lizenz
-
-Veröffentlicht unter der [MIT-Lizenz](LICENSE). Produktnamen gehören den jeweiligen Rechteinhabern und beschreiben ausschließlich die Kompatibilität. Siehe [NOTICE_DE.md](NOTICE_DE.md).
+[MIT-Lizenz](LICENSE) · [Deutsche Erläuterung](LICENSE_DE.md)

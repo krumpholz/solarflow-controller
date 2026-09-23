@@ -1,8 +1,7 @@
 from pathlib import Path
-import json, importlib.util
+import json
+import localize as de
 R=Path(__file__).resolve().parent
-spec=importlib.util.spec_from_file_location('de',R.parent/'round-trip-efficiency/build-german-flow.py')
-de=importlib.util.module_from_spec(spec);spec.loader.exec_module(de)
 de.TEXT.update({
  'valid_measurement_resumed':'Gültige Messung wieder aufgenommen',
  'invalid_configuration':'Ungültige Konfiguration',
@@ -46,36 +45,19 @@ if (Array.isArray(ausgabe)) {
 return ausgabe;
 """)
 (R/'battery-efficiency_DE.js').write_text(localized)
-# A copy of the existing capture node, with v4 wording and heartbeat key.
-prepare=(R.parent/'round-trip-efficiency/prepare-cycle.js').read_text().replace('measurement requests / watchdog status','snapshot trigger / watchdog status').replace('both energy requests carry this same snapshot','the calculation uses this SOC snapshot').replace('batt_eff_last_completed_v3','batt_eff_last_completed_v4').replace('Requesting paired daily counters','Reading battery power snapshot')
+# Canonical sources and a code-free flow template; no V3 build dependency.
+prepare=(R/'prepare-cycle.js').read_text()
 de.TEXT['Reading battery power snapshot']='Batterieleistung aus Snapshot wird gelesen'
-(R/'prepare-cycle.js').write_text(prepare)
 (R/'prepare-cycle_DE.js').write_text(de.localize(prepare))
-old=json.loads((R.parent/'round-trip-efficiency/flow.json').read_text())
-nodes=[n for n in old if n['type'] not in ('api-current-state','inject')]
-watchdog=next(n for n in old if n['type']=='inject')
-watchdog.update(name='Snapshot watchdog every 2 seconds',repeat='2')
-nodes.append(watchdog)
+nodes=json.loads((R/'flow-template.json').read_text())
 for n in nodes:
- if n['type']=='function' and n['id']=='e46be25028e13f5d':n.update(func=source,name='Rolling 168-Hour Battery Efficiency')
- if n['id']=='effprepare000003':n.update(func=prepare,wires=[['e46be25028e13f5d'],['0e16d9dcd078a8e9','effdiagnostics03']])
- if n['type']=='comment':n.update(name='Connect snapshot diagnostic output to SOC capture; read README',info='Same flow tab as snapshot and SOC writer. Connect output 11 of the V1.3 snapshot builder to SOC capture. Set capacity and stores. Disable the old efficiency writer. No input energy sensors required. See rolling-efficiency/README.md.')
- if n['type']=='ha-sensor':n['name']='Battery Efficiency'
- if n['type']=='ha-entity-config':
-  n['name']='Battery Efficiency Sensor'
-  for row in n['haConfig']:
-   if row['property']=='name':row['value']='Battery Efficiency'
-# Give new imports their own node ids; flow context remains on the user's tab.
-idmap={n['id']:'v4'+n['id'] for n in nodes}
-for n in nodes:
- n['id']=idmap[n['id']]
- for key in ('server','entityConfig'):
-  if n.get(key) in idmap:n[key]=idmap[n[key]]
- if 'wires' in n:n['wires']=[[idmap.get(i,i) for i in w] for w in n['wires']]
+ if n['id']=='v4e46be25028e13f5d': n['func']=source
+ if n['id']=='v4effprepare000003': n['func']=prepare
+idmap={key:'v4'+key for key in ['e46be25028e13f5d','effprepare000003']}
 (R/'flow.json').write_text(json.dumps(nodes,indent=2,ensure_ascii=False)+'\n')
 for n in nodes:
- if n['id']==idmap['e46be25028e13f5d']:n.update(name='Batterie Wirkungsgrad',func=(R/'battery-efficiency_DE.js').read_text())
- if n['id']==idmap['effprepare000003']:n.update(name='SOC erfassen und Messzyklus starten',func=(R/'prepare-cycle_DE.js').read_text())
+ if n['id']==idmap['e46be25028e13f5d']:n.update(name='Batterie Wirkungsgrad',func=(R/'battery-efficiency_DE.js').read_text(),outputLabels=['Wirkungsgrad / HA-Sensor','Diagnose'])
+ if n['id']==idmap['effprepare000003']:n.update(name='SOC erfassen und Messzyklus starten',func=(R/'prepare-cycle_DE.js').read_text(),outputLabels=['Snapshot auswerten','Fehlende Messung / Diagnose'])
  if n['type']=='ha-sensor':n['name']='Lade Entlade Effizenz'
  if n['type']=='debug':n['name']='Wirkungsgrad Diagnose'
  if n['type']=='inject':n['name']='Snapshot-Überwachung alle 2 Sekunden'

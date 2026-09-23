@@ -53,9 +53,9 @@ for(const language of ['EN','DE']) {
  test(language+' old daily data expires gradually and is never reimported',()=>{const r=rig({code,time:new Date(2026,8,22,12).getTime()});const date=local(r.now-6*24*H);r.flow.set('batt_eff_state_v3',v3(r.now,[day(date,2,1.6)]),'file');r.tick();const o=result(r.tick({dt:24*H}));close(o.imported_charge_kwh,1-2000/86400000*2,1e-6);r.tick({dt:7*24*H});assert.equal(r.state().migration.records.length,0);r.boot();assert.equal(result(r.tick()).legacy_days_in_window,0);});
 }
 
-test('old SOC capture works unchanged and its watchdog remains satisfied',()=>{
+test('legacy SOC capture watchdog key remains supported',()=>{
  const r=rig();r.tick();
- const prep=fs.readFileSync(path.join(ROOT,'../round-trip-efficiency/prepare-cycle.js'),'utf8');
+ const prep=fs.readFileSync(path.join(ROOT,'prepare-cycle.js'),'utf8').replaceAll('batt_eff_last_completed_v4','batt_eff_last_completed_v3');
  const ctx=new Map();class Clock extends Date{static now(){return r.now;}}
  const f=new vm.Script('(function(msg){'+prep+'})').runInNewContext({Date:Clock,flow:r.flow,context:{get:k=>ctx.get(k),set:(k,v)=>ctx.set(k,v)},node:{status(){},error(){}}});
  for(let i=0;i<12;i++) {r.tick();const pair=f({});assert.equal(pair[1],null);assert.equal(r.run(pair[0]),null);}
@@ -167,3 +167,12 @@ for (const lang of ['','_DE']) {
   assert.equal(r.state().exclusionLog.events[0].excluded_ms,0);assert.equal(out[1].result.recent_exclusions[0].excluded_ms,0);
  });
 }
+
+ test('exported Function bodies exactly match canonical language sources',()=>{
+  for(const lang of ['', '_DE']) {
+   const nodes=JSON.parse(fs.readFileSync(path.join(ROOT,`flow${lang}.json`),'utf8'));
+   for(const [id,file] of [['v4e46be25028e13f5d','battery-efficiency'],['v4effprepare000003','prepare-cycle']]) {
+    assert.equal(nodes.find(n=>n.id===id).func,fs.readFileSync(path.join(ROOT,`${file}${lang}.js`),'utf8'));
+   }
+  }
+ });

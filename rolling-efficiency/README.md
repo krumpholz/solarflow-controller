@@ -1,8 +1,10 @@
-# Battery efficiency from power – version 4.1
+# Battery efficiency from power – release v4.0.0
+
+Release **v4.0.0** uses calculation revision **4.1** in diagnostics and buffer schema **4**. Existing V4.0/V4.1 buffers continue to be used.
 
 **English** | [Deutsch](README_DE.md)
 
-A rolling 168-hour energy balance using signed battery power from the `1.3-SOLAR-G-ESP-BATT-FALLBACK` snapshot builder. Daily energy counters are no longer inputs. The Function has two outputs: efficiency and diagnostics. The counter-based version remains available in [round-trip-efficiency](../round-trip-efficiency/README.md).
+A rolling 168-hour energy balance using signed battery power from the `1.3-SOLAR-G-ESP-BATT-FALLBACK` snapshot builder. Daily energy counters are no longer inputs. The Function has two outputs: efficiency and diagnostics. The counter-based version remains available in [release v3.3.0](https://github.com/krumpholz/solarflow-controller/tree/v3.3.0/round-trip-efficiency).
 
 ## Upgrade an existing installation
 
@@ -123,7 +125,7 @@ The old `sensor.batterie_lade_energie_pro_tag` and `sensor.batterie_entlade_ener
 
 [MIT license](../LICENSE) · [Trademark notice](../NOTICE.md) · [Scope and warranty](../DISCLAIMER.md)
 
-## Exclusion diagnostics from version 4.1
+## Exclusion diagnostics
 
 Upgrade by replacing the complete calculation Function body. Keep wiring, capacity and existing context. As an alternative to the snapshot diagnostic output, the regulator's existing two-second trigger after its one-second delay can trigger SOC capture. A fixed delay cannot guarantee completed requests; snapshot validation therefore remains active.
 
