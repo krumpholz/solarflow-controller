@@ -19,7 +19,8 @@ try {
     let warning = null;
     if (now - completed > 15000) {
         flow.set("la_ela_es", null, "file");
-        warning = {payload: null, result: {valid: false, reason: "measurement_timeout", timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}};
+        flow.set("la_ela_es_mean_7d", null, "file");
+        warning = {payload: null, result: {valid: false, mean_valid: false, mean_window_complete: false, mean_covered_hours: null, mean_coverage_pct: null, reason: "measurement_timeout", timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}};
         node.status({fill: "red", shape: "ring", text: "No completed measurement cycle"});
     } else {
         node.status({fill: "blue", shape: "dot", text: "Reading battery power snapshot"});
@@ -27,5 +28,5 @@ try {
     return [msg, warning];
 } catch (err) {
     node.error(`Context configuration error: ${err.message}`);
-    return [null, {payload: null, result: {valid: false, reason: "context_configuration_error", timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}}];
+    return [null, {payload: null, result: {valid: false, mean_valid: false, mean_window_complete: false, mean_covered_hours: null, mean_coverage_pct: null, reason: "context_configuration_error", timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}}];
 }

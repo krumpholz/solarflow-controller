@@ -2,7 +2,7 @@
 
 **English** | [Deutsch](README_DE.md)
 
-Node-RED battery efficiency monitoring for SolarFlow installations. **Release v4.0.0** calculates an SOC-adjusted energy balance over a rolling 168-hour window from measured battery power. This repository supplies the monitoring component; the installation-specific regulator and snapshot builder are not included.
+Node-RED battery efficiency monitoring for SolarFlow installations. **Release v5.0.0** adds a time-weighted rolling 7-day mean of the existing SOC-adjusted 168-hour energy balance. The smoother value is available on output 1, the original balance on output 2 and diagnostics on output 3. This repository supplies the monitoring component; the installation-specific regulator and snapshot builder are not included.
 
 ## Support this project
 
@@ -24,12 +24,19 @@ The flow requires Node-RED, `node-red-contrib-home-assistant-websocket`, and the
 ## Included
 
 - Separate charge/discharge energy integration using actual sample times and signed power.
+- Time-weighted 7-day mean of unrounded valid efficiency values, with persistent history and disclosed coverage.
 - Rolling minute buffer, SOC correction, power/freshness checks and exclusion of uncertain intervals.
 - Persistent history and one-time migration of compatible V3 buffers without modifying the original.
 - Diagnostics with the latest ten exclusion episodes and their causes.
 - Equivalent [English](rolling-efficiency/flow.json) and [German](rolling-efficiency/flow_DE.json) flows and instructions.
 
-Release v4.0.0 contains calculation revision 4.1 and buffer schema 4. These numbers describe different things. Existing V4 buffers remain compatible.
+Release v5.0.0 contains calculation revision 5.0 and energy buffer schema 4, with an additive mean-history schema 1. Existing V4 energy buffers remain compatible; the new mean history starts at upgrade. The changed output order requires rewiring, which is why this is a major release.
+
+## Upgrading from v4.0.0
+
+Set the calculation Function to **three outputs**. Connect output 1 to the new mean sensor or an automation, move the existing efficiency sensor from output 1 to **output 2**, and move diagnostics from output 2 to **output 3**. Keep the flow tab, context stores and configured capacity. Update the capture/watchdog Function as described in the [guide](rolling-efficiency/README.md), so a timeout clears both sensors. Do not reset the energy buffer.
+
+The mean becomes available after the first consecutive pair of valid efficiency samples. It initially covers less than seven days. `mean_window_complete` reports a fully covered 168-hour mean window; gaps reduce coverage. Smoothing does not remove systematic SOC errors or make the result a certified round-trip measurement.
 
 ## Upgrading from v3.3.0
 

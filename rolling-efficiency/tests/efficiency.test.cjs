@@ -23,7 +23,7 @@ function rig({time=Date.parse('2026-09-22T10:00:00Z'),data=new Map(),code=body}=
  }
  return {tick,boot,flow,data,run:m=>fn(m),get now(){return clock},state:()=>flow.get('batt_eff_state_v4','file')};
 }
-function result(out){assert.ok(out);return out[0].result;}
+function result(out){assert.ok(out);assert.equal(out.length,3);return out[1].result;}
 function close(a,b,eps=1e-9){assert.ok(Math.abs(a-b)<eps,`${a} != ${b}`);}
 function v3(time,days){return {version:3,unit:'kWh',fingerprint:JSON.stringify([8.64,'sensor.batterie_lade_energie_pro_tag','sensor.batterie_entlade_energie_pro_tag',Intl.DateTimeFormat().resolvedOptions().timeZone]),last:{ts:time,date:local(time),soc:50,charge:1,discharge:1},days};}
 function local(t){const d=new Date(t);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
@@ -176,3 +176,212 @@ for (const lang of ['','_DE']) {
    }
   }
  });
+
+// Independent synthetic energy history yields eta=80 with no new power flow.
+// One kWh charged / 0.8 kWh discharged across 100 minute records.
+function meanRig(code=body) {
+ const r=rig({code});r.tick({dt:0,p:0});const s=r.state(),t=r.now;
+ for(let i=100;i>0;i--)s.buckets.push([t-i*60000,t-(i-1)*60000,.01,.008,0,60000,30]);
+ r.boot();const out=r.tick({p:0});close(result(out).eta_raw_pct,80);
+ return {r,out,eta:(pct,dt=2000)=>r.tick({p:0,soc:50+(pct-80)/8.64,dt})};
+}
+function fullMean(r,value=80) {
+ const m=r.state().mean,t=r.now;
+ m.created=t-168*H;m.buckets=[];
+ for(let i=10080;i>0;i--)m.buckets.push([t-i*60000,t-(i-1)*60000,value*60000,60000]);
+}
+for (const language of ['EN','DE']) {
+ const code=language==='EN'?body:fs.readFileSync(path.join(ROOT,'battery-efficiency_DE.js'),'utf8');
+ test(language+' three outputs: mean first, original second, diagnostics third',()=>{
+  const {r,out,eta}=meanRig(code);assert.equal(out[0].payload,null);assert.equal(out[0].result.valid,false);
+  assert.equal(out[1].payload,80);assert.equal(out[2].payload,80);assert.equal(out[0].result.source_valid,true);
+  assert.equal(out[0].result.reason,'mean_baseline_initialized');
+  const next=eta(84);assert.equal(next[0].payload,82);assert.equal(next[1].payload,84);
+  assert.equal(next[2].payload,84);assert.equal(next[0].result.valid,true);
+  assert.equal(r.flow.get('la_ela_es','file'),84);assert.equal(r.flow.get('la_ela_es_mean_7d','file'),82);
+  if(language==='DE')assert.equal(next[0].result.grund,'Gleitender 7-Tage-Mittelwert berechnet');
+ });
+ test(language+' elapsed time weights irregular intervals rather than sample counts',()=>{
+  const {r,eta}=meanRig(code);eta(84,2000);const out=eta(76,8000);
+  close(out[0].payload,80.4);close(out[0].result.mean_covered_hours,10000/H,1e-6);
+  close(r.state().mean.buckets.reduce((sum,b)=>sum+b[2],0),82*2000+80*8000,1e-6);
+ });
+ test(language+' linear trace mean is invariant under additional samples',()=>{
+  const a=meanRig(code),b=meanRig(code);a.eta(84,8000);
+  for(const v of [81,82,83,84])b.eta(v,2000);
+  close(a.r.state().mean.buckets[0][2],b.r.state().mean.buckets[0][2],1e-6);
+  assert.equal(a.r.state().mean.buckets[0][3],b.r.state().mean.buckets[0][3]);
+ });
+ test(language+' mean uses unrounded raw eta, including the zero-percent endpoint',()=>{
+  const {r,eta}=meanRig(code);eta(80.049);const out=eta(80.049);
+  close(r.state().mean.last.eta,80.049,1e-9);assert.equal(out[1].payload,80);
+  close(r.state().mean.buckets.reduce((sum,b)=>sum+b[2],0)/4000,80.03675,1e-9);
+  const zero=rig({code});zero.tick({p:2400});let z;
+  for(let i=0;i<80;i++)z=zero.tick({p:2400});assert.equal(z[0].payload,0);
+ });
+ test(language+' mean splits a linear interval at the minute boundary without losing area',()=>{
+  const {r,eta}=meanRig(code);r.tick({p:0,dt:54000});eta(80);eta(80);
+  const start=r.now,old=r.state().mean.buckets.reduce((sum,b)=>sum+b[2],0);
+  eta(86,6000);const m=r.state().mean;
+  assert.equal(start%60000,0);close(m.buckets.reduce((sum,b)=>sum+b[2],0)-old,83*6000,1e-6);
+  // Start 4 seconds before a minute ends, then cross it in six seconds.
+  r.tick({p:0,soc:50+6/8.64,dt:10000});r.tick({p:0,soc:50+6/8.64,dt:10000});
+  r.tick({p:0,soc:50+6/8.64,dt:10000});r.tick({p:0,soc:50+6/8.64,dt:10000});
+  r.tick({p:0,soc:50+6/8.64,dt:10000});const before=m.buckets.reduce((sum,b)=>sum+b[2],0);
+  assert.equal(r.now%60000,56000);eta(80,6000);
+  close(m.buckets.reduce((sum,b)=>sum+b[2],0)-before,83*6000,1e-6);
+  assert.equal(m.buckets.at(-2)[1]%60000,0);
+ });
+ test(language+' failures clear both outputs and preserve history without filling the missing time',()=>{
+  const {r,eta}=meanRig(code);eta(80);const before=JSON.stringify(r.state().mean.buckets);
+  const bad=r.tick({source:'esp',p:0});assert.equal(bad[0].payload,null);assert.equal(bad[1].payload,null);
+  assert.equal(bad[2].result.reason,'battery_fallback_excluded');assert.equal(r.state().mean.last,null);
+  assert.equal(r.flow.get('la_ela_es_mean_7d','file'),null);assert.equal(JSON.stringify(r.state().mean.buckets),before);
+  assert.equal(r.tick({p:0})[0].payload,null);eta(80);assert.equal(JSON.stringify(r.state().mean.buckets),before);
+  const out=eta(80);assert.equal(out[0].payload,80);assert.equal(r.state().mean.buckets.reduce((s,b)=>s+b[3],0),4000);
+  assert.equal(out[0].result.mean_window_complete,false);
+ });
+ test(language+' out-of-range efficiency and SOC jumps never contribute to mean history',()=>{
+  const {r,eta}=meanRig(code);eta(90);const before=JSON.stringify(r.state().mean.buckets);
+  const bad=eta(101);assert.equal(result(bad).reason,'efficiency_out_of_range');assert.equal(bad[0].payload,null);
+  assert.equal(JSON.stringify(r.state().mean.buckets),before);assert.equal(r.state().mean.last,null);
+  eta(90);assert.equal(JSON.stringify(r.state().mean.buckets),before);eta(90);
+  const duration=r.state().mean.buckets.reduce((s,b)=>s+b[3],0);
+  r.tick({p:0,soc:80});r.tick({p:0,soc:80});r.tick({p:0,soc:80});
+  assert.equal(r.state().mean.buckets.reduce((s,b)=>s+b[3],0),duration);assert.equal(r.state().mean.last,null);
+ });
+ test(language+' duplicate valid snapshots do not change any mean sample or duration',()=>{
+  const {r,eta}=meanRig(code);eta(80);const before=JSON.stringify(r.state());
+  assert.equal(r.tick({p:0,id:r.state().last.id,soc:51}),null);assert.equal(JSON.stringify(r.state()),before);
+ });
+ test(language+' serialized restart retains the mean and does not manufacture restart coverage',()=>{
+  const {r,eta}=meanRig(code);eta(80);const before=r.state().mean.buckets.reduce((s,b)=>s+b[3],0);
+  const resumed=rig({code,time:r.now,data:new Map(JSON.parse(JSON.stringify([...r.data])))});
+  const out=resumed.tick({p:0});assert.equal(out[0].payload,80);
+  assert.equal(resumed.state().mean.buckets.reduce((s,b)=>s+b[3],0),before+2000);
+  resumed.boot();resumed.tick({p:0,dt:30000});assert.equal(resumed.state().mean.last,null);
+  assert.equal(resumed.state().mean.buckets.reduce((s,b)=>s+b[3],0),before+2000);
+ });
+ test(language+' upgrade retains V4 energy but begins a new empty mean history',()=>{
+  const {r}=meanRig(code);const s=r.state();delete s.mean;
+  const energy=JSON.stringify(s.buckets.slice(0,100)),migration=JSON.stringify(s.migration),excluded=s.excludedIntervals;
+  r.boot();const out=r.tick({p:0});assert.equal(out[1].payload,80);assert.equal(out[0].payload,null);
+  assert.equal(JSON.stringify(s.buckets.slice(0,100)),energy);assert.equal(JSON.stringify(s.migration),migration);
+  assert.equal(s.excludedIntervals,excluded);assert.equal(s.mean.buckets.length,0);assert.equal(s.mean.created,r.now);
+ });
+ test(language+' V3 migration supplies an initial eta but cannot invent seven days of mean samples',()=>{
+  const r=rig({code});r.flow.set('batt_eff_state_v3',v3(r.now,[day(local(r.now),1,.8)]),'file');
+  const out=r.tick({p:0});assert.equal(out[1].payload,80);assert.equal(out[0].payload,null);
+  assert.equal(r.state().mean.buckets.length,0);assert.equal(out[0].result.mean_history_hours,0);
+  assert.equal(r.tick({p:0})[0].payload,80);
+ });
+ test(language+' rolling mean retires exactly the oldest fraction and remains bounded',()=>{
+  const {r}=meanRig(code);fullMean(r);const m=r.state().mean;m.buckets[0][2]=60*60000;
+  r.boot();const out=r.tick({p:0});const expected=(80*168*H-20*(60000-2000))/(168*H);
+  close(out[0].result.eta_mean_7d_raw_pct,Number(expected.toFixed(3)),1e-9);
+  assert.equal(out[0].result.mean_window_complete,true);assert.equal(out[0].result.mean_coverage_pct,100);
+  assert.equal(out[0].result.mean_covered_hours,168);assert.equal(out[0].result.mean_partial_boundary_bucket,true);
+  assert.ok(m.buckets.length<=10081);assert.ok(JSON.stringify(r.state()).length<2000000);
+ });
+ test(language+' a missing interval cannot be counted as a complete mean window',()=>{
+  const {r}=meanRig(code);fullMean(r);r.state().mean.buckets[20][2]-=80*2000;r.state().mean.buckets[20][3]-=2000;
+  r.boot();const out=r.tick({p:0});assert.equal(out[0].payload,80);assert.equal(out[0].result.mean_window_complete,false);
+  close(out[0].result.mean_covered_hours,Number((168-2000/H).toFixed(6)),1e-9);
+ });
+ test(language+' an eight-day outage expires all mean records instead of displaying stale efficiency',()=>{
+  const {r,eta}=meanRig(code);eta(80);const out=r.tick({p:0,dt:8*24*H});assert.equal(out[0].payload,null);
+  assert.equal(r.state().mean.buckets.length,0);assert.equal(out[0].result.mean_covered_hours,0);
+  assert.equal(out[0].result.eta_mean_7d_raw_pct,null);
+ });
+ test(language+' corrupted mean state fails closed without discarding the original energy buffer',()=>{
+  for(const bad of [null,{}, {version:1,created:1,last:null,buckets:[[2,1,0,1]]},
+   {version:1,created:1,last:null,buckets:[[1,2,101,1]]},
+   {version:1,created:1,last:{ts:Date.parse('2030-01-01T00:00:00Z'),eta:80},buckets:[]}]) {
+   const {r}=meanRig(code),s=r.state(),before=JSON.stringify(s.buckets);s.mean=bad;r.boot();
+   const out=r.tick({p:0});assert.equal(result(out).reason,'invalid_v4_state_or_configuration');
+   assert.equal(out[0].payload,null);assert.equal(JSON.stringify(s.buckets),before);
+  }
+ });
+ test(language+' mean output and diagnostics are independent copies of mutable metadata',()=>{
+  const {r,eta}=meanRig(code),out=eta(80);out[0].result.eta_mean_7d_pct=999;
+  assert.equal(out[1].result.eta_mean_7d_pct,80);assert.equal(out[2].result.eta_mean_7d_pct,80);
+  out[1].result.recent_exclusions.push({id:999});assert.equal(out[2].result.recent_exclusions.length,0);
+  assert.equal(r.state().exclusionLog.events.length,0);
+ });
+ test(language+' UTC window duration stays 168 hours across local DST transitions',()=>{
+  const r=rig({code,time:new Date(2026,9,25,3,10).getTime()});r.tick({p:0});const t=r.now,s=r.state();
+  for(let i=100;i>0;i--)s.buckets.push([t-i*60000,t-(i-1)*60000,.01,.008,0,60000,30]);
+  r.boot();r.tick({p:0});fullMean(r);r.boot();const out=r.tick({p:0});
+  assert.equal(Date.parse(out[0].result.mean_window_end)-Date.parse(out[0].result.mean_window_start),168*H);
+  assert.equal(out[0].result.mean_window_complete,true);
+ });
+}
+
+test('both import flows preserve existing sensor IDs and wire three calculation outputs in order',()=>{
+ for(const lang of ['', '_DE']) {
+  const nodes=JSON.parse(fs.readFileSync(path.join(ROOT,`flow${lang}.json`),'utf8'));
+  const calc=nodes.find(n=>n.id==='v4e46be25028e13f5d');assert.equal(calc.outputs,3);
+  assert.equal(calc.outputLabels.length,3);
+  assert.deepEqual(calc.wires,[['v5effmean00000001'],['v40e16d9dcd078a8e9'],['v4effdiagnostics03']]);
+  assert.equal(nodes.find(n=>n.id==='v40e16d9dcd078a8e9').entityConfig,'v4bb523511b4c4476f');
+  const warning=nodes.find(n=>n.id==='v4effprepare000003').wires[1];
+  for(const id of ['v5effmean00000001','v40e16d9dcd078a8e9','v4effdiagnostics03'])assert.ok(warning.includes(id));
+  for(const n of nodes.filter(n=>n.type==='ha-sensor')) {
+   const config=nodes.find(c=>c.id===n.entityConfig);
+   assert.equal(config.haConfig.find(p=>p.property==='unit_of_measurement').value,'%');
+  }
+ }
+});
+test('watchdog clears both persistent output keys and warns both sensors after 15 seconds',()=>{
+ for(const lang of ['', '_DE']) {
+  const r=rig(),ctx=new Map();class Clock extends Date{static now(){return r.now;}}
+  const prep=fs.readFileSync(path.join(ROOT,`prepare-cycle${lang}.js`),'utf8');
+  const f=new vm.Script('(function(msg){'+prep+'})').runInNewContext({Date:Clock,flow:r.flow,context:{get:k=>ctx.get(k),set:(k,v)=>ctx.set(k,v)},node:{status(){},error(){}}});
+  f({});r.flow.set('la_ela_es',80,'file');r.flow.set('la_ela_es_mean_7d',79,'file');
+  r.tick({dt:16000,p:null});const out=f({});assert.equal(out[1].payload,null);
+  assert.equal(out[1].result.valid,false);assert.equal(out[1].result.mean_valid,false);
+  assert.equal(out[1].result.reason,'measurement_timeout');assert.equal(r.flow.get('la_ela_es','file'),null);
+  assert.equal(r.flow.get('la_ela_es_mean_7d','file'),null);
+ }
+});
+
+for(const language of ['EN','DE']) {
+ const code=language==='EN'?body:fs.readFileSync(path.join(ROOT,'battery-efficiency_DE.js'),'utf8');
+ test(language+' exact 100-percent arithmetic endpoint remains valid through SOC integration',()=>{
+  const {r,eta}=meanRig(code);eta(90);const out=eta(100);
+  assert.equal(out[1].payload,100);assert.equal(result(out).valid,true);
+  eta(100);r.boot();assert.equal(eta(100)[1].payload,100);
+ });
+}
+
+for(const language of ['EN','DE']) {
+ const code=language==='EN'?body:fs.readFileSync(path.join(ROOT,'battery-efficiency_DE.js'),'utf8');
+ test(language+' exact zero-percent endpoint is accepted, but real overshoot remains invalid',()=>{
+  const {eta}=meanRig(code);for(const v of [64,48,32,16])eta(v);
+  const zero=eta(0);assert.equal(zero[1].payload,0);assert.equal(result(zero).valid,true);
+  const below=eta(-0.00001);assert.equal(below[0].payload,null);assert.equal(below[1].payload,null);
+  assert.equal(result(below).reason,'efficiency_out_of_range');
+  const b=meanRig(code);b.eta(90);b.eta(100);const above=b.eta(100.00001);
+  assert.equal(above[1].payload,null);assert.equal(result(above).reason,'efficiency_out_of_range');
+ });
+}
+
+for(const language of ['EN','DE']) {
+ const code=language==='EN'?body:fs.readFileSync(path.join(ROOT,'battery-efficiency_DE.js'),'utf8');
+ test(language+' both complete seven-day buffers survive serialization within a bounded storage budget',()=>{
+  const {r}=meanRig(code),s=r.state(),t=r.now;fullMean(r);s.buckets=[];
+  for(let i=10080;i>0;i--)s.buckets.push([t-i*60000,t-(i-1)*60000,.01,.008,0,60000,30]);
+  const serialized=JSON.stringify([...r.data]);assert.ok(serialized.length<2500000);
+  const b=rig({code,time:r.now,data:new Map(JSON.parse(serialized))}),out=b.tick({p:0});
+  assert.equal(out[0].payload,80);assert.equal(out[0].result.mean_window_complete,true);
+  assert.equal(result(out).window_complete,true);assert.ok(b.state().buckets.length<=10081);
+  assert.ok(b.state().mean.buckets.length<=10081);
+ });
+ test(language+' re-upgrade after a V4 writer advanced its baseline excludes the missing mean interval',()=>{
+  const {r,eta}=meanRig(code);eta(80);const s=r.state(),before=JSON.stringify(s.mean.buckets);
+  s.last={...s.last,ts:r.now+2000,id:'v4-writer-cycle'};r.boot();const out=r.tick({p:0,dt:4000});
+  assert.equal(result(out).valid,true);assert.equal(out[0].payload,80);
+  assert.equal(JSON.stringify(s.mean.buckets),before);assert.equal(s.mean.last.ts,r.now);
+  r.tick({p:0});assert.equal(s.mean.buckets.reduce((sum,b)=>sum+b[3],0),4000);
+ });
+}

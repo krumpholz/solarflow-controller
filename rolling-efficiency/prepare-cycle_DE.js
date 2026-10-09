@@ -1,13 +1,7 @@
 /*
- * Batterie Wirkungsgrad – gleitende 168 Stunden, Version 4.1.
- * Deutsche Oberfläche, identischer englischer Rechenkern. MIT-Lizenz.
- * Kapazität und Leistung oben im CFG des Rechenkerns prüfen.
- * Snapshot-Werte aus dem Standard-Flow-Speicher, SOC aus memoryOnly.
- * Neuer Puffer: batt_eff_state_v4 im Dateispeicher file mit Cache.
- * Vorhandener V3-Puffer wird einmal übernommen und nicht verändert.
- * Alte Tageswerte: gleichmäßige zeitliche Gewichtung als Übergangsnäherung.
- * Minutenpuffer: älteste angeschnittene Minute anteilig gewichten.
- * Zwei Ausgänge: HA-Wirkungsgrad / Diagnose. Anleitung: README_DE.md.
+ * SOC erfassen und Snapshot auswerten; Watchdog für beide Ergebnissensoren.
+ * Zwei Ausgänge: Berechnung auslösen / fehlende Messung und Diagnose.
+ * Gleicher Flow-Tab wie Snapshot und SOC-Schreiber. MIT-Lizenz.
  */
 const DE_TEXTE = {
     "invalid_soc": "Ladezustand fehlt oder ist ungültig",
@@ -40,6 +34,9 @@ const DE_TEXTE = {
     "invalid_v3_state": "V3-Puffer ungültig",
     "invalid_v3_cutover": "V3-Messzeitpunkt ungültig oder neuer als Snapshot",
     "v3_configuration_mismatch": "V3-Kapazität, Entitäten oder Zeitzone stimmen nicht überein",
+    "invalid_efficiency_sample": "Aktueller Wirkungsgrad ungültig – Mittelwert pausiert",
+    "mean_baseline_initialized": "Mittelwert-Ausgangspunkt gesetzt – nächstes gültiges Intervall abwarten",
+    "mean_available": "Gleitender 7-Tage-Mittelwert berechnet",
     "Reading battery power snapshot": "Batterieleistung aus Snapshot wird gelesen"
 };
 
@@ -80,7 +77,8 @@ try {
     let warning = null;
     if (now - completed > 15000) {
         flow.set("la_ela_es", null, "file");
-        warning = {payload: null, result: {valid: false, reason: "measurement_timeout", timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}};
+        flow.set("la_ela_es_mean_7d", null, "file");
+        warning = {payload: null, result: {valid: false, mean_valid: false, mean_window_complete: false, mean_covered_hours: null, mean_coverage_pct: null, reason: "measurement_timeout", timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}};
         node.status({fill: "red", shape: "ring", text: "No completed measurement cycle"});
     } else {
         node.status({fill: "blue", shape: "dot", text: "Reading battery power snapshot"});
@@ -88,7 +86,7 @@ try {
     return [msg, warning];
 } catch (err) {
     node.error(`Context configuration error: ${err.message}`);
-    return [null, {payload: null, result: {valid: false, reason: "context_configuration_error", timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}}];
+    return [null, {payload: null, result: {valid: false, mean_valid: false, mean_window_complete: false, mean_covered_hours: null, mean_coverage_pct: null, reason: "context_configuration_error", timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}}];
 }
 
 })(msg, knotenDeutsch);
@@ -98,6 +96,8 @@ if (Array.isArray(ausgabe)) {
         if (!nachricht || !nachricht.result) continue;
         const r = nachricht.result;
         r.grund = deutsch(r.reason);
+        if (r.mean_reason) r.mittelwertgrund = deutsch(r.mean_reason);
+        if (r.source_reason) r.quellgrund = deutsch(r.source_reason);
         if (r.interval_status) r.intervallstatus = deutsch(r.interval_status);
         if (r.legacy_migration) r.pufferuebernahme = deutsch(r.legacy_migration.status);
         if (r.detail) r.detail = deutsch(r.detail);

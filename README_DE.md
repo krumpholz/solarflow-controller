@@ -2,7 +2,7 @@
 
 [English](README.md) | **Deutsch**
 
-Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v4.0.0** berechnet eine SOC-korrigierte Energiebilanz über gleitende 168 Stunden aus gemessener Batterieleistung. Dieses Repository enthält die Auswertung; der anlagenspezifische Regler und Snapshot-Builder sind nicht enthalten.
+Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v5.0.0** ergänzt einen zeitgewichteten gleitenden 7-Tage-Mittelwert der bisherigen SOC-korrigierten 168-Stunden-Energiebilanz. Der geglättete Wert liegt an Ausgang 1, die bisherige Bilanz an Ausgang 2 und die Diagnose an Ausgang 3. Dieses Repository enthält die Auswertung; der anlagenspezifische Regler und Snapshot-Builder sind nicht enthalten.
 
 ## Unterstützung
 
@@ -24,12 +24,19 @@ Benötigt werden Node-RED, `node-red-contrib-home-assistant-websocket` und für 
 ## Enthalten
 
 - Getrennte Integration von Lade- und Entladeenergie mit tatsächlichen Messzeitabständen und vorzeichenbehafteter Leistung.
+- Zeitgewichteter 7-Tage-Mittelwert aus ungerundeten gültigen Wirkungsgradwerten mit dauerhafter Historie und ausgewiesener Abdeckung.
 - Gleitender Minutenpuffer, SOC-Korrektur, Leistungs- und Aktualitätsprüfungen sowie Ausschluss unklarer Intervalle.
 - Dauerhafte Historie und einmalige Übernahme kompatibler V3-Puffer ohne Veränderung des Originals.
 - Diagnose der letzten zehn Ausschlussereignisse mit Ursachen.
 - Gleichwertige [deutsche](rolling-efficiency/flow_DE.json) und [englische](rolling-efficiency/flow.json) Flows und Anleitungen.
 
-Release v4.0.0 enthält Berechnungsrevision 4.1 und Pufferschema 4. Diese Nummern bezeichnen unterschiedliche Dinge. Vorhandene V4-Puffer bleiben kompatibel.
+Release v5.0.0 enthält Berechnungsrevision 5.0 und Energie-Pufferschema 4 mit einem ergänzten Mittelwert-Pufferschema 1. Vorhandene V4-Energiepuffer bleiben kompatibel; die neue Mittelwerthistorie beginnt beim Update. Die geänderte Ausgangsreihenfolge erfordert eine neue Verdrahtung und begründet den Sprung der Hauptversion.
+
+## Umstieg von v4.0.0
+
+Die Berechnungsfunktion auf **drei Ausgänge** stellen. Ausgang 1 mit dem neuen Mittelwertsensor oder einer Automatik verbinden, den bisherigen Wirkungsgradsensor von Ausgang 1 auf **Ausgang 2** und die Diagnose von Ausgang 2 auf **Ausgang 3** umstecken. Flow-Tab, Kontextspeicher und eingestellte Kapazität beibehalten. Den SOC-/Watchdog-Knoten gemäß [Anleitung](rolling-efficiency/README_DE.md) aktualisieren, damit ein Timeout beide Sensoren zurücksetzt. Den Energiepuffer nicht löschen.
+
+Der Mittelwert steht nach dem ersten aufeinanderfolgenden Paar gültiger Wirkungsgradwerte bereit. Anfangs umfasst er weniger als sieben Tage. `mean_window_complete` zeigt ein vollständig abgedecktes 168-Stunden-Mittelwertfenster an; Lücken vermindern die Abdeckung. Die Glättung beseitigt keine systematischen SOC-Fehler und macht das Ergebnis nicht zu einer zertifizierten Roundtrip-Messung.
 
 ## Umstieg von v3.3.0
 

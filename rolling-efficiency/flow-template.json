@@ -3,8 +3,8 @@
     "id": "v4e46be25028e13f5d",
     "type": "function",
     "z": "577158dd0ea2615a",
-    "name": "Rolling 168-Hour Battery Efficiency",
-    "outputs": 2,
+    "name": "Battery Efficiency and Rolling 7-Day Mean",
+    "outputs": 3,
     "timeout": 0,
     "noerr": 0,
     "initialize": "",
@@ -14,11 +14,19 @@
     "y": 260,
     "wires": [
       [
+        "v5effmean00000001"
+      ],
+      [
         "v40e16d9dcd078a8e9"
       ],
       [
         "v4effdiagnostics03"
       ]
+    ],
+    "outputLabels": [
+      "Rolling 7-day mean",
+      "Original efficiency / HA sensor",
+      "Diagnostics"
     ]
   },
   {
@@ -154,6 +162,7 @@
         "v4e46be25028e13f5d"
       ],
       [
+        "v5effmean00000001",
         "v40e16d9dcd078a8e9",
         "v4effdiagnostics03"
       ]
@@ -185,7 +194,7 @@
     "type": "comment",
     "z": "577158dd0ea2615a",
     "name": "Connect snapshot diagnostic output to SOC capture; read README",
-    "info": "Same flow tab as snapshot and SOC writer. Connect output 11 of the V1.3 snapshot builder to SOC capture. Set capacity and stores. Disable the old efficiency writer. No input energy sensors required. See rolling-efficiency/README.md.",
+    "info": "Same flow tab as snapshot and SOC writer. Connect output 11 of the V1.3 snapshot builder to SOC capture. Calculation outputs: 1 mean, 2 original sensor, 3 diagnostics. Set capacity and stores. Disable old efficiency writer. Mean history starts at upgrade. See rolling-efficiency/README.md.",
     "x": 590,
     "y": 80,
     "wires": []
@@ -214,5 +223,100 @@
         "v4effprepare000003"
       ]
     ]
+  },
+  {
+    "id": "v5effmean00000001",
+    "type": "ha-sensor",
+    "z": "577158dd0ea2615a",
+    "name": "Battery Efficiency 7-Day Mean",
+    "entityConfig": "v5effmeancfg00001",
+    "version": 0,
+    "state": "payload",
+    "stateType": "msg",
+    "attributes": [
+      {
+        "property": "quality",
+        "value": "result.reason",
+        "valueType": "msg"
+      },
+      {
+        "property": "valid",
+        "value": "result.valid",
+        "valueType": "msg"
+      },
+      {
+        "property": "last_measurement",
+        "value": "result.timestamp",
+        "valueType": "msg"
+      },
+      {
+        "property": "covered_hours",
+        "value": "result.mean_covered_hours",
+        "valueType": "msg"
+      },
+      {
+        "property": "coverage_pct",
+        "value": "result.mean_coverage_pct",
+        "valueType": "msg"
+      },
+      {
+        "property": "window_complete",
+        "value": "result.mean_window_complete",
+        "valueType": "msg"
+      },
+      {
+        "property": "source_valid",
+        "value": "result.source_valid",
+        "valueType": "msg"
+      }
+    ],
+    "inputOverride": "allow",
+    "outputProperties": [],
+    "x": 1170,
+    "y": 140,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "v5effmeancfg00001",
+    "type": "ha-entity-config",
+    "server": "v44c54b454.60653c",
+    "deviceConfig": "",
+    "name": "Battery Efficiency 7-Day Mean Sensor",
+    "version": 6,
+    "entityType": "sensor",
+    "haConfig": [
+      {
+        "property": "name",
+        "value": "Battery Efficiency 7-Day Mean"
+      },
+      {
+        "property": "icon",
+        "value": "mdi:battery-sync"
+      },
+      {
+        "property": "entity_picture",
+        "value": ""
+      },
+      {
+        "property": "entity_category",
+        "value": ""
+      },
+      {
+        "property": "device_class",
+        "value": ""
+      },
+      {
+        "property": "unit_of_measurement",
+        "value": "%"
+      },
+      {
+        "property": "state_class",
+        "value": ""
+      }
+    ],
+    "resend": false,
+    "debugEnabled": false
   }
 ]

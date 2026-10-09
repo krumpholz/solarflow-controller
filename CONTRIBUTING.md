@@ -9,9 +9,12 @@ From the repository root:
 ```sh
 python3 rolling-efficiency/build.py
 node --test rolling-efficiency/tests/*.test.cjs
+TZ=Europe/Berlin node --test rolling-efficiency/tests/*.test.cjs
 ```
 
 Keep both READMEs and release notes consistent. Preserve persisted-state compatibility and test any migration changes. Explain changes to integration, exclusion boundaries, SOC handling, or time weighting. Generated files must match their sources and the build must be reproducible.
+
+Mean tests must verify elapsed-time weighting, unrounded source values, excluded gaps, startup coverage, persistence and the output order. Run the suite in UTC and Europe/Berlin; CI also runs Node.js 22 and 24. See [testing details](rolling-efficiency/TESTING.md). Only report a field test when actual operating data supports it.
 
 Include a minimal reproduction for bugs, with configuration, software versions and sanitized diagnostics. Never commit credentials, personal live buffers, installation exports or raw operational logs. Regression fixtures contain synthetic data.
 

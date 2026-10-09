@@ -1,18 +1,18 @@
-# Batterie-Wirkungsgrad aus Leistung – Release v4.0.0
+# Batterie-Wirkungsgrad und gleitender 7-Tage-Mittelwert – Release v5.0.0
 
-Release **v4.0.0** verwendet Revisionsnummer **4.1** in der Diagnose und Pufferschema **4**. Bestehende V4.0/V4.1-Puffer werden weiterverwendet.
+Release **v5.0.0** verwendet Berechnungsrevision **5.0**, Energie-Pufferschema **4** und ergänztes Mittelwert-Pufferschema **1**. Bestehende V4-Energiepuffer werden weiterverwendet. Die Ausgangsreihenfolge ändert sich; die Mittelwerthistorie beginnt beim Update.
 
 [English](README.md) | **Deutsch**
 
-Gleitende 168-Stunden-Energiebilanz aus dem vorzeichenbehafteten Leistungswert des Snapshot-Builders `1.3-SOLAR-G-ESP-BATT-FALLBACK`. Keine Tageszähler als Eingabe erforderlich. Zwei Funktionsausgänge: Wirkungsgrad und Diagnose. Die bestehende Fassung mit Tageszählern bleibt unter [Release v3.3.0](https://github.com/krumpholz/solarflow-controller/tree/v3.3.0/round-trip-efficiency) verfügbar.
+Gleitende 168-Stunden-Energiebilanz aus dem vorzeichenbehafteten Leistungswert des Snapshot-Builders `1.3-SOLAR-G-ESP-BATT-FALLBACK`. Keine Tageszähler als Eingabe erforderlich. Drei Funktionsausgänge: **7-Tage-Mittelwert, bisheriger Wirkungsgrad, Diagnose**, in dieser Reihenfolge. Die bestehende Fassung mit Tageszählern bleibt unter [Release v3.3.0](https://github.com/krumpholz/solarflow-controller/tree/v3.3.0/round-trip-efficiency) verfügbar.
 
 ## Bestehende Installation umstellen
 
 1. Alten Flow exportieren und Node-RED-Kontext sichern. Im selben Flow-Tab bleiben; dort liegt der vorhandene Puffer.
-2. Den **gesamten** Funktionscode von **Batterie Wirkungsgrad** durch [battery-efficiency_DE.js](battery-efficiency_DE.js) ersetzen. Zwei Ausgänge beibehalten. `capacityKWh: 8.640` und `maxPowerKW: 2.4` an die Anlage anpassen.
+2. Den **gesamten** Funktionscode von **Batterie Wirkungsgrad** durch [battery-efficiency_DE.js](battery-efficiency_DE.js) ersetzen. **Drei Ausgänge** einstellen. `capacityKWh: 8.640` und `maxPowerKW: 2.4` an die Anlage anpassen.
 3. Ausgang 1 von **SOC erfassen und Messzyklus starten** direkt mit **Batterie Wirkungsgrad** verbinden. Die beiden bisherigen Tageszähler-Abfragen aus diesem Berechnungszweig entfernen. Keine zweite alte Berechnung parallel auf dieselben Ausgaben/Kontextwerte schreiben lassen.
 4. Für jeden 2-Sekunden-Snapshot **Ausgang 11 (Diagnose, Index 10)** von **Messwerte berechnen V1.3** zusätzlich mit dem Eingang von **SOC erfassen und Messzyklus starten** verbinden. Den bisherigen 5-Sekunden-Timer als Auslöser dieses Zweigs abtrennen. Der Snapshot-Ausgang wird erst nach dem Schreiben aller benötigten Flow-Werte ausgegeben. Die bestehenden anderen Verbindungen des Snapshot-Nodes bleiben erhalten.
-5. Ausgang 1 der Wirkungsgradfunktion bleibt mit **Lade Entlade Effizenz**, Ausgang 2 mit **Wirkungsgrad Diagnose** verbunden. Der SOC-Vorbereitungsknoten kann unverändert bleiben: Die V4-Funktion bedient auch dessen bisherigen Watchdog-Schlüssel. Lediglich dessen Statusbeschreibung erwähnt dann noch Tageszähler; [prepare-cycle_DE.js](prepare-cycle_DE.js) enthält die passende Beschriftung für V4.
+5. **Ausgang 1** der Berechnung mit dem neuen Mittelwertsensor oder einer Automatik verbinden. **Lade Entlade Effizenz** auf **Ausgang 2**, **Wirkungsgrad Diagnose** auf **Ausgang 3** umstecken. SOC-Erfassung durch [prepare-cycle_DE.js](prepare-cycle_DE.js) ersetzen. Deren Warnungsausgang (Ausgang 2) mit **beiden** HA-Sensoren und der Diagnose verbinden. Der alte Vorbereitungsknoten löst Berechnungen weiterhin aus, setzt bei seinem eigenen Watchdog-Timeout aber den neuen Mittelwertsensor noch nicht zurück.
 6. Optional den bisherigen Timer als separaten 2-Sekunden-Watchdog an **SOC erfassen** anschließen. Doppelte Snapshot-Zyklen werden nicht erneut integriert. Bei ausbleibenden Snapshots liefert diese zusätzliche Abfrage `null`, statt einen alten Prozentwert unbegrenzt anzuzeigen. Der komplette Import enthält diesen Timer. Ohne einen weiterlaufenden Auslöser kann kein Function-Node den Ausfall seiner eigenen Eingaben anzeigen.
 
 **Nur Funktionscode tauschen und die Zähler umgehen funktioniert zum Einstieg.** Solange jedoch nur alle fünf Sekunden abgefragt wird, integriert die Funktion nur diese ausgewählten Leistungswerte. Dazwischenliegende 2-Sekunden-Messpunkte lassen sich aus dem überschriebenen Flow-Kontext nicht nachträglich zurückholen. Die ereignisgesteuerte Verbindung in Schritt 4 erfasst jeden erfolgreichen Snapshot.
@@ -59,9 +59,9 @@ contextStorage: {
 }
 ```
 
-Der V4-Zustand liegt vollständig in `flow.batt_eff_state_v4` im Store `file`: Minutenpuffer, Leistungs-/SOC-Ausgangspunkt, Übernahmemarker und Ausschlusszähler. Die Dateiablage schreibt zeitverzögert; bei Stromausfall können noch nicht geschriebene Sekunden verloren gehen. Ein normaler Neustart lädt den gespeicherten Zustand, importiert V3 nicht nochmals und ignoriert wiederholte Snapshot-Zyklen. Eine Lücke über zehn Sekunden wird auf beiden Seiten der Energiebilanz ausgeschlossen. Nur eine aktive V4-Funktion darf diesen Zustand schreiben.
+Der V4-Zustand liegt vollständig in `flow.batt_eff_state_v4` im Store `file`: Energie-Minutenpuffer, Leistungs-/SOC-Ausgangspunkt, Übernahmemarker, Ausschlusszähler und ergänztes Objekt `mean` (Schema 1, Prozent-Zeit-Integrale, Abdeckung und letzter gültiger Mittelwert-Messpunkt). Die Dateiablage schreibt zeitverzögert; bei Stromausfall können noch nicht geschriebene Sekunden verloren gehen. Ein normaler Neustart lädt den gespeicherten Zustand, importiert V3 nicht nochmals und ignoriert wiederholte Snapshot-Zyklen. Eine Lücke über zehn Sekunden wird auf beiden Seiten der Energiebilanz ausgeschlossen. Nur eine aktive V4-Funktion darf diesen Zustand schreiben.
 
-Die folgenden bisherigen Ausgabevariablen werden weiterhin im Store `file` aktualisiert: `sum_batt_la_7d`, `sum_batt_ela_7d` in kWh und `la_ela_es` in Prozent oder `null`.
+Die bisherigen Ausgabevariablen bleiben im Store `file`: `sum_batt_la_7d`, `sum_batt_ela_7d` in kWh und `la_ela_es` als bisheriger Prozentwert oder `null`. Neu ist `la_ela_es_mean_7d` als Mittelwert in Prozent oder `null`. Berechnungsfehler und Watchdog-Timeout setzen beide Prozentwerte zurück. Der alte Schlüssel wird nicht mit dem Mittelwert überschrieben.
 
 ## Berechnung und Genauigkeit
 
@@ -87,7 +87,7 @@ Die Zeitbasis der Leistung ist der **Snapshot-Abschluss**, nicht der im aktuelle
 
 Das Fenster endet am letzten verarbeiteten Snapshot und beginnt exakt 168 Stunden davor; es hängt nicht von Mitternacht oder Sommerzeitwechseln ab. Neue Intervalle werden bei Minutengrenzen aufgeteilt, innerhalb einer Minute anschließend ohne Rundung summiert. Maximal etwa 10.081 Minutenaggregate werden gespeichert. Damit bleiben Puffer und Dateischreibvolumen begrenzt.
 
-**Die älteste angeschnittene Minute wird gleichmäßig zeitanteilig gewichtet.** Deren Energie- und SOC-Verlauf ist nach der Aggregation nicht mehr sekundengenau bekannt. Das ist eine bewusste, in `boundary_weighting` ausgewiesene Näherung mit höchstens einer betroffenen Minute. Ladeenergie, Entladeenergie, SOC-Änderung und Abdeckung erhalten denselben Gewichtungsfaktor. Es wird kein ganzer Tag mehr um Mitternacht entfernt. Kleine Änderungen durch SOC-Schritte, Lastwechsel und den Fensterrand bleiben möglich; die Anzeige ist keine künstlich geglättete Kurve.
+**Die älteste angeschnittene Minute wird gleichmäßig zeitanteilig gewichtet.** Deren Energie- und SOC-Verlauf ist nach der Aggregation nicht mehr sekundengenau bekannt. Das ist eine bewusste, in `boundary_weighting` ausgewiesene Näherung mit höchstens einer betroffenen Minute. Ladeenergie, Entladeenergie, SOC-Änderung und Abdeckung erhalten denselben Gewichtungsfaktor. Es wird kein ganzer Tag mehr um Mitternacht entfernt. Kleine Änderungen durch SOC-Schritte, Lastwechsel und den Fensterrand bleiben möglich; der bisherige Prozentwert an Ausgang 2 wird nicht geglättet. Ausgang 1 liefert den separat beschriebenen Mittelwert.
 
 ### Grenzen und Lücken
 
@@ -95,7 +95,66 @@ Das Fenster endet am letzten verarbeiteten Snapshot und beginnt exakt 168 Stunde
 - Snapshots älter als 6,5 s, ungültige Werte und ESP-Ersatzwerte werden abgelehnt. Der ESP-Fallback kann wiederholte Telemetrie oder eine abweichende Messgrenze enthalten; er wird deshalb nicht als frische Modbus-Messung integriert.
 - Maximal zehn Sekunden zwischen gültigen Punkten sind erlaubt. Kürzere Abstände werden linear überbrückt; längere Lücken und ausdrücklich ungültige Zwischenmeldungen starten einen neuen Ausgangspunkt. Dabei werden Energie und SOC-Änderung gemeinsam ausgeschlossen.
 - Ein SOC-Schritt über zwei Prozentpunkte plus physikalischem Zuwachs mit 20 % Reserve wird zunächst ausgeschlossen. Drei aufeinanderfolgende ähnliche Werte bestätigen den neuen SOC-Ausgangspunkt. Langsame BMS-Korrekturen unter dieser Grenze sind damit nicht vollständig erkennbar.
-- Ein negativer Wirkungsgrad oder ein Wert über 100 % wird als `null` ausgegeben, nicht auf 0/100 begrenzt. Die angezeigte Kapazität von 8,640 kWh ist eine Installationsvorgabe, kein universeller SolarFlow-Wert.
+- Ein negativer Wirkungsgrad oder ein Wert über 100 % wird als `null` ausgegeben, nicht auf 0/100 begrenzt. Nur rechnerische Überschreitungen innerhalb von **1e-9 Prozentpunkten** einer exakten 0/100-Grenze werden auf diese Grenze zurückgeführt, damit Gleitkomma-Subtraktion keine falsche Ablehnung erzeugt. Diagnose: `efficiency_arithmetic_tolerance_pct`. Die angezeigte Kapazität von 8,640 kWh ist eine Installationsvorgabe, kein universeller SolarFlow-Wert.
+
+## Gleitender 7-Tage-Prozentmittelwert
+
+Ausgang 2 behält die bisherige Formel und Prüfung. Ausgang 1 mittelt deren **ungerundete gültige Prozentwerte** über ein eigenes gleitendes 168-Stunden-Fenster. Gewichtet wird nach Zeit, nicht nach Nachrichtenanzahl oder Ladeenergie. Ein länger anliegender gültiger Wert trägt entsprechend mehr Zeit bei.
+
+Für ein aufeinanderfolgendes akzeptiertes Intervall mit gültigen Prozentwerten an beiden Endpunkten:
+
+`Prozent_Zeit_ms = (Wirkungsgrad_alt + Wirkungsgrad_neu) / 2 × dt_ms`
+
+`Mittelwert_% = Summe(Prozent_Zeit_ms im Fenster) / Summe(gültig abgedeckte_ms im Fenster)`
+
+Vor der Aggregation wird der lineare Verlauf an Minutengrenzen aufgeteilt. In der ältesten angeschnittenen Minute werden Integral und gültige Zeit mit demselben Überlappungsanteil gewichtet. Wie beim Energiepuffer bleibt der Verlauf innerhalb dieser einen Randminute eine Näherung. Gespeicherte Prozentwerte und Integrale werden nicht gerundet; nur die ausgegebene Nutzlast wird auf eine Nachkommastelle gerundet.
+
+Beispiel: 80 → 84 % über 2 Sekunden ergibt 82 × 2; 84 → 76 % über 8 Sekunden ergibt 80 × 8. Zeitgewichtet entstehen **80,4 %**. Ein Mittelwert nach Messpunktanzahl ergäbe 80 % und würde sich mit der Abfragerate ändern.
+
+### Verfügbarkeit, Lücken und Neustart
+
+- Der erste gültige Prozentwert setzt den Mittelwert-Ausgangspunkt. Der nächste aufeinanderfolgende gültige Wert trägt sein Intervall bei und macht den Mittelwert verfügbar. Vorhandene Mittelwerthistorie kann nach Wiederaufnahme gültiger Messungen weiterverwendet werden.
+- Ungültige Messungen, SOC-Sprungprüfung, unplausibler Wirkungsgrad, zu geringe Ladeenergie und ausgeschlossene Messintervalle tragen keine Mittelwertdauer bei. Der vorherige Mittelwert-Ausgangspunkt wird gelöscht. Der nächste gültige Prozentwert setzt einen neuen Ausgangspunkt; die Lücke wird nicht überbrückt.
+- Bei aktuell ungültiger Berechnung liefern Ausgang 1 und 2 beide `payload: null`, auch wenn ein früher gültiger Mittelwert noch in der Historie liegt. Ausgang 3 beschreibt die Ursache. Fehler werden nicht als Null-Prozent-Messpunkte eingerechnet.
+- Nach Neustart bleibt die gespeicherte Mittelwerthistorie erhalten. Ein kurzes akzeptiertes Intervall kann am gespeicherten Ausgangspunkt fortsetzen; eine Lücke über zehn Sekunden nicht. Doppelte Snapshots ergänzen weder Daten noch Abdeckung.
+- Die vorhandene V4-Energiehistorie bleibt erhalten. Die neue Mittelwerthistorie beginnt beim Update. Weder V4-Minutenenergiesummen noch übernommene V3-Tageswerte enthalten den früheren Prozentwertverlauf; ein historischer Mittelwert wird nicht erfunden.
+- Der Mittelwert kann schon während des Aufbaus angezeigt werden und umfasst dann weniger als sieben Tage. Ein vollständiges Fenster braucht 168 Stunden gültig abgedeckter Mittelwertintervalle mit einer Millisekunde Rechentoleranz. Lücken bleiben bis zum Herauslaufen sichtbar. `mean_history_hours` allein belegt keine Abdeckung.
+- Beide Historien halten jeweils ungefähr 10.081 Minutenaggregate. Abdeckung und Speicher bleiben begrenzt. Der periodische Snapshot-Watchdog setzt bei ausbleibenden Messungen beide Ausgabesensoren zurück; die Berechnung braucht weiterhin einen Auslöser, um den Ausfall festzustellen.
+
+### Ausgänge und Diagnose
+
+Alle Ausgänge verwenden `msg.payload` für den veröffentlichten Prozentwert oder `null` und `msg.result` für die Diagnose. An Ausgang 1 beschreiben `result.valid` und `result.reason` den Mittelwert; `source_valid` und `source_reason` beschreiben die bisherige Bilanz. Ausgang 2 und 3 behalten deren `valid`/`reason` und enthalten zusätzlich die Mittelwertfelder. Die zurückgegebenen Diagnoseobjekte sind voneinander unabhängige Kopien.
+
+| Ausgang | Nutzlast | Anschluss |
+| --- | --- | --- |
+| 1 | Gleitender 7-Tage-Mittelwert in Prozent | Neuer HA-Mittelwertsensor / Automatik |
+| 2 | Bisherige SOC-korrigierte 168-Stunden-Bilanz in Prozent | Bisheriger HA-Wirkungsgradsensor |
+| 3 | Gleiche Nutzlast wie Ausgang 2 mit gemeinsamer Diagnose | Debug / Diagnoseauswertung |
+
+| Mittelwert-Diagnose | Bedeutung |
+| --- | --- |
+| `eta_mean_7d_pct` | Ausgegebener Mittelwert mit einer Nachkommastelle oder `null` |
+| `eta_mean_7d_raw_pct` | Historischer Mittelwert für Diagnose auf drei Stellen gerundet, auch bei aktuell ungültiger Quelle |
+| `mean_valid`, `mean_reason` | Aktuelle Verwendbarkeit und Begründung |
+| `mean_window_start`, `mean_window_end` | Exakte UTC-Fenstergrenzen mit 168 Stunden Abstand |
+| `mean_window_complete` | Vollständig abgedecktes Mittelwertfenster; getrennt vom bisherigen `window_complete` |
+| `mean_covered_hours`, `mean_coverage_pct` | Aktuell vertretene gültige Mittelwertintervalle ohne Lücken |
+| `mean_started_at`, `mean_history_hours` | Beginn der neuen Historie und seitdem vergangene Zeit |
+| `mean_method`, `mean_source` | Linearer zeitgewichteter Mittelwert der bisherigen gleitenden Bilanz |
+| `mean_buffer_buckets`, `mean_partial_boundary_bucket`, `mean_boundary_weighting` | Speichergröße und ausgewiesene Näherung der ältesten Randminute |
+
+Eine Automatik, die auf eine vollständig abgedeckte Woche warten soll, kann in einer Function hinter **Ausgang 1** filtern:
+
+```js
+if (msg.result?.mean_valid !== true || msg.result?.mean_window_complete !== true) return null;
+if (typeof msg.payload !== "number" || !Number.isFinite(msg.payload) || msg.payload <= 0) return null;
+msg.batteryEfficiencyFactor = msg.payload / 100; // z. B. 80 % -> 0,80
+return msg;
+```
+
+Damit steht ein Faktor für die nachfolgende Berechnung einer Entladeschwelle bereit; Geräteeinstellungen werden dadurch noch nicht verändert. Für die Verwendung eines Teilfensters eine ausdrückliche Mindestabdeckung wählen, statt vergangene Aufbauzeit als gemessene Abdeckung zu behandeln.
+
+Der neue Mittelwert glättet SOC-Rasterung und kurzfristige lastabhängige Schwankungen. Systematische SOC-Fehler, ungenaue Kapazität und die physikalischen Grenzen der Energiebilanz bleiben. Weil bereits eine 168-Stunden-Bilanz gemittelt wird, werden dauerhafte Änderungen langsamer sichtbar. Es entsteht keine neue zyklusbezogene Roundtrip-Messung. Automatisierte Prüfung und ihre Grenzen stehen in [TESTING_DE.md](TESTING_DE.md).
 
 ## Übernahme des V3-Puffers
 
@@ -123,7 +182,7 @@ Quellen: [Node-RED-Dateikontext](https://nodered.org/docs/api/context/store/loca
 
 ## Ausschlussdiagnose
 
-Zum Update genügt der vollständige Austausch von **Batterie Wirkungsgrad**. Verdrahtung, Kapazität und vorhandenen Kontext beibehalten. Alternativ zum Snapshot-Diagnoseausgang kann wie beim Regler der bestehende 2-Sekunden-Takt nach dessen 1-Sekunden-Verzögerung den SOC-Vorbereitungsknoten auslösen. Diese feste Verzögerung garantiert keine abgeschlossenen Abfragen; die Snapshot-Prüfungen bleiben deshalb aktiv.
+Zum Update den vollständigen Code von **Batterie Wirkungsgrad** tauschen und die drei Ausgänge wie oben beschrieben umverdrahten. Kapazität und vorhandenen Kontext beibehalten. Alternativ zum Snapshot-Diagnoseausgang kann wie beim Regler der bestehende 2-Sekunden-Takt nach dessen 1-Sekunden-Verzögerung den SOC-Vorbereitungsknoten auslösen. Diese feste Verzögerung garantiert keine abgeschlossenen Abfragen; die Snapshot-Prüfungen bleiben deshalb aktiv.
 
 `recent_exclusions` enthält bis zu zehn zusammenhängende Ausschlussereignisse, neuestes zuerst, einschließlich eines noch offenen Ereignisses. Die Liste wird in `batt_eff_state_v4` im Store `file` gespeichert und auf erfolgreichen sowie fehlerhaften Berechnungsausgaben mitgeliefert. Doppelte gültige Snapshots erzeugen weiterhin keine neue Nachricht. Ein noch nicht vorhandener Messausgangspunkt kann noch kein auszuschließendes Intervall besitzen; entsprechende Startfehler stehen im normalen `reason`.
 
@@ -140,4 +199,4 @@ Wiederholte Fehler bis zur Wiederaufnahme bilden ein Ereignis. Ändert sich inne
 
 `exclusion_counts_by_reason` zählt Ereignisse **je Ursache seit Aufzeichnungsbeginn**; dieselbe Ursache erhöht den Zähler innerhalb eines Ereignisses nur einmal. Ein Ereignis mit mehreren Ursachen zählt einmal bei jeder dieser Ursachen. Diese Summen bleiben auch erhalten, wenn ältere Einträge aus der Zehnerliste fallen. Beobachtungszahlen innerhalb eines Ereignisses zählen dagegen die tatsächlichen Fehleraufrufe, auch wiederholte Abfragen desselben fehlerhaften Snapshots.
 
-Das Update ergänzt ausschließlich Diagnosefelder im bestehenden V4-Zustand. Energiehistorie, Übernahmemarker und bisherige Ausschlusszähler bleiben erhalten. `exclusion_log_since` benennt den Aufzeichnungsbeginn, `exclusions_before_logging` den vorherigen Bestand ohne rekonstruierbare Ursachen. Die Ursachen früherer Ausschlüsse werden nicht erfunden. Die Speicherung unterliegt demselben Dateispeicher-Schreibintervall wie der Energiepuffer. Fehlende oder defekte Kontextspeicher können naturgemäß auch die dauerhafte Fehleraufzeichnung verhindern.
+Die Ausschlussaufzeichnung ergänzt Diagnosefelder im bestehenden V4-Zustand; dieses Release ergänzt außerdem die getrennte Mittelwerthistorie. Energiehistorie, Übernahmemarker und bisherige Ausschlusszähler bleiben erhalten. `exclusion_log_since` benennt den Aufzeichnungsbeginn, `exclusions_before_logging` den vorherigen Bestand ohne rekonstruierbare Ursachen. Die Ursachen früherer Ausschlüsse werden nicht erfunden. Die Speicherung unterliegt demselben Dateispeicher-Schreibintervall wie der Energiepuffer. Fehlende oder defekte Kontextspeicher können naturgemäß auch die dauerhafte Fehleraufzeichnung verhindern.

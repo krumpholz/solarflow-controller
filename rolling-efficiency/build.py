@@ -18,10 +18,13 @@ de.TEXT.update({
  'disabled':'Übernahme deaktiviert',
  'invalid_v3_state':'V3-Puffer ungültig',
  'invalid_v3_cutover':'V3-Messzeitpunkt ungültig oder neuer als Snapshot',
- 'v3_configuration_mismatch':'V3-Kapazität, Entitäten oder Zeitzone stimmen nicht überein'
+ 'v3_configuration_mismatch':'V3-Kapazität, Entitäten oder Zeitzone stimmen nicht überein',
+ 'invalid_efficiency_sample':'Aktueller Wirkungsgrad ungültig – Mittelwert pausiert',
+ 'mean_baseline_initialized':'Mittelwert-Ausgangspunkt gesetzt – nächstes gültiges Intervall abwarten',
+ 'mean_available':'Gleitender 7-Tage-Mittelwert berechnet'
 })
 de.HEADER='''/*
- * Batterie Wirkungsgrad – gleitende 168 Stunden, Version 4.1.
+ * Batterie Wirkungsgrad – gleitende 168 Stunden, Revision 5.0.
  * Deutsche Oberfläche, identischer englischer Rechenkern. MIT-Lizenz.
  * Kapazität und Leistung oben im CFG des Rechenkerns prüfen.
  * Snapshot-Werte aus dem Standard-Flow-Speicher, SOC aus memoryOnly.
@@ -29,7 +32,9 @@ de.HEADER='''/*
  * Vorhandener V3-Puffer wird einmal übernommen und nicht verändert.
  * Alte Tageswerte: gleichmäßige zeitliche Gewichtung als Übergangsnäherung.
  * Minutenpuffer: älteste angeschnittene Minute anteilig gewichten.
- * Zwei Ausgänge: HA-Wirkungsgrad / Diagnose. Anleitung: README_DE.md.
+ * Drei Ausgänge: 7-Tage-Mittelwert / bisheriger Wirkungsgrad / Diagnose.
+ * Mittelwert beginnt beim Update neu; Energiehistorie bleibt erhalten.
+ * Anleitung: README_DE.md.
  */
 '''
 source=(R/'battery-efficiency.js').read_text()
@@ -48,6 +53,12 @@ return ausgabe;
 # Canonical sources and a code-free flow template; no V3 build dependency.
 prepare=(R/'prepare-cycle.js').read_text()
 de.TEXT['Reading battery power snapshot']='Batterieleistung aus Snapshot wird gelesen'
+de.HEADER='''/*
+ * SOC erfassen und Snapshot auswerten; Watchdog für beide Ergebnissensoren.
+ * Zwei Ausgänge: Berechnung auslösen / fehlende Messung und Diagnose.
+ * Gleicher Flow-Tab wie Snapshot und SOC-Schreiber. MIT-Lizenz.
+ */
+'''
 (R/'prepare-cycle_DE.js').write_text(de.localize(prepare))
 nodes=json.loads((R/'flow-template.json').read_text())
 for n in nodes:
@@ -56,14 +67,15 @@ for n in nodes:
 idmap={key:'v4'+key for key in ['e46be25028e13f5d','effprepare000003']}
 (R/'flow.json').write_text(json.dumps(nodes,indent=2,ensure_ascii=False)+'\n')
 for n in nodes:
- if n['id']==idmap['e46be25028e13f5d']:n.update(name='Batterie Wirkungsgrad',func=(R/'battery-efficiency_DE.js').read_text(),outputLabels=['Wirkungsgrad / HA-Sensor','Diagnose'])
+ if n['id']==idmap['e46be25028e13f5d']:n.update(name='Batterie Wirkungsgrad und 7-Tage-Mittelwert',func=(R/'battery-efficiency_DE.js').read_text(),outputLabels=['Gleitender 7-Tage-Mittelwert','Bisheriger Wirkungsgrad / HA-Sensor','Diagnose'])
  if n['id']==idmap['effprepare000003']:n.update(name='SOC erfassen und Messzyklus starten',func=(R/'prepare-cycle_DE.js').read_text(),outputLabels=['Snapshot auswerten','Fehlende Messung / Diagnose'])
- if n['type']=='ha-sensor':n['name']='Lade Entlade Effizenz'
+ if n['type']=='ha-sensor':n['name']='Batterie Wirkungsgrad 7-Tage-Mittelwert' if n['id']=='v5effmean00000001' else 'Lade Entlade Effizenz'
  if n['type']=='debug':n['name']='Wirkungsgrad Diagnose'
  if n['type']=='inject':n['name']='Snapshot-Überwachung alle 2 Sekunden'
  if n['type']=='ha-entity-config':
-  n['name']='S Lade Entlade Effizenz'
+  mean=n['id']=='v5effmeancfg00001'
+  n['name']='S Batterie Wirkungsgrad 7-Tage-Mittelwert' if mean else 'S Lade Entlade Effizenz'
   for row in n['haConfig']:
-   if row['property']=='name':row['value']='Lade Entlade Effizenz'
- if n['type']=='comment':n.update(name='Snapshot-Diagnose an SOC-Erfassung anschließen; Anleitung lesen',info='Gleicher Flow-Tab wie Snapshot und SOC-Schreiber. Ausgang 11 des Snapshot-Nodes V1.3 an SOC-Erfassung anschließen. Kapazität und Kontextspeicher prüfen. Alte Berechnung abschalten. Keine Eingabe-Energiesensoren erforderlich. Siehe rolling-efficiency/README_DE.md.')
+   if row['property']=='name':row['value']='Batterie Wirkungsgrad 7-Tage-Mittelwert' if mean else 'Lade Entlade Effizenz'
+ if n['type']=='comment':n.update(name='Snapshot-Diagnose an SOC-Erfassung anschließen; Anleitung lesen',info='Gleicher Flow-Tab wie Snapshot und SOC-Schreiber. Ausgang 11 des Snapshot-Nodes V1.3 an SOC-Erfassung anschließen. Berechnung: Ausgang 1 Mittelwert, 2 bisheriger Sensor, 3 Diagnose. Kapazität und Kontextspeicher prüfen. Alte Berechnung abschalten. Mittelwert beginnt ohne erfundene Historie. Siehe rolling-efficiency/README_DE.md.')
 (R/'flow_DE.json').write_text(json.dumps(nodes,indent=2,ensure_ascii=False)+'\n')

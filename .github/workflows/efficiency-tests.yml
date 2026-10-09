@@ -1,0 +1,33 @@
+name: Battery efficiency tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
+        timezone: [UTC, Europe/Berlin]
+    env:
+      TZ: ${{ matrix.timezone }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Regenerate German wrappers and import flows
+        run: python3 rolling-efficiency/build.py
+      - name: Check generated files are current
+        run: git diff --exit-code -- rolling-efficiency/battery-efficiency_DE.js rolling-efficiency/prepare-cycle_DE.js rolling-efficiency/flow.json rolling-efficiency/flow_DE.json
+      - name: Run calculation, mean and flow regressions
+        run: node --test rolling-efficiency/tests/*.test.cjs
