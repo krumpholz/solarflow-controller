@@ -12,11 +12,11 @@ A rolling 168-hour energy balance using signed battery power from the `1.3-SOLAR
 2. Replace the **entire** calculation body with [battery-efficiency.js](battery-efficiency.js) or its [German equivalent](battery-efficiency_DE.js). Set **three outputs**, `capacityKWh` and `maxPowerKW`; defaults are 8.640 kWh and 2.4 kW. Version 5.1 requires an SOC timestamp by default (`requireSocTimestamp: true`).
 3. Replace **Capture SOC and Start Measurement Cycle** with [prepare-cycle.js](prepare-cycle.js), set **two outputs**, and connect its output 1 **directly** to the calculation. Remove both daily-counter queries from this path. Preparation preserves the original `batt_level_ts`; it does not refresh that timestamp.
 4. Use the installation's **existing common timer**: write SOC and its timestamp, then invoke preparation approximately **one second later**. The power snapshot must already be complete. A fixed delay does not guarantee successful requests, so snapshot checks remain active. The imported Inject node is a manual test button; it has **no repeat and no startup injection**. Keep the existing periodic trigger running even if new SOC or power measurements fail.
-5. Calculation output **1** goes to **Prepare Mean Sensor** and to any automation; output **2** goes to **Prepare Efficiency Sensor**; output **3** goes to diagnostics. Both preparation nodes use [prepare-sensor.js](prepare-sensor.js) and feed standard HA API nodes. Branch an automation before sensor preparation because preparation converts `msg.payload` into an API request.
-6. Preparation's warning output **2** goes to **diagnostics only**. Optionally also connect it to **Prepare Efficiency Sensor** to mark the original sensor unknown. Do not connect warnings to mean preparation or the mean API node. The watchdog clears only `la_ela_es`; the calculation alone manages `la_ela_es_mean_7d`.
-7. Replace Companion `ha-sensor` / `ha-entity-config` nodes with the normal API path in [flow.json](flow.json). Select the existing HA server in both API nodes. Configure entity IDs in the `SENSOR` block of the sensor-preparation Functions; use your actual existing ID for the original sensor if needed. An entity still maintained by another integration can overwrite these API writes; disable its old writer.
+5. Connect calculation output **1 directly to the mean sensor** and any automation, output **2 directly to the existing efficiency sensor**, and output **3** to diagnostics. Both sensors read State = `msg.payload`. No data-preparation Function or API node is needed.
+6. Preparation's warning output **2** goes to **diagnostics only**. Optionally also connect it directly to the **existing efficiency sensor** to mark that sensor unknown. Never connect warnings to the mean sensor. The watchdog clears only `la_ela_es`; the calculation alone manages `la_ela_es_mean_7d`.
+7. Retain the existing ha-sensor and its Entity config. Add only [sensor-mean.json](sensor-mean.json) to create a separate mean sensor without importing a second calculation/server. For a fresh installation use [flow.json](flow.json). Select the existing HA server in each Entity config and install the required Companion integration. When replacing the previous API flow, remove its API/preparation nodes and retain only one writer for each sensor.
 
-See the [wiring diagram](WIRING.md) and the [Home Assistant sensor setup](#home-assistant-sensors-without-companion-integration). The external Modbus/snapshot builder and SOC writer are installation-specific and are not included in the import. Place the imported nodes on their flow tab. Activate only one language.
+See the [wiring diagram](WIRING.md) and the [direct Home Assistant sensor setup](#direct-home-assistant-sensors). The external Modbus/snapshot builder and SOC writer are installation-specific and are not included in the import. Place the imported nodes on their flow tab. Activate only one language.
 
 If there is no existing periodic calculation trigger, configure one approximately every two seconds after updating SOC. A trigger exclusively from the snapshot builder's output 11 processes successful snapshots promptly, but needs continuing timer invocations to evaluate retained mean history when snapshots stop. Use one main trigger path; do not add a second timer to an already paced installation. Replayed snapshot IDs do not integrate twice, but overwritten intermediate power samples cannot be reconstructed.
 
@@ -120,7 +120,7 @@ Example: 80 → 84% over 2 seconds contributes 82 × 2; 84 → 76% over 8 second
 - **Availability depends on valid retained mean intervals, independently of current SOC/source validity.** Brief SOC failures, stale power, fallback values, SOC jump checks, out-of-range original efficiency or insufficient charge throughput pause new collection but keep output 1 available when history remains. Output 2 can be null at the same time. Output 1 then reports `valid: true`, `source_valid: false`, `reason: mean_available` and the actual `source_reason`.
 - Invalid or excluded intervals add no duration. Clear the interpolation baseline; the first subsequent valid original percentage sets a new baseline. Neither a held percentage nor 0% is inserted across the gap. Recovery does not bridge it.
 - The mean window ends at the **current evaluation clock**, even during source failures. Continuing timer calls prune old data and update coverage/sample age. Its value can change as older intervals expire. If no valid mean intervals remain in the latest 168 hours, output 1 becomes null; corrupt state, configuration or runtime/context failures also cannot claim trusted mean availability.
-- The SOC watchdog clears only the original output key. Its warning is a source diagnostic, not a statement that mean history is invalid. No warning wire enters the mean sensor path. API failures go to diagnostics and do not reset calculation history.
+- The SOC watchdog clears only the original output key. Its warning is a source diagnostic, not a statement that mean history is invalid. No warning wire enters the mean sensor path. Sensor errors go to diagnostics and do not reset calculation history.
 - A restart retains mean history, including during a source outage. A short accepted interval can continue the persisted baseline; a gap over ten seconds cannot. Duplicate valid snapshots append no records and extend no coverage.
 - Existing V5 mean history is reused. When upgrading V3/V4 energy-only state, the mean begins with new observations; existing energy aggregates cannot reconstruct earlier percentages.
 - Startup can publish a partial window. A complete window requires 168 hours of valid covered intervals, with one millisecond of arithmetic tolerance; gaps remain visible until they leave the window. Elapsed `mean_history_hours` does not prove coverage.
@@ -175,22 +175,29 @@ V4 begins power integration at a new baseline. Do not retrospectively fill the t
 
 **The original V3 buffer remains unchanged.** On rollback, it is therefore current only up to the migration time; V4 does not maintain V3 daily records. Existing V4 state always takes precedence. Do not delete V4 casually to force another import.
 
-## Home Assistant sensors without Companion integration
+## Direct Home Assistant sensors
 
-The flow needs Node-RED, `node-red-contrib-home-assistant-websocket` (API schema verified against 0.80.3) and a working Home Assistant server connection. **No `hass-node-red` custom integration or Companion sensor is required.** Daily energy sensors are not queried or created.
+The current flow uses **ha-sensor** and **ha-entity-config**, verified against `node-red-contrib-home-assistant-websocket` **0.80.3**, with a working HA server connection. These nodes require the [hass-node-red Companion integration](https://github.com/zachowj/hass-node-red), **1.1.0 or newer**, installed in Home Assistant. This matches the supplied existing sensor; removing preparation does not remove that dependency. Daily energy sensors are not queried or created.
 
-The sensor-preparation Function selects the mean when `msg.result.output === "mean_7d"`; otherwise it selects the original sensor, including optional watchdog warnings. Configure the `SENSOR` block in both preparation nodes. Default entity IDs are identical in the English/German flows:
+For an existing calculation, import only [sensor-mean.json](sensor-mean.json), select the existing server in its Entity config, and wire **calculation output 1 directly to the new sensor**. This import contains only the mean sensor and its own Entity config; it references server `4c54b454.60653c` and the same flow tab. Re-select the server if yours has another ID. Keep the old sensor on output 2 with its original Entity config. The full flow preserves original node/config IDs `619074ace164b99e` / `bb523511b4c4476f`; the mean uses new IDs `0f55fb7a4d14af9f` / `71e17f5b60730d3d`. Node-RED IDs are not HA entity IDs; keep an existing Entity config to retain its integration identity.
 
-| Value | Default entity ID |
+| Setting | Both sensors |
 | --- | --- |
-| Rolling mean | `sensor.battery_efficiency_mean_7d` |
-| Original efficiency | `sensor.battery_efficiency` |
+| State | `msg.payload` (`stateType: msg`) |
+| Attributes / output properties | Empty arrays |
+| Input Override | `allow` |
+| Entity type / unit | Sensor / `%` |
+| Device class / state class | Empty, matching the supplied sensor |
+| Resend / debug | Disabled, matching the supplied sensor |
+| Entity config | Separate for each sensor; existing HA server |
 
-Preparation creates `msg.payload = {protocol: "http", method: "post", path: "/states/sensor.…", data: {state, attributes}}`. The standard **API** node uses its selected server credentials and automatically addresses Home Assistant's `/api` prefix. Input `payload.data` is an object; do not wire the numeric calculation payload straight into the API node. The response is placed in `msg.ha_state`, after which this sensor branch ends. Scoped Catch messages enter diagnostics.
+Names distinguish the original and mean sensors. The Companion integration creates the new HA entity; use its actual entity ID from Home Assistant in dashboards/automations rather than assuming a fixed ID from its name. Do not reuse the old sensor's Entity config for the mean: both would write the same HA entity.
 
-A valid number is written as a state string, including a real `"0"`; null/invalid values become **`"unknown"`**, never `"0"`. Attributes include `%`, `state_class: measurement`, validity and quality. The mean additionally exposes source validity, source reason, paused collection, coverage, sample age and window boundaries. A valid retained mean is written normally while `source_valid` is false.
+Numeric **0** remains a real 0% value; calculation **null** is sent directly and the sensor reports **unknown**. Valid retained means continue during brief SOC failures even with `result.source_valid: false`. No diagnostic attributes are configured; diagnostics remain in `msg.result` and on calculation output 3. An optional mean coverage attribute must read `msg.result.mean_covered_hours`, not the original `covered_hours`; SOC freshness describes the current source rather than mean availability.
 
-These REST writes create/update **state-machine sensor entries**, without an entity registry entry or `unique_id`. They can be used by entity ID in dashboards and automations; some UI entity-management features are unavailable. After a Home Assistant restart, the next successful API write recreates the state. Keep the periodic trigger running and choose IDs not maintained by another active writer. The raw sensor's existing ID can be configured explicitly; retaining a Node-RED node ID alone does not preserve its HA entity ID.
+Missing-measurement warnings go only to diagnostics by default. Their optional direct connection to the old sensor marks only that sensor unknown; never connect them to the mean sensor. Catch monitors the two sensors. With `resend: false`, recovery after HA restart depends on the next calculation update; continue the existing timer.
+
+This sensor-only adjustment retains release **5.1.0**, calculation **5.1** and both state schemas. The published `v5.1.0` tag/downloads retain the original API-based release snapshot. Use current files on `main` for direct sensor wiring; no tag is moved or historical download replaced.
 
 Without legacy records, sufficient valid intervals must first supply at least **0.1 kWh of charge energy** and a plausible original balance. The mean then needs a consecutive valid percentage interval; no seven-day startup wait is imposed. Discharge alone initially lacks the denominator. Partial-window output is possible and coverage remains disclosed.
 
@@ -198,8 +205,8 @@ Without legacy records, sufficient valid intervals must first supply at least **
 
 ## References
 
-- [Home Assistant REST API](https://developers.home-assistant.io/docs/api/rest/)
-- [Standard Home Assistant API node](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/API.html)
+- [Home Assistant Sensor node](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/sensor.html)
+- [Companion integration](https://github.com/zachowj/hass-node-red)
 - [Node-RED filesystem context](https://nodered.org/docs/api/context/store/localfilesystem)
 
 [MIT license](../LICENSE) · [Trademark notice](../NOTICE.md) · [Scope and warranty](../DISCLAIMER.md)

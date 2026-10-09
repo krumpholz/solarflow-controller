@@ -19,7 +19,13 @@ Your support helps maintain, test and document this project and keep it freely a
 3. Configure battery capacity, power limits and persistent context storage. Import [flow.json](rolling-efficiency/flow.json), select your Home Assistant server and connect the existing timer after SOC capture.
 4. Run only one efficiency calculation. Existing users should follow the upgrade instructions before replacing nodes.
 
-The flow requires Node-RED, `node-red-contrib-home-assistant-websocket` and a working Home Assistant server connection. Standard API nodes write the two sensor states; no Node-RED Companion/custom integration is required. Importing a flow does not create its input measurements or the external snapshot builder. Daily charge/discharge energy sensors are no longer required. New installations begin calculating once enough valid charge energy is available; they do not wait seven days.
+The flow requires Node-RED, `node-red-contrib-home-assistant-websocket` and a working Home Assistant server connection. Both ha-sensor nodes receive numeric calculation payloads directly; no sensor-preparation Function is used. They require the [hass-node-red Companion integration](https://github.com/zachowj/hass-node-red), version 1.1.0 or newer, in Home Assistant. Importing a flow does not create its input measurements or the external snapshot builder. Daily charge/discharge energy sensors are no longer required. New installations begin calculating once enough valid charge energy is available; they do not wait seven days.
+
+## Sensor wiring update, version unchanged
+
+The current `main` branch uses the supplied simple sensor configuration: State = `msg.payload`, `%`, empty attributes/output properties and separate entity configurations. For an existing installation, import only [sensor-mean.json](rolling-efficiency/sensor-mean.json) and connect calculation output **1** directly to it. Keep the existing sensor on output **2**. See the [direct wiring](rolling-efficiency/WIRING.md).
+
+Release version **5.1.0** and calculation revision **5.1** remain unchanged. The published `v5.1.0` tag and release downloads retain their original API-based snapshot; use the files on `main` linked here for the updated sensor wiring.
 
 ## Included
 
@@ -38,7 +44,7 @@ Release v5.1.0 (calculation 5.1) keeps output 1 available from valid retained me
 
 ## Upgrading from v4.0.0
 
-Set the calculation Function to **three outputs**. Connect output 1 to the new mean sensor or an automation, move the existing efficiency sensor from output 1 to **output 2**, and move diagnostics from output 2 to **output 3**. Keep the flow tab, context stores and configured capacity. Update the capture/watchdog Function as described in the [guide](rolling-efficiency/README.md), so the watchdog warns diagnostics and clears only the original efficiency key. Replace Companion sensors with the standard API paths and configure the actual target entity IDs. Do not reset the energy buffer.
+Set the calculation Function to **three outputs**. Connect output 1 to the new mean sensor or an automation, move the existing efficiency sensor from output 1 to **output 2**, and move diagnostics from output 2 to **output 3**. Keep the flow tab, context stores and configured capacity. Update the capture/watchdog Function as described in the [guide](rolling-efficiency/README.md), so the watchdog warns diagnostics and clears only the original efficiency key. Retain the existing sensor and its Entity config, and add the new mean sensor on output 1. Both read State = msg.payload directly without preparation. Do not reset the energy buffer.
 
 The mean becomes available after the first consecutive pair of valid efficiency samples. It initially covers less than seven days. `mean_window_complete` reports a fully covered 168-hour mean window; gaps reduce coverage. Smoothing does not remove systematic SOC errors or make the result a certified round-trip measurement.
 

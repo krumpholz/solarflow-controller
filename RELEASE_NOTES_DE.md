@@ -4,20 +4,25 @@
 
 Release **5.1.0** enthält Berechnungsrevision **5.1**, Energie-Pufferschema **4** und Mittelwert-Schema **1**. Kompatible Energiehistorie und vorhandene V5-Mittelwerthistorie bleiben erhalten.
 
-## Änderungen gegenüber v4.0.0
+## Aktuelle Sensoranpassung auf main, Version unverändert
+
+Die aktuellen Importe verwenden direkt die bereitgestellte einfache **ha-sensor**-Vorlage: State = `msg.payload`, Einheit `%`, leere Attribute/Ausgabefelder, Resend/Debug aus und getrennte Entity configs. Ausgang **1** führt zum Mittelwertsensor, **2** zum bisherigen Sensor und **3** zur Diagnose. API-Nodes und Sensor-Aufbereitungsfunktionen entfallen. Diese Sensoren benötigen `hass-node-red` Companion-Integration **1.1.0+** in HA.
+
+Bei bestehender Installation nur [sensor-mean_DE.json](rolling-efficiency/sensor-mean_DE.json) importieren, in dessen Entity config den vorhandenen Server auswählen und Berechnungsausgang 1 anschließen. Bisherigen Sensor samt Entity config an Ausgang 2 beibehalten. Siehe [Anleitung](rolling-efficiency/README_DE.md) und [direkte Verdrahtung](rolling-efficiency/WIRING_DE.md).
+
+Diese Konfigurations-/Dokumentationskorrektur verändert weder VERSION, Berechnungsrevision, Rechen-/SOC-Code noch gespeicherte Historie. Der veröffentlichte Tag `v5.1.0` und vorhandene Release-Downloads bleiben der ursprüngliche API-basierte Stand. Angepasste Dateien liegen auf `main`; kein Tag oder früherer Download wird ersetzt.
+
+## Berechnungsänderungen gegenüber v4.0.0
 
 - Dauerhaften, zeitgewichteten gleitenden **7-Tage-Mittelwert** ungerundeter gültiger Prozentwerte der bisherigen SOC-korrigierten 168-Stunden-Bilanz ergänzen. **Ausgang 1 = Mittelwert, Ausgang 2 = bisheriger Wirkungsgrad, Ausgang 3 = Diagnose.**
-- Gültige gespeicherte Mittelwerthistorie bei kurzen SOC-/Quellausfällen verfügbar halten. Aufnahme pausieren und Interpolations-Ausgangspunkt löschen. Zeitfenster weiterlaufen lassen, abgelaufene Intervalle entfernen und Abdeckung, Quellgültigkeit sowie Messwertalter ausweisen. Fehlende Werte weder als 0 % einrechnen noch durch gehaltene Werte mit erfundener Abdeckung ersetzen.
-- Companion-Sensoren durch Aufbereitungsfunktionen und **normale Home-Assistant-API**-Schreibzugriffe ersetzen. Keine Custom Integration `hass-node-red` erforderlich. Dies sind Sensorzustände ohne Entitätsregistereintrag/Unique-ID; nach HA-Neustart stellt das nächste erfolgreiche Schreiben sie wieder her.
-- SOC-Vorbereitung aktualisieren: originalen Zeitstempel erhalten, in der Berechnung standardmäßig verlangen und vorhandenen gemeinsamen Timer etwa eine Sekunde später nutzen. Tageszählerabfragen entfernen. Importierter Inject nur manuell.
-- Ausgang „fehlende Messung“ an die Diagnose führen. Verbindung zum bisherigen Sensor optional; keine Warnungsverbindung zum Mittelwertsensor. Watchdog setzt nur den bisherigen Wirkungsgradschlüssel zurück.
-- Leistungsintegration, SOC-Korrektur, V3-Übernahme und Ausschlussdiagnose beibehalten. Nur Gleitkomma-Überschreitungen innerhalb von 1e-9 Prozentpunkten an exakten 0/100-%-Grenzen auflösen; echte Bereichsüberschreitungen bleiben ungültig.
-- **144 automatisierte Tests**, deutsche/englische Importflows, Installationsanleitungen und Verdrahtungsschemata bereitstellen. GitHub Actions prüft Node.js 22/24 in UTC/Berlin und veröffentlicht versionierte Release-Dateien nach erfolgreichen Main-Tests.
+- Gültige Mittelwerthistorie bei kurzen SOC-/Quellausfällen verfügbar halten. Aufnahme pausieren und Interpolations-Ausgangspunkt löschen. Zeitabhängigen Ablauf fortsetzen; Abdeckung, Quellgültigkeit und Messwertalter ausweisen. Fehlende Werte ergeben weder 0 % noch gehaltene Intervalle mit erfundener Abdeckung.
+- Originalen SOC-Zeitstempel erhalten und standardmäßig verlangen. Vorhandenen gemeinsamen Timer etwa eine Sekunde später nutzen. Keine Tageszählerabfragen oder zusätzlicher periodischer Timer; importierter Inject nur manuell.
+- Fehlende-Messung-Warnungen an die Diagnose führen, optional zusätzlich an den bisherigen Sensor. Kein Warnungskabel zum Mittelwert; Watchdog setzt nur den bisherigen Wirkungsgradschlüssel zurück.
+- Leistungsintegration, SOC-Korrektur, V3-Übernahme und Ausschlussdiagnose erhalten. Nur Gleitkomma-Überschreitungen innerhalb von 1e-9 Prozentpunkten an exakten 0/100-%-Grenzen auflösen; echte Bereichsüberschreitungen bleiben ungültig.
+- **144 automatisierte Tests**, deutsche/englische Gesamt- und Sensorimporte, Installationsanleitungen und Verdrahtungsschemata bereitstellen. GitHub Actions prüft Node.js 22/24 in UTC/Berlin. Neue Versionen werden nach erfolgreichen Main-Tests veröffentlicht; bestehende Releases bleiben erhalten.
 
-## Umstieg
+## Umstieg und Prüfung
 
-Berechnung, SOC-Vorbereitung und Sensorpfade gemeinsam gemäß [Anleitung](rolling-efficiency/README_DE.md) und [Verdrahtung](rolling-efficiency/WIRING_DE.md) ersetzen. Drei Berechnungs- und zwei Vorbereitungsausgänge einstellen. Kapazität, Leistungsgrenzen, originalen SOC-Zeitstempel und Sensor-Entitäts-IDs konfigurieren; in beiden API-Nodes den vorhandenen HA-Server auswählen. Automatik an Berechnungsausgang 1 vor der API-Aufbereitung abzweigen. Flow-Tab/Kontext beibehalten und nur einen Schreiber betreiben.
+Flow-Tab, Kontextspeicher, Kapazität und beide Historien erhalten; nur eine Berechnung betreiben. V3/V4-Energiehistorie ergibt keine früheren Mittelwert-Messpunkte. Ein neuer Mittelwert benötigt zwei aufeinanderfolgende gültige Wirkungsgradbeobachtungen, keine sieben Tage. Fehlende, abgelaufene oder nicht sicher nutzbare Mittelwerthistorie ergibt null; Vollständigkeitsflags beschreiben gemessene Abdeckung statt vergangener Aufbauzeit.
 
-Bei V3/V4 mit reiner Energiehistorie beginnt der Mittelwert mit neuen gültigen Intervallen. Aus dem v5.0.0-Entwicklungsentwurf bleiben beide Historien ohne Rücksetzung erhalten. Der Aufbau benötigt zwei aufeinanderfolgende gültige Wirkungsgradbeobachtungen, keine sieben Tage. Ohne verbleibende gültige Historie oder bei nicht sicher nutzbarem Zustand/Konfiguration/Laufzeit wird Ausgang 1 unbekannt. Vollständigkeitsflags zeigen tatsächliche Intervallabdeckung statt vergangener Aufbauzeit.
-
-Der Betreiber hat den Ersatznode für die SOC-Vorbereitung live getestet. Die synthetische Testsuite behauptet keinen Live-Gesamttest der HA-Anbindung oder siebentägigen Hardwarelauf. Siehe [Prüfung](rolling-efficiency/TESTING_DE.md). Glättung beseitigt keine systematischen SOC-/Kapazitätsfehler und reagiert langsamer auf dauerhafte Änderungen, weil die zugrunde liegende Bilanz bereits sieben Tage umfasst.
+Der Betreiber meldete den Live-Test des Ersatznodes für die SOC-Vorbereitung. Die synthetische Testsuite behauptet keinen angemeldeten HA-Sensortest oder siebentägigen Hardwarelauf. Siehe [Prüfung](rolling-efficiency/TESTING_DE.md). Glättung beseitigt keine systematischen SOC-/Kapazitätsfehler und reagiert langsamer auf dauerhafte Änderungen, weil die zugrunde liegende Bilanz bereits sieben Tage umfasst.

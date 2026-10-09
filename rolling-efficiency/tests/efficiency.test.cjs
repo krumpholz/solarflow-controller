@@ -172,7 +172,7 @@ for (const lang of ['','_DE']) {
  test('exported Function bodies exactly match canonical language sources',()=>{
   for(const lang of ['', '_DE']) {
    const nodes=JSON.parse(fs.readFileSync(path.join(ROOT,`flow${lang}.json`),'utf8'));
-   for(const [id,file] of [['v4e46be25028e13f5d','battery-efficiency'],['v4effprepare000003','prepare-cycle'],['v51effmeanprep01','prepare-sensor'],['v51effrawprep001','prepare-sensor']]) {
+   for(const [id,file] of [['v4e46be25028e13f5d','battery-efficiency'],['v4effprepare000003','prepare-cycle']]) {
     assert.equal(nodes.find(n=>n.id===id).func,fs.readFileSync(path.join(ROOT,`${file}${lang}.js`),'utf8'));
    }
   }
@@ -320,23 +320,26 @@ for (const language of ['EN','DE']) {
  });
 }
 
-test('both flows use standard HA API nodes and route warnings only to diagnostics',()=>{
+test('both flows connect sensors directly and keep warning/error paths in diagnostics',()=>{
  for(const lang of ['', '_DE']) {
   const nodes=JSON.parse(fs.readFileSync(path.join(ROOT,`flow${lang}.json`),'utf8'));
+  const ids=new Set(nodes.map(n=>n.id));assert.equal(ids.size,nodes.length);
   const calc=nodes.find(n=>n.id==='v4e46be25028e13f5d');assert.equal(calc.outputs,3);
   assert.equal(calc.outputLabels.length,3);
-  assert.deepEqual(calc.wires,[['v51effmeanprep01'],['v51effrawprep001'],['v4effdiagnostics03']]);
-  assert.equal(nodes.some(n=>['ha-sensor','ha-entity-config','api-current-state'].includes(n.type)),false);
-  const warning=nodes.find(n=>n.id==='v4effprepare000003').wires[1];
-  assert.deepEqual(warning,['v4effdiagnostics03']);
-  assert.equal(nodes.filter(n=>n.type==='ha-api').length,2);
-  for(const n of nodes.filter(n=>n.type==='ha-api')) {
-   assert.equal(n.version,1);assert.equal(n.protocol,'http');assert.equal(n.method,'post');
-   assert.equal(n.responseType,'json');assert.equal(n.dataType,'json');
-   assert.match(n.path,/^states\/sensor\./);
-   assert.equal(n.outputProperties[0].property,'ha_state');
+  assert.deepEqual(calc.wires,[['0f55fb7a4d14af9f'],['619074ace164b99e'],['v4effdiagnostics03']]);
+  assert.equal(nodes.some(n=>['ha-api','api-current-state'].includes(n.type)),false);
+  assert.equal(nodes.filter(n=>n.type==='function').length,2);
+  assert.equal(nodes.filter(n=>n.type==='ha-sensor').length,2);
+  assert.equal(nodes.filter(n=>n.type==='ha-entity-config').length,2);
+  assert.deepEqual(nodes.find(n=>n.id==='v4effprepare000003').wires[1],['v4effdiagnostics03']);
+  const caught=nodes.find(n=>n.type==='catch');
+  assert.deepEqual(caught.scope,['0f55fb7a4d14af9f','619074ace164b99e']);
+  assert.deepEqual(caught.wires,[['v4effdiagnostics03']]);
+  for(const n of nodes) {
+   for(const wire of (n.wires||[]).flat())assert.ok(ids.has(wire),`missing wire target ${wire}`);
+   if(n.entityConfig)assert.ok(ids.has(n.entityConfig));
+   if(n.server)assert.ok(ids.has(n.server));
   }
-  assert.deepEqual(nodes.find(n=>n.type==='catch').wires,[['v4effdiagnostics03']]);
  }
 });
 test('watchdog clears only original output key and never declares mean history invalid',()=>{
@@ -399,14 +402,11 @@ function capture(r,code) {
  return new vm.Script('(function(msg){'+code+'})').runInNewContext({Date:Clock,flow:r.flow,
   context:{get:k=>ctx.get(k),set:(k,v)=>ctx.set(k,v)},node:{status(){},error(){}}});
 }
-function sensor(code,errors=[]) {
- return new vm.Script('(function(msg){'+code+'})').runInNewContext({
-  node:{status(){},error:(...args)=>errors.push(args)}});
-}
 for(const lang of ['', '_DE']) {
  const code=fs.readFileSync(path.join(ROOT,`battery-efficiency${lang}.js`),'utf8');
  const prep=fs.readFileSync(path.join(ROOT,`prepare-cycle${lang}.js`),'utf8');
- const format=fs.readFileSync(path.join(ROOT,`prepare-sensor${lang}.js`),'utf8');
+ const nodes=JSON.parse(fs.readFileSync(path.join(ROOT,`flow${lang}.json`),'utf8'));
+ const meanSensor=nodes.find(n=>n.id==='0f55fb7a4d14af9f');
  test(lang+' existing timer accepts SOC observed one second before capture without restamping it',()=>{
   const r=rig({code});r.flow.set('batt_level',42.5,'memoryOnly');
   r.flow.set('batt_level_ts',r.now-1000,'memoryOnly');const out=capture(r,prep)({payload:123});
@@ -492,38 +492,49 @@ for(const lang of ['', '_DE']) {
   const out=r.tick({p:0});assert.equal(out[0].payload,80);assert.equal(out[1].payload,null);
   assert.equal(out[0].result.source_reason,'insufficient_charge_energy');
  });
- test(lang+' API payload publishes retained mean with valid true and source valid false',()=>{
+ test(lang+' direct mean sensor consumes the retained percentage independently of source validity',()=>{
   const {r,eta}=meanRig(code);eta(80);const out=r.tick({soc:null,p:0});
-  const request=sensor(format)(out[0]).payload;
-  assert.equal(request.protocol,'http');assert.equal(request.method,'post');
-  assert.equal(request.path,'/states/sensor.battery_efficiency_mean_7d');
-  assert.equal(request.data.state,'80');assert.equal(request.data.attributes.valid,true);
-  assert.equal(request.data.attributes.source_valid,false);assert.equal(request.data.attributes.collection_paused,true);
-  assert.equal(request.data.attributes.quality,'mean_available');
-  assert.equal(request.data.attributes.unit_of_measurement,'%');assert.equal(request.data.attributes.state_class,'measurement');
-  assert.equal(request.data.attributes.sample_age_seconds,2);
+  assert.equal(meanSensor.stateType,'msg');assert.equal(meanSensor.state,'payload');
+  assert.equal(out[0][meanSensor.state],80);assert.equal(out[0].result.valid,true);
+  assert.equal(out[0].result.source_valid,false);assert.equal(out[0].result.mean_collection_paused,true);
+  assert.deepEqual(meanSensor.attributes,[]);assert.deepEqual(meanSensor.outputProperties,[]);
  });
- test(lang+' API payload accepts true zero but maps invalid readings to unknown',()=>{
-  const run=sensor(format);
-  assert.equal(run({payload:0,result:{valid:true,output:'mean_7d'}}).payload.data.state,'0');
-  for(const value of [null,undefined,'0',true,NaN,Infinity,-1,101]) {
-   const request=run({payload:value,result:{valid:true}}).payload;
-   assert.equal(request.data.state,'unknown');assert.equal(request.data.attributes.valid,false);
+ test(lang+' direct state wiring preserves a real zero and passes null when mean history expires',()=>{
+  const {r}=meanRig(code);fullMean(r,0);r.boot();
+  const zero=r.tick({soc:null,p:0});assert.equal(zero[0][meanSensor.state],0);
+  assert.equal(zero[0].result.valid,true);
+  const expired=r.tick({soc:null,p:0,dt:8*24*H});
+  assert.equal(expired[0][meanSensor.state],null);assert.equal(expired[0].result.valid,false);
+  assert.equal(expired[0].result.reason,'mean_history_expired');
+ });
+ test(lang+' mean sensor duplicates the supplied original sensor settings without reusing its identity',()=>{
+  const original=nodes.find(n=>n.id==='619074ace164b99e');
+  const comparable=n=>Object.fromEntries(Object.entries(n).filter(([k])=>!['id','name','entityConfig','x','y'].includes(k)));
+  assert.deepEqual(comparable(meanSensor),comparable(original));
+  assert.notEqual(meanSensor.entityConfig,original.entityConfig);
+  assert.equal(original.entityConfig,'bb523511b4c4476f');
+  for(const node of [original,meanSensor]) {
+   assert.equal(node.version,0);assert.equal(node.inputOverride,'allow');
+   const config=nodes.find(n=>n.id===node.entityConfig);
+   assert.equal(config.server,'4c54b454.60653c');assert.equal(config.version,6);
+   assert.equal(config.entityType,'sensor');assert.equal(config.deviceConfig,'');
+   assert.equal(config.resend,false);assert.equal(config.debugEnabled,false);
+   const values=Object.fromEntries(config.haConfig.map(p=>[p.property,p.value]));
+   assert.equal(values.unit_of_measurement,'%');assert.equal(values.state_class,'');
+   assert.equal(values.device_class,'');assert.equal(values.icon,'');
   }
-  assert.equal(run({payload:80,result:{valid:false}}).payload.data.state,'unknown');
  });
- test(lang+' optional watchdog sensor path addresses only the original sensor',()=>{
-  const r=rig({code}),run=capture(r,prep);run({});r.tick({dt:16000,soc:null});
-  const warning=run({})[1],request=sensor(format)(warning).payload;
-  assert.equal(request.path,'/states/sensor.battery_efficiency');assert.equal(request.data.state,'unknown');
+ test(lang+' incremental mean import matches the full flow and reuses only the existing HA server',()=>{
+  const imported=JSON.parse(fs.readFileSync(path.join(ROOT,`sensor-mean${lang}.json`),'utf8'));
+  assert.equal(imported.length,2);
+  assert.deepEqual(imported.map(n=>n.type),['ha-sensor','ha-entity-config']);
+  const withoutPosition=n=>Object.fromEntries(Object.entries(n).filter(([k])=>!['x','y'].includes(k)));
+  for(const node of imported)assert.deepEqual(withoutPosition(node),withoutPosition(nodes.find(n=>n.id===node.id)));
+  assert.equal(imported[0].z,'577158dd0ea2615a');assert.equal(imported[0].entityConfig,imported[1].id);
+  assert.equal(imported[1].server,'4c54b454.60653c');
+  assert.deepEqual(imported[0].wires,[[]]);
  });
- test(lang+' sensor target IDs are configurable and invalid domains stop the request',()=>{
-  const errors=[],good=format.replace('sensor.battery_efficiency_mean_7d','sensor.mein_mittelwert');
-  assert.equal(sensor(good)({payload:80,result:{valid:true,output:'mean_7d'}}).payload.path,'/states/sensor.mein_mittelwert');
-  const bad=format.replace('sensor.battery_efficiency_mean_7d','switch.battery');
-  assert.equal(sensor(bad,errors)({payload:80,result:{valid:true,output:'mean_7d'}}),null);assert.equal(errors.length,1);
- });
- test(lang+' release and calculation versions advance while persisted schemas stay compatible',()=>{
+ test(lang+' sensor update keeps release/calculation versions and persisted schemas unchanged',()=>{
   const {r,eta}=meanRig(code),out=eta(80);
   for(const msg of out){assert.equal(msg.result.release_version,'5.1.0');assert.equal(msg.result.calculation_revision,'5.1');}
   assert.equal(r.state().version,4);assert.equal(r.state().mean.version,1);

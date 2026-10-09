@@ -2,6 +2,13 @@
 
 **English** | [Deutsch](CHANGELOG_DE.md)
 
+## Sensor wiring correction on main — 2026-10-09 (version unchanged)
+
+- Use the supplied minimal ha-sensor configuration for both percentages: State = msg.payload, %, no attributes/output properties, resend/debug disabled. Connect calculation outputs 1/2 directly to separate mean/original sensors; remove API and preparation nodes/files.
+- Preserve the supplied original sensor/Entity config and add a distinct mean Entity config using the existing HA server. Add English/German sensor-only imports for existing installations.
+- Document Companion integration 1.1.0+ as required for these sensor nodes; diagnostics remain on output 3. Update both READMEs, wiring diagrams and configuration tests; all 144 regressions remain.
+- Keep release 5.1.0, calculation 5.1, calculations and history unchanged. Published v5.1.0 tag/assets retain the original release snapshot; updated imports are available from main.
+
 ## v5.1.0 — 2026-10-09
 
 - Keep output 1 available from valid retained mean history during brief SOC/source failures. Pause new collection, clear its interpolation baseline and continue clock-based 168-hour expiry without zero or held-value samples.

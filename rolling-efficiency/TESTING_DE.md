@@ -20,7 +20,7 @@ TZ=UTC node --test rolling-efficiency/tests/*.test.cjs
 TZ=Europe/Berlin node --test rolling-efficiency/tests/*.test.cjs
 ```
 
-Im Repository-Stamm ausführen. Nach dem Build müssen `battery-efficiency_DE.js`, `prepare-cycle_DE.js`, `prepare-sensor_DE.js`, `flow.json` und `flow_DE.json` mit dem eingecheckten Stand übereinstimmen. GitHub Actions prüft dies vor den Tests. Beide Sprachfassungen führen denselben zentralen Rechenkern aus.
+Im Repository-Stamm ausführen. Nach dem Build müssen `battery-efficiency_DE.js`, `prepare-cycle_DE.js`, `flow.json`, `flow_DE.json`, `sensor-mean.json` und `sensor-mean_DE.json` mit dem eingecheckten Stand übereinstimmen. GitHub Actions prüft dies vor den Tests. Beide Sprachfassungen führen denselben zentralen Rechenkern aus.
 
 ## Mittelwert- und Integrationstests
 
@@ -37,13 +37,15 @@ Die Testsammlung enthält **144 Tests**, einschließlich der bisherigen 70 Fäll
 | Neustart und Rückkehr | JSON-Speicherung erhält die Mittelwerthistorie; Duplikate verlängern sie nicht; zwischenzeitlicher V4-Betrieb überbrückt keine fehlende Mittelwerthistorie |
 | Siebentagefenster | Vorgegebene vollständige 168-Stunden-Puffer verlieren nur den ältesten Anteil; Lücken verhindern Vollständigkeit; nach acht Tagen Ausfall ist die Historie ausgelaufen |
 | Speicher und Beschädigung | Beide vollständigen Puffer bleiben begrenzt und überstehen Speicherung; beschädigter Mittelwertzustand erzeugt ungültige Ausgabe ohne Löschen der Energiehistorie |
-| Flows und Watchdog | Drei Ausgänge, normale API-Anfragen, unbekannt gegenüber echter Null; Watchdog erhält Mittelwertschlüssel, Warnung nur Diagnose; manueller Inject ohne Wiederholung |
+| Flows und Watchdog | Drei Ausgänge, direkte ha-sensor-Nutzlasten, getrennte Konfigurationen, null gegenüber echter Null; Watchdog erhält Mittelwertschlüssel, Warnung nur Diagnose; manueller Inject ohne Wiederholung |
 | Sprache und Sommerzeit | Erzeugte Funktionskörper entsprechen den Quellen; das UTC-Fenster bleibt beim Europe/Berlin-Sommerzeitwechsel 168 Stunden lang |
 
 Die Siebentagetests verwenden deterministische synthetische Minutenhistorien und prüfen Verarbeitung, Ablauf alter Daten, Abdeckung und Speicherung. Dies ist kein siebentägiger Echtzeitbetrieb an der Hardware. Anlage der HA-Sensoren, BLE-Zeitverhalten und tatsächliche SOC-Genauigkeit müssen mit dem aktualisierten Flow an der Anlage beobachtet werden. Das Repository enthält keine persönlichen Betriebsprotokolle oder Zugangsdaten.
 
 ## Zusätzliche Verfügbarkeits- und Sensortests in v5.1
 
-Zusätzliche Fälle prüfen den originalen, eine Sekunde alten SOC-Zeitstempel mit standardmäßig verpflichtender Zeitstempelprüfung, ungültigen SOC/Zahlenüberlauf, weiterlaufende Timer-Auswertung bei Ausfällen, zeitanteiligen Fensterrand bei ungültigem SOC, vollständiges Auslaufen, Speicherung während eines Fehlers, Wiederaufnahme ohne Überbrückung, aktuell zu geringe Ladeenergie und nicht sicher nutzbare Laufzeit-/Kontextfehler. Sensorfälle prüfen HTTP-POST-Objekte, vom aktuellen Quellzustand unabhängige Mittelwertgültigkeit, echte Null gegenüber unbekannt, einstellbare Entitäts-IDs und den optionalen Watchdog-Pfad ausschließlich zum bisherigen Sensor. Release 5.1.0 / Berechnung 5.1 / Energie-Schema 4 / Mittelwert-Schema 1 werden getrennt geprüft.
+Zusätzliche Fälle prüfen den originalen, eine Sekunde alten SOC-Zeitstempel mit standardmäßig verpflichtender Zeitstempelprüfung, ungültigen SOC/Zahlenüberlauf, weiterlaufende Timer-Auswertung bei Ausfällen, zeitanteiligen Fensterrand bei ungültigem SOC, vollständiges Auslaufen, Speicherung während eines Fehlers, Wiederaufnahme ohne Überbrückung, aktuell zu geringe Ladeenergie und nicht sicher nutzbare Laufzeit-/Kontextfehler. Sensorfälle prüfen direkte State = msg.payload-Verdrahtung, vom aktuellen Quellzustand unabhängige Mittelwertgültigkeit, echte Null gegenüber null, getrennte übereinstimmende Entity configs, bisherige Sensoridentität und den kleinen Mittelwertimport mit vorhandenem Server ohne weitere Berechnung. Warnungs- und Catch-Pfade bleiben standardmäßig an der Diagnose. Release 5.1.0 / Berechnung 5.1 / Energie-Schema 4 / Mittelwert-Schema 1 werden getrennt geprüft.
 
 Der Betreiber meldete am 09.10.2026 den Live-Test des Ersatznodes für die SOC-Vorbereitung. Dies bestätigt dessen Einsatz im vorhandenen Ablauf und keinen vollständigen Test des neuen Sensor-/Mittelwertflows oder siebentägigen Hardwarelauf. CI nutzt weiterhin synthetische Daten ohne HA-Zugangsdaten.
+
+Die Sensoranpassung bei gleicher Version verändert weder Rechen-/SOC-Quellen noch Pufferschemata. Diese Tests prüfen Exportkonfiguration und Berechnungsnachrichten, keine angemeldete HA-/Companion-Sitzung. Tatsächliche Sensoranlage und null-zu-unbekannt-Verarbeitung benötigen weiterhin die installierte Integration.

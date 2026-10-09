@@ -20,6 +20,8 @@ Fehlerberichte benötigen ein minimales Beispiel mit Konfiguration, Softwarevers
 
 Beiträge stehen unter der [MIT-Lizenz](LICENSE). Siehe [Projekthinweise](NOTICE_DE.md).
 
-Sensor-Aufbereitung in `rolling-efficiency/prepare-sensor.js` pflegen; `build.py` erzeugt auch deren deutsche Fassung. Mittelwert bei kurzen Quellfehlern verfügbar halten und fehlende Dauer ausschließen. Zeitabhängiges Auslaufen, verpflichtenden originalen SOC-Zeitstempel, API-Ausgabe unbekannt/Null und Warnungsverdrahtung prüfen. Normale API-Sensorzustände haben keinen Entitätsregistereintrag; keine Companion-/Registerfunktionen zusagen.
+Sensoreinstellungen gehören in `rolling-efficiency/flow-template.json`. `build.py` erzeugt beide Gesamtflows und die beiden kleinen Mittelwertsensor-Importe. Sensorvorlage erhalten: direkt State = msg.payload, leere Attribute/Ausgabefelder, getrennte Entity configs, bisherige Sensoridentität und ausgewählter HA-Server. Beide Sensoren benötigen die Companion-Integration; keine Funktion ohne sie zusagen. Direkte Mittelwertverfügbarkeit unabhängig von der Quellgültigkeit, echte Null/null, Warnungsverdrahtung und kleinen Import prüfen. Keinen Aufbereitungsnode erneut ergänzen.
 
 Nach vier erfolgreichen Matrix-Jobs eines Pushs nach main liest der Release-Job `VERSION`, erzeugt den zugehörigen Tag/die Veröffentlichung mit zweisprachigen Hinweisen und lädt erzeugte Flow-/Function-Dateien hoch. Vorhandene Releases bleiben unverändert. VERSION, Berechnungsrevision, Änderungsverläufe und beide Release-Hinweise vor einem Release-Merge gemeinsam aktualisieren.
+
+Reine Sensoranpassungen ohne Versionswechsel aktualisieren main und dessen Dokumentation; bestehende veröffentlichte Tags/Downloads bleiben der ursprüngliche Release-Stand. Aktuelle main-Importe ausdrücklich verlinken.

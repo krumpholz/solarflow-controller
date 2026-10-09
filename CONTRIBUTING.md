@@ -20,6 +20,8 @@ Include a minimal reproduction for bugs, with configuration, software versions a
 
 Contributions are provided under the [MIT License](LICENSE). See [project notice](NOTICE.md).
 
-Sensor payload preparation lives in `rolling-efficiency/prepare-sensor.js`; `build.py` also creates its German wrapper. Keep the mean usable during short source failures while excluding missing duration. Test clock-based expiry, mandatory original SOC timestamps, API unknown/zero handling and warning wiring. Sensor states written through the standard API have no entity-registry entry; do not claim Companion or registry features.
+Sensor configuration lives in `rolling-efficiency/flow-template.json`. `build.py` creates both full flows and the two mean-sensor-only imports. Preserve the supplied sensor contract: direct State = msg.payload, empty attributes/output properties, separate Entity configs, original sensor identity and selected HA server. Both sensor nodes require the Companion integration; do not claim they work without it. Test direct mean availability independently of source validity, real zero/null, warning wiring and the incremental import. Avoid reintroducing a formatting Function.
 
 After all four matrix jobs pass on a push to main, the release job reads `VERSION`, creates the corresponding tag/release with bilingual notes and uploads the generated flow/Function files. Existing releases are left unchanged. Update VERSION, calculation revision, changelogs and both release-note files together before merging a release.
+
+Sensor-only corrections without a version change update main and its documentation; existing published tags/assets remain the original release snapshot. Link current main imports explicitly.

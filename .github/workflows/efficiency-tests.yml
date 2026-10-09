@@ -28,7 +28,7 @@ jobs:
       - name: Regenerate German wrappers and import flows
         run: python3 rolling-efficiency/build.py
       - name: Check generated files are current
-        run: git diff --exit-code -- rolling-efficiency/battery-efficiency_DE.js rolling-efficiency/prepare-cycle_DE.js rolling-efficiency/prepare-sensor_DE.js rolling-efficiency/flow.json rolling-efficiency/flow_DE.json
+        run: git diff --exit-code -- rolling-efficiency/battery-efficiency_DE.js rolling-efficiency/prepare-cycle_DE.js rolling-efficiency/flow.json rolling-efficiency/flow_DE.json rolling-efficiency/sensor-mean.json rolling-efficiency/sensor-mean_DE.json
       - name: Run calculation, mean and flow regressions
         run: node --test rolling-efficiency/tests/*.test.cjs
 
@@ -70,7 +70,7 @@ jobs:
             rolling-efficiency/flow.json rolling-efficiency/flow_DE.json \
             rolling-efficiency/battery-efficiency.js rolling-efficiency/battery-efficiency_DE.js \
             rolling-efficiency/prepare-cycle.js rolling-efficiency/prepare-cycle_DE.js \
-            rolling-efficiency/prepare-sensor.js rolling-efficiency/prepare-sensor_DE.js \
+            rolling-efficiency/sensor-mean.json rolling-efficiency/sensor-mean_DE.json \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title "SolarFlow Controller $release_tag" --latest \
             --notes-file release-notes-combined.md
