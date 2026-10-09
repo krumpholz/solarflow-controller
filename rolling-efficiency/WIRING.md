@@ -11,12 +11,10 @@ flowchart TD
     D --> P["Capture SOC and Start Measurement Cycle"]
     P -->|"Output 1: SOC snapshot"| C["Efficiency calculation 5.1"]
     P -->|"Output 2: missing measurement"| X["Diagnostics / Debug"]
-    C -->|"Output 1: 7-day mean"| M["Prepare Mean Sensor"]
+    C -->|"Output 1: 7-day mean"| M["Mean sensor: msg.payload"]
     C -->|"Output 1: 7-day mean"| A["Automation"]
-    C -->|"Output 2: original efficiency"| E["Prepare Efficiency Sensor"]
+    C -->|"Output 2: original efficiency"| E["Original sensor: msg.payload"]
     C -->|"Output 3: diagnostics"| X
-    M --> MA["HA API: write mean sensor"]
-    E --> EA["HA API: write original sensor"]
     P -.->|"Output 2: optional"| E
 ```
 
@@ -26,10 +24,10 @@ The dashed warning connection is optional and absent from the default import. No
 | --- | --- |
 | SOC preparation | 2 outputs: calculation / diagnostics |
 | Calculation | 3 outputs: mean / original / diagnostics |
-| Each sensor preparation | 1 output: request object to its API node |
-| Each API node | HTTP POST; existing HA server; response in `msg.ha_state` |
-| API/formatting Catch | Diagnostics only |
+| Both ha-sensor nodes | State = `msg.payload`; `%`; no attributes/output properties |
+| Each Entity config | Separate sensor identity; existing HA server; resend/debug disabled |
+| Sensor Catch | Diagnostics only |
 
-Branch automation directly from calculation output 1, before API preparation changes the payload. During a short source failure, valid retained mean history continues on output 1, with `source_valid: false`; new collection pauses. The clock continues to expire old intervals. The original output may be null. Without remaining valid mean history, the mean also becomes unknown.
+Branch automation directly from calculation output 1. Both sensors also receive their numeric payloads directly; no preparation Function is required. During a short source failure, valid retained mean history continues on output 1, with `source_valid: false`; new collection pauses. The clock continues to expire old intervals. The original output may be null. Without remaining valid mean history, the mean also becomes unknown.
 
-Configure sensor entity IDs in the `SENSOR` block of the preparation nodes. Defaults: `sensor.battery_efficiency_mean_7d` and `sensor.battery_efficiency`. No Companion integration is required. These API writes create sensor states without their own entity-registry entry/unique ID; the next successful write recreates them after HA restart. See [installation and sensor details](README.md).
+For an existing installation, import only [sensor-mean.json](sensor-mean.json). Keep the existing sensor/Entity config and use the new separate Entity config for the mean. Select the existing server in each configuration. Requires `hass-node-red` Companion integration 1.1.0+; the new entity's actual HA ID is obtained from HA. Release 5.1.0 / calculation 5.1 stay unchanged; use current `main` imports instead of the original API-based release snapshot. See [installation and sensor details](README.md).

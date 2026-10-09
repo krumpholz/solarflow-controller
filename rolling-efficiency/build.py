@@ -66,32 +66,30 @@ de.HEADER='''/*
  */
 '''
 (R/'prepare-cycle_DE.js').write_text(de.localize(prepare))
-sensor=(R/'prepare-sensor.js').read_text()
-de.HEADER='''/*
- * Normalen HA-Sensor über den Standard-API-Knoten schreiben.
- * Keine Node-RED-Companion-Integration erforderlich. MIT-Lizenz.
- * Entitäts-IDs oben konfigurieren; Automatik vor der Aufbereitung abzweigen.
- */
-'''
-(R/'prepare-sensor_DE.js').write_text(de.localize(sensor
- .replace('"Battery Efficiency 7-Day Mean"','"Batterie Wirkungsgrad 7-Tage-Mittelwert"')
- .replace('"Battery Efficiency"','"Lade Entlade Effizenz"')))
 nodes=json.loads((R/'flow-template.json').read_text())
 for n in nodes:
  if n['id']=='v4e46be25028e13f5d': n['func']=source
  if n['id']=='v4effprepare000003': n['func']=prepare
- if n['id'] in ['v51effmeanprep01','v51effrawprep001']: n['func']=sensor
 idmap={key:'v4'+key for key in ['e46be25028e13f5d','effprepare000003']}
 (R/'flow.json').write_text(json.dumps(nodes,indent=2,ensure_ascii=False)+'\n')
+def write_mean_import(language):
+ # Add only the new sensor/configuration; reuse the operator's HA server.
+ mean=[dict(n) for n in nodes if n['id'] in ['0f55fb7a4d14af9f','71e17f5b60730d3d']]
+ next(n for n in mean if n['type']=='ha-sensor').update(x=1520,y=5180)
+ (R/f'sensor-mean{language}.json').write_text(json.dumps(mean,indent=2,ensure_ascii=False)+'\n')
+write_mean_import('')
 for n in nodes:
  if n['id']==idmap['e46be25028e13f5d']:n.update(name='Batterie Wirkungsgrad und 7-Tage-Mittelwert',func=(R/'battery-efficiency_DE.js').read_text(),outputLabels=['Gleitender 7-Tage-Mittelwert','Bisheriger Wirkungsgrad / HA-Sensor','Diagnose'])
  if n['id']==idmap['effprepare000003']:n.update(name='SOC erfassen und Messzyklus starten',func=(R/'prepare-cycle_DE.js').read_text(),outputLabels=['Snapshot auswerten','Fehlende Messung / Diagnose'])
- if n['id'] in ['v51effmeanprep01','v51effrawprep001']:
-  n['func']=(R/'prepare-sensor_DE.js').read_text()
-  n['name']='Mittelwert für HA aufbereiten' if n['id']=='v51effmeanprep01' else 'Wirkungsgrad für HA aufbereiten'
- if n['type']=='ha-api':n['name']='API: Mittelwertsensor schreiben' if n['id']=='v5effmean00000001' else 'API: Wirkungsgradsensor schreiben'
+ if n['type']=='ha-sensor':n['name']='Lade Entlade Effizenz 7-Tage-Mittelwert' if n['id']=='0f55fb7a4d14af9f' else 'Lade Entlade Effizenz'
+ if n['type']=='ha-entity-config':
+  name='Lade Entlade Effizenz 7-Tage-Mittelwert' if n['id']=='71e17f5b60730d3d' else 'Lade Entlade Effizenz'
+  n['name']='S '+name
+  next(item for item in n['haConfig'] if item['property']=='name')['value']=name
+ if n['type']=='server':n['statusSeparator']='am:'
  if n['type']=='debug':n['name']='Wirkungsgrad Diagnose'
  if n['type']=='inject':n['name']='Snapshot manuell prüfen'
  if n['type']=='catch':n['name']='Fehler der Sensor-Anbindung'
- if n['type']=='comment':n.update(name='Vorhandenen Timer nach SOC-Erfassung anschließen; Anleitung lesen',info='Gleicher Flow-Tab wie Snapshot und SOC-Schreiber. Vorhandener Takt: SOC samt originalem Zeitstempel schreiben, 1 s später SOC erfassen und Berechnung starten. Snapshot muss dann vollständig vorliegen. Kein zusätzlicher periodischer Timer. Keine Tageszählerabfragen. Berechnung: Ausgang 1 Mittelwert und Automatik, 2 bisheriger Wirkungsgrad, 3 Diagnose. Watchdog-Ausgang 2 nur an Diagnose, optional an bisherigen Sensor. Standard-HA-API statt Companion-Sensor. Entitäts-IDs in der Sensor-Aufbereitung konfigurieren. Kapazität und Kontextspeicher prüfen; alte Berechnung abschalten. Siehe rolling-efficiency/README_DE.md.')
+ if n['type']=='comment':n.update(name='Vorhandenen Timer nach SOC-Erfassung anschließen; Anleitung lesen',info='Gleicher Flow-Tab wie Snapshot und SOC-Schreiber. Vorhandener Takt: SOC samt originalem Zeitstempel schreiben, 1 s später SOC erfassen und Berechnung starten. Snapshot muss dann vollständig vorliegen. Kein zusätzlicher periodischer Timer. Keine Tageszählerabfragen. Berechnung: Ausgang 1 direkt an Mittelwertsensor und Automatik, 2 direkt an bisherigen Sensor, 3 Diagnose. Watchdog-Ausgang 2 nur an Diagnose, optional an bisherigen Sensor. Beide ha-sensor-Nodes: State = msg.payload, Einheit %, keine Attribute und kein Aufbereitungsnode. Benötigt hass-node-red Companion-Integration 1.1.0+ in HA. Vorhandenen Server in jeder Entity config auswählen; bisherige Entity config für deren HA-Entität beibehalten. Kapazität und Kontextspeicher prüfen; alte Berechnung abschalten. Siehe rolling-efficiency/README_DE.md.')
 (R/'flow_DE.json').write_text(json.dumps(nodes,indent=2,ensure_ascii=False)+'\n')
+write_mean_import('_DE')

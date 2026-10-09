@@ -2,6 +2,13 @@
 
 [English](CHANGELOG.md) | **Deutsch**
 
+## Sensor-Anbindung auf main angepasst — 09.10.2026 (Version unverändert)
+
+- Beide Prozentwerte mit der bereitgestellten minimalen ha-sensor-Vorlage ausgeben: State = msg.payload, %, keine Attribute/Ausgabefelder, Resend/Debug aus. Berechnungsausgänge 1/2 direkt an getrennte Mittelwert-/bisherige Sensoren führen; API- und Aufbereitungsnodes/-dateien entfernen.
+- Vorgegebenen bisherigen Sensor samt Entity config erhalten; eigene Mittelwert-Entity-config mit vorhandenem HA-Server ergänzen. Kleine deutsche/englische Sensorimporte für bestehende Installationen hinzufügen.
+- Companion-Integration 1.1.0+ als Voraussetzung dieser Sensoren dokumentieren; Diagnose bleibt an Ausgang 3. Beide READMEs, Verdrahtungsschemata und Konfigurationstests anpassen; alle 144 Regressionstests bleiben erhalten.
+- Release 5.1.0, Berechnung 5.1, Rechenkern und Historie erhalten. Veröffentlichter v5.1.0-Tag/Downloads bleiben der ursprüngliche Release-Stand; angepasste Importe liegen auf main.
+
 ## v5.1.0 — 09.10.2026
 
 - Ausgang 1 bleibt bei kurzen SOC-/Quellausfällen aus gültiger Mittelwerthistorie verfügbar. Neue Aufnahme pausiert, ihr Interpolations-Ausgangspunkt wird gelöscht und das 168-Stunden-Fenster läuft weiter. Keine Nullwerte oder gehaltenen Messintervalle ergänzen.

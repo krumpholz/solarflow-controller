@@ -19,7 +19,13 @@ Deine Unterstützung hilft dabei, das Projekt zu pflegen, zu testen, zu dokument
 3. Batteriekapazität, Leistungsgrenzen und dauerhaften Kontextspeicher konfigurieren. [flow_DE.json](rolling-efficiency/flow_DE.json) importieren, den Home-Assistant-Server auswählen und den vorhandenen Timer nach der SOC-Erfassung anschließen.
 4. Nur eine Wirkungsgradberechnung betreiben. Bei bestehenden Installationen zuerst die Umstiegsanleitung beachten.
 
-Benötigt werden Node-RED, `node-red-contrib-home-assistant-websocket` und eine funktionierende HA-Serververbindung. Normale API-Knoten schreiben beide Sensorzustände; eine Node-RED-Companion-/Custom-Integration ist nicht erforderlich. Ein Flow-Import erzeugt weder die Eingabemesswerte noch den externen Snapshot-Builder. Tageszähler für Lade- und Entladeenergie sind nicht mehr erforderlich. Neue Installationen rechnen, sobald genügend gültige Ladeenergie vorhanden ist; sieben Tage Wartezeit sind nicht erforderlich.
+Benötigt werden Node-RED, `node-red-contrib-home-assistant-websocket` und eine funktionierende HA-Serververbindung. Beide ha-sensor-Knoten erhalten die numerischen Berechnungsausgaben direkt; ein Sensor-Aufbereitungsnode entfällt. Dafür wird die [hass-node-red Companion-Integration](https://github.com/zachowj/hass-node-red), Version 1.1.0 oder neuer, in Home Assistant benötigt. Ein Flow-Import erzeugt weder die Eingabemesswerte noch den externen Snapshot-Builder. Tageszähler für Lade- und Entladeenergie sind nicht mehr erforderlich. Neue Installationen rechnen, sobald genügend gültige Ladeenergie vorhanden ist; sieben Tage Wartezeit sind nicht erforderlich.
+
+## Sensor-Anbindung angepasst, Version unverändert
+
+Der aktuelle `main`-Zweig verwendet die bereitgestellte einfache Sensorvorlage: State = `msg.payload`, `%`, leere Attribute/Ausgabefelder und getrennte Entity configs. Bei einer bestehenden Installation nur [sensor-mean_DE.json](rolling-efficiency/sensor-mean_DE.json) importieren und Berechnungsausgang **1** direkt anschließen. Der bisherige Sensor bleibt an Ausgang **2**. Siehe [direkte Verdrahtung](rolling-efficiency/WIRING_DE.md).
+
+Release-Version **5.1.0** und Berechnungsrevision **5.1** bleiben unverändert. Der veröffentlichte Tag `v5.1.0` und dessen Release-Downloads enthalten weiterhin den ursprünglichen API-basierten Stand; für die angepasste Sensorverdrahtung die hier verlinkten Dateien aus `main` verwenden.
 
 ## Enthalten
 
@@ -38,7 +44,7 @@ Release v5.1.0 (Berechnung 5.1) hält Ausgang 1 bei kurzen SOC-/Quellausfällen 
 
 ## Umstieg von v4.0.0
 
-Die Berechnungsfunktion auf **drei Ausgänge** stellen. Ausgang 1 mit dem neuen Mittelwertsensor oder einer Automatik verbinden, den bisherigen Wirkungsgradsensor von Ausgang 1 auf **Ausgang 2** und die Diagnose von Ausgang 2 auf **Ausgang 3** umstecken. Flow-Tab, Kontextspeicher und eingestellte Kapazität beibehalten. Den SOC-/Watchdog-Knoten gemäß [Anleitung](rolling-efficiency/README_DE.md) aktualisieren, damit der Watchdog die Diagnose warnt und nur den bisherigen Wirkungsgradschlüssel zurücksetzt. Companion-Sensoren durch die Standard-API-Pfade ersetzen und die tatsächlichen Ziel-Entitäts-IDs konfigurieren. Den Energiepuffer nicht löschen.
+Die Berechnungsfunktion auf **drei Ausgänge** stellen. Ausgang 1 mit dem neuen Mittelwertsensor oder einer Automatik verbinden, den bisherigen Wirkungsgradsensor von Ausgang 1 auf **Ausgang 2** und die Diagnose von Ausgang 2 auf **Ausgang 3** umstecken. Flow-Tab, Kontextspeicher und eingestellte Kapazität beibehalten. Den SOC-/Watchdog-Knoten gemäß [Anleitung](rolling-efficiency/README_DE.md) aktualisieren, damit der Watchdog die Diagnose warnt und nur den bisherigen Wirkungsgradschlüssel zurücksetzt. Den bisherigen Sensor samt Entity config beibehalten und den neuen Mittelwertsensor an Ausgang 1 ergänzen. Beide lesen direkt State = msg.payload ohne Aufbereitungsnode. Den Energiepuffer nicht löschen.
 
 Der Mittelwert steht nach dem ersten aufeinanderfolgenden Paar gültiger Wirkungsgradwerte bereit. Anfangs umfasst er weniger als sieben Tage. `mean_window_complete` zeigt ein vollständig abgedecktes 168-Stunden-Mittelwertfenster an; Lücken vermindern die Abdeckung. Die Glättung beseitigt keine systematischen SOC-Fehler und macht das Ergebnis nicht zu einer zertifizierten Roundtrip-Messung.
 

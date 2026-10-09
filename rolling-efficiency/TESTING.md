@@ -20,7 +20,7 @@ TZ=UTC node --test rolling-efficiency/tests/*.test.cjs
 TZ=Europe/Berlin node --test rolling-efficiency/tests/*.test.cjs
 ```
 
-Run from the repository root. After generation, `battery-efficiency_DE.js`, `prepare-cycle_DE.js`, `prepare-sensor_DE.js`, `flow.json` and `flow_DE.json` must match the committed files. The GitHub Actions workflow checks this before testing. Both language variants execute the same canonical calculation body.
+Run from the repository root. After generation, `battery-efficiency_DE.js`, `prepare-cycle_DE.js`, `flow.json`, `flow_DE.json`, `sensor-mean.json` and `sensor-mean_DE.json` must match the committed files. The GitHub Actions workflow checks this before testing. Both language variants execute the same canonical calculation body.
 
 ## Mean and integration regressions
 
@@ -37,13 +37,15 @@ The suite contains **144 tests**, including the original 70 cases. It exercises 
 | Restart and rollback | JSON serialization retains mean history; duplicates cannot extend it; an intervening V4 writer cannot bridge missing mean history |
 | Seven-day window | Seeded complete 168-hour buffers retire only the oldest fraction; gaps prevent complete coverage; an eight-day outage expires all records |
 | Storage and corruption | Both complete buffers remain bounded and survive serialization; malformed mean state fails closed without erasing energy history |
-| Flows and watchdog | Three outputs in order; standard API request objects; unknown versus real zero; warnings preserve the mean key and route only to diagnostics; manual Inject does not repeat |
+| Flows and watchdog | Three outputs in order; direct ha-sensor payloads; distinct original/mean configurations; null versus real zero; warnings preserve the mean key and route only to diagnostics; manual Inject does not repeat |
 | Language and DST | Canonical/generated bodies match; UTC window duration stays 168 hours across a Europe/Berlin DST transition |
 
 The seven-day tests use deterministic synthetic minute histories and exercise their processing, pruning, coverage and serialization. They are not a seven-day real-time hardware run. Live Home Assistant sensor creation, BLE timing and actual SOC accuracy require operating the updated flow on the installation. No operational measurement logs or credentials are included in the repository.
 
 ## v5.1 source availability and sensor regressions
 
-Additional cases verify a preserved one-second-old SOC timestamp against the default mandatory timestamp check, invalid SOC/numeric overflow, continuing timer evaluation during an outage, partial-boundary expiry with invalid SOC, total expiry, serialization during failure, recovery without bridging, insufficient current charge, and untrusted runtime/context failure. Sensor cases verify HTTP POST objects, retained mean validity independent of source validity, real zero versus unknown, configurable entity IDs and the optional original-only watchdog path. Release 5.1.0 / calculation 5.1 / energy schema 4 / mean schema 1 are checked separately.
+Additional cases verify a preserved one-second-old SOC timestamp against the default mandatory timestamp check, invalid SOC/numeric overflow, continuing timer evaluation during an outage, partial-boundary expiry with invalid SOC, total expiry, serialization during failure, recovery without bridging, insufficient current charge, and untrusted runtime/context failure. Sensor cases verify direct State = msg.payload wiring, retained mean validity independent of source validity, real zero versus null, separate matching Entity configs, original sensor identity, and a mean-only import that reuses the existing server without another calculation. Warning and Catch paths stay in diagnostics by default. Release 5.1.0 / calculation 5.1 / energy schema 4 / mean schema 1 are checked separately.
 
 The operator reported a live test of the SOC-preparation replacement on 2026-10-09. This validates that component's use in the installation, not the entire new sensor/mean flow or a seven-day hardware run. CI still uses synthetic data and no Home Assistant credentials.
+
+The same-version sensor correction does not change calculation/capture sources or persisted schemas. These tests validate export configuration and calculation messages, not an authenticated HA/Companion session. Actual sensor creation and null-to-unknown behavior still require the installed integration.
