@@ -1,6 +1,6 @@
 /*
- * Rolling 168-hour SOC-adjusted battery efficiency, revision 4.1.
- * Node-RED Function body, TWO outputs: HA state / diagnostics. MIT license.
+ * Rolling 168-hour SOC-adjusted battery efficiency, revision 5.1.
+ * THREE outputs: 7-day mean / original efficiency / diagnostics. MIT license.
  * Reads the supplied V1.3 snapshot builder's flow context; no energy sensors.
  * Minute aggregates bound persistence size. The oldest partial minute is
  * weighted by overlap; intra-minute timing at the window edge is approximate.
@@ -14,7 +14,7 @@ const CFG = {
     maxSnapshotAgeMs: 6500,
     maxIntervalMs: 10000,
     maxSocAgeMs: 120000,
-    requireSocTimestamp: false,
+    requireSocTimestamp: true,
     socStepTolerancePct: 2,
     socRebaseConfirmations: 3,
     socConfirmationTolerancePct: 1,
@@ -25,10 +25,18 @@ const CFG = {
 };
 const MEM = "memoryOnly", FILE = "file", KEY = "batt_eff_state_v4";
 const HOUR = 3600000, WINDOW = 168 * HOUR, BUCKET = 60000;
+const PCT_ARITHMETIC_TOLERANCE = 1e-9;
 const now = Date.now();
 const finite = v => typeof v === "number" && Number.isFinite(v);
 const copy = x => JSON.parse(JSON.stringify(x));
 const round = (x, n = 6) => finite(x) ? Number(x.toFixed(n)) : null;
+// Resolve machine-precision overshoot at algebraic 0/100 endpoints only.
+// Real out-of-range measurements are still rejected, never clamped.
+function stablePercent(x) {
+    if (finite(x) && x<0 && x>=-PCT_ARITHMETIC_TOLERANCE) return 0;
+    if (finite(x) && x>100 && x<=100+PCT_ARITHMETIC_TOLERANCE) return 100;
+    return x;
+}
 function number(x) {
     if (finite(x)) return x;
     if (typeof x !== "string" || !/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(x.trim())) return null;
@@ -134,9 +142,88 @@ function validState(s, signature) {
         d.end<=d.start || d.charge<0 || d.discharge<0 || typeof d.known!=="boolean") return false;
     const p=s.last;
     if (p && (![p.ts,p.power,p.soc].every(finite) || p.soc<0 || p.soc>100 || typeof p.id!=="string")) return false;
+    if (s.mean!==undefined && !validMean(s.mean, p)) return false;
     return true;
 }
+function validMean(m, sample) {
+    if (!m || m.version!==1 || !finite(m.created) || !sample || m.created>sample.ts ||
+        !Array.isArray(m.buckets) || m.buckets.length>10082) return false;
+    let lastEnd=0;
+    for (const b of m.buckets) {
+        if (!Array.isArray(b) || b.length!==4 || !b.every(finite) || b[0]<lastEnd ||
+            b[1]<=b[0] || b[1]-b[0]>BUCKET || b[3]<=0 || b[3]>b[1]-b[0]+0.001 ||
+            b[2]<0 || b[2]>100*b[3]+0.001 || b[0]<m.created || b[1]>sample.ts) return false;
+        lastEnd=b[1];
+    }
+    // V4 code ignores the additive mean while advancing the energy baseline.
+    // A retained older mean baseline is safe: updateMean will not bridge it.
+    return m.last===null || (m.last && finite(m.last.ts) && m.last.ts>=m.created &&
+        m.last.ts<=sample.ts && m.last.ts>=lastEnd && finite(m.last.eta) &&
+        m.last.eta>=0 && m.last.eta<=100);
+}
 let state;
+// Additive history: existing energy buffers cannot reconstruct past eta samples.
+function pruneMean(ts) {
+    const m=state && state.mean;
+    if (m) while (m.buckets.length && m.buckets[0][1]<=ts-WINDOW) m.buckets.shift();
+}
+function updateMean(ts, raw, valid, accepted, previousSample) {
+    if (!state.mean) state.mean={version:1,created:ts,last:null,buckets:[]};
+    const m=state.mean, last=m.last;
+    if (valid && accepted && last && previousSample && last.ts===previousSample.ts &&
+        ts>last.ts && ts-last.ts<=CFG.maxIntervalMs) {
+        const dt=ts-last.ts;
+        for (let a=last.ts;a<ts;) {
+            const end=Math.min(ts,(Math.floor(a/BUCKET)+1)*BUCKET);
+            const v0=last.eta+(raw-last.eta)*(a-last.ts)/dt;
+            const v1=last.eta+(raw-last.eta)*(end-last.ts)/dt;
+            let b=m.buckets[m.buckets.length-1];
+            if (!b || Math.floor(b[0]/BUCKET)!==Math.floor(a/BUCKET)) {
+                b=[a,end,0,0];m.buckets.push(b);
+            }
+            b[1]=end;b[2]+=(v0+v1)*0.5*(end-a);b[3]+=end-a;
+            a=end;
+        }
+    }
+    m.last=valid ? {ts,eta:raw} : null;
+    pruneMean(ts);
+}
+function meanOutput(ts, sourceValid, historyTrusted = true) {
+    const m=historyTrusted && state && state.mean, from=ts-WINDOW;
+    let weighted=0,covered=0,partial=false;
+    for (const b of m ? m.buckets : []) {
+        const f=overlap(b[0],b[1],from,ts)/(b[1]-b[0]);
+        weighted+=b[2]*f;covered+=b[3]*f;
+        if (f>0 && f<1) partial=true;
+    }
+    const raw=covered>0 ? stablePercent(weighted/covered) : null;
+    // Current inputs control collection, not availability of retained history.
+    const valid=finite(raw) && raw>=0 && raw<=100;
+    const complete=!!m && covered>=WINDOW-1;
+    const lastSample=covered>0 ? m.buckets[m.buckets.length-1][1] : null;
+    return {eta_mean_7d_pct:valid ? round(raw,1) : null,eta_mean_7d_raw_pct:round(raw,3),
+        mean_valid:valid,mean_reason:!historyTrusted ? "mean_history_unavailable" :
+            covered<=0 ? (m && ts-m.created>=WINDOW ? "mean_history_expired" : "mean_baseline_initialized") :
+            valid ? "mean_available" : "invalid_mean_history",
+        mean_collection_paused:!sourceValid,
+        mean_last_sample_at:lastSample===null ? null : new Date(lastSample).toISOString(),
+        mean_sample_age_seconds:lastSample===null ? null : round(Math.max(0,ts-lastSample)/1000,3),
+        mean_window_start:new Date(from).toISOString(),mean_window_end:new Date(ts).toISOString(),
+        mean_window_complete:complete,mean_covered_hours:round(covered/HOUR),
+        mean_coverage_pct:round(100*covered/WINDOW,3),
+        mean_history_hours:m ? round(Math.max(0,ts-m.created)/HOUR) : 0,
+        mean_started_at:m ? new Date(m.created).toISOString() : null,
+        mean_method:"time_weighted_linear_eta",mean_source:"rolling_168_hour_soc_adjusted_energy_balance",
+        mean_bucket_seconds:BUCKET/1000,mean_buffer_buckets:m ? m.buckets.length : 0,
+        mean_boundary_weighting:"uniform_within_oldest_partial_minute",mean_partial_boundary_bucket:partial};
+}
+function outputs(result) {
+    const mean={payload:result.eta_mean_7d_pct,result:{...copy(result),
+        valid:result.mean_valid,reason:result.mean_reason,
+        source_valid:result.valid,source_reason:result.reason,output:"mean_7d"}};
+    const original={payload:result.eta_pct,result};
+    return [mean,original,copy(original)];
+}
 // Optional additive state extension: old v4 energy buffers need no migration.
 function audit() {
     if (!state) return null;
@@ -184,14 +271,27 @@ function auditOutput() {
 }
 function save() { flow.set(KEY,state,FILE); }
 function fail(reason, detail, block = true, values = {}) {
+    // Only reviewed measurement failures may reuse already validated history.
+    // Configuration, corrupted state and runtime/store failures remain unknown.
+    const keepHistory=["expired_soc_capture","invalid_soc","soc_timestamp_required",
+        "stale_or_future_soc","missing_or_stale_snapshot","battery_fallback_excluded",
+        "invalid_battery_power","soc_jump_pending"].includes(reason);
+    let mean=meanOutput(now,false,false);
     try {
-        if (state && state.last && block) { note(reason,{...values,...(detail ? {error_message:String(detail).slice(0,500)} : {})}); state.blocked=true; save(); }
+        if (state) {
+            if (state.last && block) { note(reason,{...values,...(detail ? {error_message:String(detail).slice(0,500)} : {})}); state.blocked=true; }
+            if (state.mean) state.mean.last=null;
+            pruneMean(now);save();
+        }
+        mean=meanOutput(now,false,keepHistory);
         flow.set("la_ela_es",null,FILE);
-    } catch (error) { detail = error.message; }
+        flow.set("la_ela_es_mean_7d",mean.eta_mean_7d_pct,FILE);
+    } catch (error) { detail = error.message; mean=meanOutput(now,false,false); }
     node.status({fill:"yellow",shape:"ring",text:reason});
-    const out={payload:null,result:{version:4,calculation_revision:"4.1",valid:false,reason,
-        timestamp:new Date(now).toISOString(),detail,covered_hours:null,soc_freshness_verified:false,...auditOutput()}};
-    return [out,copy(out)];
+    const result={version:4,release_version:"5.1.0",calculation_revision:"5.1",valid:false,reason,
+        eta_pct:null,timestamp:new Date(now).toISOString(),detail,covered_hours:null,
+        soc_freshness_verified:false,...mean,...auditOutput()};
+    return outputs(result);
 }
 try {
     if (![CFG.capacityKWh,CFG.maxPowerKW,CFG.minChargeKWh].every(v=>finite(v)&&v>0) ||
@@ -316,7 +416,7 @@ try {
         if (f>0 && !d.known) legacyMissing=true;
     }
     charge+=importedCharge;discharge+=importedDischarge;delta+=importedDelta;
-    const raw=charge>0 ? 100*(discharge+delta)/charge : null;
+    const raw=charge>0 ? stablePercent(100*(discharge+delta)/charge) : null;
     const enough=charge+1e-12>=CFG.minChargeKWh;
     const plausible=finite(raw) && raw>=0 && raw<=100;
     const hasImported=state.migration.records.length>0;
@@ -324,6 +424,9 @@ try {
     const resultReason=legacyMissing ? "legacy_soc_boundaries_missing" : !enough ? "insufficient_charge_energy" :
         !plausible ? "efficiency_out_of_range" : valid ? "calculation_available" : reason;
     const eta=valid ? round(raw,1) : null;
+    updateMean(ts,raw,valid,accepted,prev);
+    pruneMean(now);
+    const mean=meanOutput(now,valid);
     save();
     // Also keep the original SOC capture node's watchdog compatible.
     flow.set("batt_eff_last_completed_v3",now,MEM);
@@ -331,8 +434,10 @@ try {
     flow.set("sum_batt_la_7d",round(charge,3),FILE);
     flow.set("sum_batt_ela_7d",round(discharge,3),FILE);
     flow.set("la_ela_es",eta,FILE);
-    const result={version:4,calculation_revision:"4.1",valid,reason:resultReason,interval_status:reason,
+    flow.set("la_ela_es_mean_7d",mean.eta_mean_7d_pct,FILE);
+    const result={version:4,release_version:"5.1.0",calculation_revision:"5.1",valid,reason:resultReason,interval_status:reason,
         timestamp:new Date(ts).toISOString(),eta_pct:eta,eta_raw_pct:round(raw,3),
+        efficiency_arithmetic_tolerance_pct:PCT_ARITHMETIC_TOLERANCE,
         window:"rolling_168_hours",window_start:new Date(from).toISOString(),window_end:new Date(ts).toISOString(),
         window_complete:!hasImported && covered>=WINDOW-1,days_used:round(covered/86400000,3),
         sum_charge_kwh_7d:round(charge),sum_discharge_kwh_7d:round(discharge),delta_stored_energy_kwh:round(delta),
@@ -349,11 +454,10 @@ try {
         legacy_migration:{status:state.migration.status,at:state.migration.at,source:"batt_eff_state_v3",
             source_last_ts:state.migration.source_last_ts,distribution:state.migration.distribution || null},
         imported_charge_kwh:round(importedCharge),imported_discharge_kwh:round(importedDischarge),
-        imported_delta_kwh:round(importedDelta),historical_accuracy_verified:false,...auditOutput()};
-    const out={payload:eta,result};
+        imported_delta_kwh:round(importedDelta),historical_accuracy_verified:false,...mean,...auditOutput()};
     node.status({fill:valid && !hasImported ? "green":"yellow",shape:valid?"dot":"ring",
         text:valid?`${eta}% | 168h | ${round(covered/HOUR,2)}h`:resultReason});
-    return [out,copy(out)];
+    return outputs(result);
 } catch(err) {
     node.error(`Efficiency calculation stopped: ${err.message}`);
     return fail("context_or_runtime_error",err.message);

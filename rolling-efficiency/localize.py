@@ -24,7 +24,7 @@ TEXT = {
 HEADER = ""
 
 def without_comments(source):
-    # These two controlled source files have no // inside executable strings.
+    # These controlled source files have no // inside executable strings.
     # Refuse unsupported changes rather than silently changing string values.
     source = re.sub(r'/\*.*?\*/', '', source, flags=re.S)
     lines = []
@@ -66,6 +66,8 @@ if (Array.isArray(ausgabe)) {
         if (!nachricht || !nachricht.result) continue;
         const r = nachricht.result;
         r.grund = deutsch(r.reason);
+        if (r.mean_reason) r.mittelwertgrund = deutsch(r.mean_reason);
+        if (r.source_reason) r.quellgrund = deutsch(r.source_reason);
         if (r.interval_status) r.intervallstatus = deutsch(r.interval_status);
         if (r.legacy_migration) r.pufferuebernahme = deutsch(r.legacy_migration.status);
         if (r.detail) r.detail = deutsch(r.detail);

@@ -1,18 +1,23 @@
-# SolarFlow Controller v4.0.0
+# SolarFlow Controller v5.1.0
 
 [English](RELEASE_NOTES.md) | **Deutsch**
 
-## Änderungen gegenüber v3.3.0
+Release **5.1.0** enthält Berechnungsrevision **5.1**, Energie-Pufferschema **4** und Mittelwert-Schema **1**. Kompatible Energiehistorie und vorhandene V5-Mittelwerthistorie bleiben erhalten.
 
-- Gleitende **168 Stunden** ersetzen das Fenster aus sieben Kalendertagen. Alte Daten verlassen den Puffer schrittweise; um Mitternacht entfällt nicht mehr ein ganzer Tag.
-- Lade- und Entladeenergie werden aus gemessener vorzeichenbehafteter Batterieleistung mit tatsächlichen Zeitstempeln berechnet, einschließlich Richtungswechseln. Tagesenergiezähler sind keine Eingabe mehr.
-- Dauerhafte Minutenwerte erhalten die Historie über Neustarts. Kompatible V3-Historie wird einmal übernommen; bestehende V4-Puffer werden weiterverwendet.
-- Neue Nutzer erhalten nach ausreichend gültiger Ladeenergie einen Wert, ohne sieben Tage warten zu müssen.
-- Die letzten zehn Ausschlussereignisse erläutern verworfene Daten mit Dauer, Ursachen, Messwerten und Grenzwerten.
-- Deutsche und englische Anleitungen und Flows sind abgestimmt. Überholte V3-Laufzeitdateien und Build-Abhängigkeiten wurden aus dem aktuellen Dateibaum entfernt; v3.3.0 bleibt verfügbar.
+## Änderungen gegenüber v4.0.0
+
+- Dauerhaften, zeitgewichteten gleitenden **7-Tage-Mittelwert** ungerundeter gültiger Prozentwerte der bisherigen SOC-korrigierten 168-Stunden-Bilanz ergänzen. **Ausgang 1 = Mittelwert, Ausgang 2 = bisheriger Wirkungsgrad, Ausgang 3 = Diagnose.**
+- Gültige gespeicherte Mittelwerthistorie bei kurzen SOC-/Quellausfällen verfügbar halten. Aufnahme pausieren und Interpolations-Ausgangspunkt löschen. Zeitfenster weiterlaufen lassen, abgelaufene Intervalle entfernen und Abdeckung, Quellgültigkeit sowie Messwertalter ausweisen. Fehlende Werte weder als 0 % einrechnen noch durch gehaltene Werte mit erfundener Abdeckung ersetzen.
+- Companion-Sensoren durch Aufbereitungsfunktionen und **normale Home-Assistant-API**-Schreibzugriffe ersetzen. Keine Custom Integration `hass-node-red` erforderlich. Dies sind Sensorzustände ohne Entitätsregistereintrag/Unique-ID; nach HA-Neustart stellt das nächste erfolgreiche Schreiben sie wieder her.
+- SOC-Vorbereitung aktualisieren: originalen Zeitstempel erhalten, in der Berechnung standardmäßig verlangen und vorhandenen gemeinsamen Timer etwa eine Sekunde später nutzen. Tageszählerabfragen entfernen. Importierter Inject nur manuell.
+- Ausgang „fehlende Messung“ an die Diagnose führen. Verbindung zum bisherigen Sensor optional; keine Warnungsverbindung zum Mittelwertsensor. Watchdog setzt nur den bisherigen Wirkungsgradschlüssel zurück.
+- Leistungsintegration, SOC-Korrektur, V3-Übernahme und Ausschlussdiagnose beibehalten. Nur Gleitkomma-Überschreitungen innerhalb von 1e-9 Prozentpunkten an exakten 0/100-%-Grenzen auflösen; echte Bereichsüberschreitungen bleiben ungültig.
+- **144 automatisierte Tests**, deutsche/englische Importflows, Installationsanleitungen und Verdrahtungsschemata bereitstellen. GitHub Actions prüft Node.js 22/24 in UTC/Berlin und veröffentlicht versionierte Release-Dateien nach erfolgreichen Main-Tests.
 
 ## Umstieg
 
-Die [Anleitung](rolling-efficiency/README_DE.md) beachten: Snapshot-Eingang statt der beiden Tageszählerabfragen verwenden, Kontextspeicher und bestehende Historie erhalten und nur eine Berechnung betreiben. Regler/Snapshot-Quelle müssen die dokumentierten Kontextvariablen bereits bereitstellen. Release v4.0.0 enthält Berechnungsrevision **4.1**, Pufferschema **4**.
+Berechnung, SOC-Vorbereitung und Sensorpfade gemeinsam gemäß [Anleitung](rolling-efficiency/README_DE.md) und [Verdrahtung](rolling-efficiency/WIRING_DE.md) ersetzen. Drei Berechnungs- und zwei Vorbereitungsausgänge einstellen. Kapazität, Leistungsgrenzen, originalen SOC-Zeitstempel und Sensor-Entitäts-IDs konfigurieren; in beiden API-Nodes den vorhandenen HA-Server auswählen. Automatik an Berechnungsausgang 1 vor der API-Aufbereitung abzweigen. Flow-Tab/Kontext beibehalten und nur einen Schreiber betreiben.
 
-Die Berechnung wurde im Betrieb erprobt und verfügt über automatisierte Regressionstests. Übernommene Tageshistorie bleibt eine Näherung; das Release behauptet keinen abgeschlossenen 168-Stunden-Feldtest und keine zertifizierte Messgenauigkeit. Quellenzeitversatz, BMS-Korrekturen und fehlende Messwerte bleiben relevant.
+Bei V3/V4 mit reiner Energiehistorie beginnt der Mittelwert mit neuen gültigen Intervallen. Aus dem v5.0.0-Entwicklungsentwurf bleiben beide Historien ohne Rücksetzung erhalten. Der Aufbau benötigt zwei aufeinanderfolgende gültige Wirkungsgradbeobachtungen, keine sieben Tage. Ohne verbleibende gültige Historie oder bei nicht sicher nutzbarem Zustand/Konfiguration/Laufzeit wird Ausgang 1 unbekannt. Vollständigkeitsflags zeigen tatsächliche Intervallabdeckung statt vergangener Aufbauzeit.
+
+Der Betreiber hat den Ersatznode für die SOC-Vorbereitung live getestet. Die synthetische Testsuite behauptet keinen Live-Gesamttest der HA-Anbindung oder siebentägigen Hardwarelauf. Siehe [Prüfung](rolling-efficiency/TESTING_DE.md). Glättung beseitigt keine systematischen SOC-/Kapazitätsfehler und reagiert langsamer auf dauerhafte Änderungen, weil die zugrunde liegende Bilanz bereits sieben Tage umfasst.
