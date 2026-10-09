@@ -1,6 +1,6 @@
-# Battery efficiency and rolling 7-day mean – release v5.0.0
+# Battery efficiency and rolling 7-day mean – release v5.1.0
 
-Release **v5.0.0** uses calculation revision **5.0**, energy-buffer schema **4** and additive mean-history schema **1**. Existing V4 energy buffers continue to be used. The output order changes; the mean history starts at upgrade.
+Release **v5.1.0** uses calculation revision **5.1**, energy-buffer schema **4** and additive mean-history schema **1**. Existing energy and V5 mean buffers continue to be used. Output order is mean / original / diagnostics; only installations without a mean buffer begin a new mean history.
 
 **English** | [Deutsch](README_DE.md)
 
@@ -8,16 +8,19 @@ A rolling 168-hour energy balance using signed battery power from the `1.3-SOLAR
 
 ## Upgrade an existing installation
 
-1. Export the old flow and back up Node-RED context. Stay on the same flow tab so that the existing buffer remains accessible.
-2. Replace the **entire** calculation Function body with [battery-efficiency.js](battery-efficiency.js), or [battery-efficiency_DE.js](battery-efficiency_DE.js) for German. Set **three outputs**. Set `capacityKWh` and `maxPowerKW` for the installation; defaults are 8.640 kWh and 2.4 kW.
-3. Connect output 1 of **Capture SOC and Start Measurement Cycle** directly to the calculation Function. Remove the two daily-counter queries from this calculation path. Do not run the old calculation as a parallel writer to the same context/output sensor.
-4. To process every two-second snapshot, connect **output 11 (diagnostics, index 10)** of **Messwerte berechnen V1.3** to the SOC capture input. Disconnect the old five-second timer as the main trigger for this branch. The snapshot builder emits diagnostics after writing the complete successful snapshot. Keep its other existing connections.
-5. Connect calculation **output 1** to the new mean sensor or an automation. Move the existing HA efficiency sensor to **output 2** and diagnostics to **output 3**. Replace SOC capture with [prepare-cycle.js](prepare-cycle.js) or its German counterpart. Connect its warning output (output 2) to **both** HA sensors and diagnostics. The old capture code still triggers calculations, but does not clear the new mean sensor on its own watchdog timeout.
-6. Optionally retain a separate two-second timer into SOC capture as a watchdog. Repeated snapshot IDs do not integrate again. If snapshots stop, polling produces `null` rather than leaving an old percentage displayed indefinitely. The full import includes this timer. Without a continuing trigger, a Function cannot report the failure of its own incoming messages.
+1. Export the old flow and back up Node-RED context. Keep the same flow tab, context stores and configured battery capacity. Only one calculation may write the efficiency state.
+2. Replace the **entire** calculation body with [battery-efficiency.js](battery-efficiency.js) or its [German equivalent](battery-efficiency_DE.js). Set **three outputs**, `capacityKWh` and `maxPowerKW`; defaults are 8.640 kWh and 2.4 kW. Version 5.1 requires an SOC timestamp by default (`requireSocTimestamp: true`).
+3. Replace **Capture SOC and Start Measurement Cycle** with [prepare-cycle.js](prepare-cycle.js), set **two outputs**, and connect its output 1 **directly** to the calculation. Remove both daily-counter queries from this path. Preparation preserves the original `batt_level_ts`; it does not refresh that timestamp.
+4. Use the installation's **existing common timer**: write SOC and its timestamp, then invoke preparation approximately **one second later**. The power snapshot must already be complete. A fixed delay does not guarantee successful requests, so snapshot checks remain active. The imported Inject node is a manual test button; it has **no repeat and no startup injection**. Keep the existing periodic trigger running even if new SOC or power measurements fail.
+5. Calculation output **1** goes to **Prepare Mean Sensor** and to any automation; output **2** goes to **Prepare Efficiency Sensor**; output **3** goes to diagnostics. Both preparation nodes use [prepare-sensor.js](prepare-sensor.js) and feed standard HA API nodes. Branch an automation before sensor preparation because preparation converts `msg.payload` into an API request.
+6. Preparation's warning output **2** goes to **diagnostics only**. Optionally also connect it to **Prepare Efficiency Sensor** to mark the original sensor unknown. Do not connect warnings to mean preparation or the mean API node. The watchdog clears only `la_ela_es`; the calculation alone manages `la_ela_es_mean_7d`.
+7. Replace Companion `ha-sensor` / `ha-entity-config` nodes with the normal API path in [flow.json](flow.json). Select the existing HA server in both API nodes. Configure entity IDs in the `SENSOR` block of the sensor-preparation Functions; use your actual existing ID for the original sensor if needed. An entity still maintained by another integration can overwrite these API writes; disable its old writer.
 
-**Replacing only the calculation code and bypassing the counters works as a minimal change.** With the original five-second polling trigger, however, only those selected power samples are integrated. Intermediate two-second snapshots have already been overwritten in flow context. The event-driven connection in step 4 processes every successful snapshot.
+See the [wiring diagram](WIRING.md) and the [Home Assistant sensor setup](#home-assistant-sensors-without-companion-integration). The external Modbus/snapshot builder and SOC writer are installation-specific and are not included in the import. Place the imported nodes on their flow tab. Activate only one language.
 
-For a new installation, import [flow.json](flow.json) or [flow_DE.json](flow_DE.json), activate only one language, place it on the snapshot/SOC writer's flow tab and select the existing Home Assistant server. The export does not include the installation-specific Modbus builder, devices or network configuration. An existing measurement setup must supply the contract below.
+If there is no existing periodic calculation trigger, configure one approximately every two seconds after updating SOC. A trigger exclusively from the snapshot builder's output 11 processes successful snapshots promptly, but needs continuing timer invocations to evaluate retained mean history when snapshots stop. Use one main trigger path; do not add a second timer to an already paced installation. Replayed snapshot IDs do not integrate twice, but overwritten intermediate power samples cannot be reconstructed.
+
+**Upgrade from v5.0.0:** retain both energy and mean histories; neither schema changes. Replace calculation, SOC preparation and sensor nodes together. From V4 or V3, existing compatible energy history is retained but mean history starts with new valid percentage intervals; earlier aggregate energy records cannot reconstruct past mean samples.
 
 ## External input contract
 
@@ -38,9 +41,9 @@ The explicit **`memoryOnly`** store supplies:
 | Key | Meaning |
 | --- | --- |
 | `batt_level` | Battery SOC, 0–100 percent |
-| `batt_level_ts` | Optional SOC observation time, Unix milliseconds; if present, at most 120 seconds old |
+| `batt_level_ts` | SOC observation time, Unix milliseconds; required by default and at most 120 seconds old at capture |
 
-SOC capture forwards these values through `msg._eff`. Without that object, the calculation reads the SOC keys directly. The BLE sensor `sensor.bluetooth_solarflow_solarflow_batterie_soc` can continue to feed **SOC -> EMS**. A timestamp generated on every HA poll proves only polling recency, not a new measurement at the BLE device. `soc_freshness_verified` checks only the age of the supplied timestamp.
+SOC capture forwards these values through `msg._eff`. The original observation timestamp is retained. A one-second-old SOC timestamp is valid. With `requireSocTimestamp: true`, missing, future or expired timestamps pause collection; retained mean history can still be available. Set the option to false only for an explicit legacy setup without timestamps; unverified SOC freshness remains disclosed. Without that object, the calculation reads the SOC keys directly. The BLE sensor `sensor.bluetooth_solarflow_solarflow_batterie_soc` can continue to feed **SOC -> EMS**. A timestamp generated on every HA poll proves only polling recency, not a new measurement at the BLE device. `soc_freshness_verified` checks only the age of the supplied timestamp.
 
 The separate `p_batt_in` and `p_batt_out` keys are unnecessary: both directions are derived from signed `p_batterie`. Use identical measurement boundaries in both directions. Do not mix AC measurements, DC telemetry and power setpoints.
 
@@ -61,7 +64,7 @@ contextStorage: {
 
 The complete V4 state is stored in `flow.batt_eff_state_v4`, store `file`: energy minute aggregates, power/SOC baseline, migration marker, exclusion counters and the additive `mean` object (schema 1, percentage-time integrals, coverage and last valid mean sample). Filesystem writes are delayed; a sudden power loss can lose unflushed seconds. A restart reads the persisted buffer, does not import V3 again and ignores replayed snapshot cycles. A gap longer than ten seconds is excluded from both sides of the balance. Only one active calculation Function may write this state.
 
-Compatibility output keys in `file` remain `sum_batt_la_7d`, `sum_batt_ela_7d` (kWh) and `la_ela_es` (original percent or `null`). New `la_ela_es_mean_7d` contains the mean percent or `null`. Both percentage keys are cleared on a calculation failure or watchdog timeout. The old key is not overwritten with the mean.
+Compatibility output keys in `file` remain `sum_batt_la_7d`, `sum_batt_ela_7d` (kWh) and `la_ela_es` (original percent or `null`). New `la_ela_es_mean_7d` contains the mean percent or `null`. Measurement failures clear the original key, while valid retained mean history remains published in the mean key. The watchdog never writes the mean key. Only absent, expired or untrusted mean history produces a null mean. The original key keeps its original meaning.
 
 ## Calculation and accuracy
 
@@ -95,7 +98,7 @@ The window ends at the latest processed snapshot and starts exactly 168 hours ea
 - Reject snapshots older than 6.5 seconds, invalid inputs and ESP fallback values. Reused ESP telemetry or a different measurement boundary must not be treated as a fresh Modbus measurement.
 - Accept at most ten seconds between valid points. Shorter gaps are interpolated. Longer gaps and explicitly invalid intervening observations start a new baseline, excluding matching energy and SOC changes together.
 - Reject an SOC change exceeding two percentage points plus the physically permitted change with 20% reserve. Three consecutive similar observations confirm a new SOC baseline. Gradual BMS corrections below this threshold cannot all be detected.
-- Negative efficiency or values above 100% produce `null`, never a clamped 0/100. Only arithmetic overshoot within **1e-9 percentage points** of an exact 0/100 boundary is resolved to that boundary to avoid false rejections from floating-point subtraction. The tolerance is disclosed by `efficiency_arithmetic_tolerance_pct`. The configured 8.640 kWh is installation-specific, not a universal SolarFlow capacity.
+- Negative original efficiency or values above 100% produce `null` on output 2, never a clamped 0/100; retained mean availability is evaluated separately. Only arithmetic overshoot within **1e-9 percentage points** of an exact 0/100 boundary is resolved to that boundary to avoid false rejections from floating-point subtraction. The tolerance is disclosed by `efficiency_arithmetic_tolerance_pct`. The configured 8.640 kWh is installation-specific, not a universal SolarFlow capacity.
 
 ## Rolling 7-day percentage mean
 
@@ -113,13 +116,15 @@ Example: 80 → 84% over 2 seconds contributes 82 × 2; 84 → 76% over 8 second
 
 ### Availability, gaps and restart
 
-- A first valid percentage establishes the mean baseline. The next consecutive valid percentage contributes its interval and makes the mean available. Existing mean history can be reused after valid measurement resumes.
-- Invalid measurements, SOC jump confirmation, out-of-range efficiency, insufficient charge energy and excluded measurement intervals contribute no mean duration. The previous mean baseline is cleared. The first subsequent valid percentage establishes a new baseline; no missing time is bridged.
-- On a currently invalid calculation, output 1 and output 2 both carry `payload: null`, even when a previously valid mean remains in history. Output 3 explains the cause. Failures are not inserted as zero-percent samples.
-- After a restart, persisted mean history continues. A short accepted interval can continue the persisted baseline; a gap over ten seconds cannot. Duplicate snapshots neither append records nor extend coverage.
-- Existing V4 energy history is retained. The new mean history starts at upgrade. Neither V4 energy minute totals nor imported V3 daily totals provide the earlier sequence of efficiency percentages; no historical mean is fabricated.
-- The mean can be displayed during startup, but then it covers less than seven days. A complete window needs 168 hours of valid covered mean intervals, with a one-millisecond arithmetic tolerance. Gaps remain visible until they leave the rolling window. `mean_history_hours` alone does not prove coverage.
-- Both histories retain approximately 10,081 minute aggregates each. Mean coverage and retained memory remain bounded. The periodic snapshot watchdog clears both output sensors when measurements stop; the Function still needs a trigger to detect that failure.
+- A first valid original percentage establishes the mean baseline. The next consecutive accepted interval with valid endpoints makes the mean available. No initial or historical percentage samples are fabricated.
+- **Availability depends on valid retained mean intervals, independently of current SOC/source validity.** Brief SOC failures, stale power, fallback values, SOC jump checks, out-of-range original efficiency or insufficient charge throughput pause new collection but keep output 1 available when history remains. Output 2 can be null at the same time. Output 1 then reports `valid: true`, `source_valid: false`, `reason: mean_available` and the actual `source_reason`.
+- Invalid or excluded intervals add no duration. Clear the interpolation baseline; the first subsequent valid original percentage sets a new baseline. Neither a held percentage nor 0% is inserted across the gap. Recovery does not bridge it.
+- The mean window ends at the **current evaluation clock**, even during source failures. Continuing timer calls prune old data and update coverage/sample age. Its value can change as older intervals expire. If no valid mean intervals remain in the latest 168 hours, output 1 becomes null; corrupt state, configuration or runtime/context failures also cannot claim trusted mean availability.
+- The SOC watchdog clears only the original output key. Its warning is a source diagnostic, not a statement that mean history is invalid. No warning wire enters the mean sensor path. API failures go to diagnostics and do not reset calculation history.
+- A restart retains mean history, including during a source outage. A short accepted interval can continue the persisted baseline; a gap over ten seconds cannot. Duplicate valid snapshots append no records and extend no coverage.
+- Existing V5 mean history is reused. When upgrading V3/V4 energy-only state, the mean begins with new observations; existing energy aggregates cannot reconstruct earlier percentages.
+- Startup can publish a partial window. A complete window requires 168 hours of valid covered intervals, with one millisecond of arithmetic tolerance; gaps remain visible until they leave the window. Elapsed `mean_history_hours` does not prove coverage.
+- Both histories hold approximately 10,081 minute aggregates each. The oldest partial minute remains the disclosed uniform-overlap approximation.
 
 ### Outputs and diagnostics
 
@@ -139,7 +144,9 @@ All outputs use `msg.payload` for the published percentage or `null`, and `msg.r
 | `mean_window_start`, `mean_window_end` | Exact UTC window boundaries, 168 hours apart |
 | `mean_window_complete` | Full covered mean window; separate from original `window_complete` |
 | `mean_covered_hours`, `mean_coverage_pct` | Valid mean intervals currently represented, excluding gaps |
-| `mean_started_at`, `mean_history_hours` | Start of the new history and elapsed time since then |
+| `mean_started_at`, `mean_history_hours` | History start and elapsed time; not proof of coverage |
+| `mean_collection_paused` | Current original source is invalid; retained mean can still be valid |
+| `mean_last_sample_at`, `mean_sample_age_seconds` | Last retained mean interval endpoint and its age |
 | `mean_method`, `mean_source` | Linear, time-weighted average of the existing rolling balance |
 | `mean_buffer_buckets`, `mean_partial_boundary_bucket`, `mean_boundary_weighting` | Storage and disclosed oldest-minute approximation |
 
@@ -158,9 +165,9 @@ The new mean smooths SOC quantization and short-term load-related fluctuations; 
 
 ## V3 buffer migration
 
-At the first valid measurement, optionally read `batt_eff_state_v3` from `file`. Capacity, previous entity IDs and Node-RED timezone must match the V3 fingerprint. A mismatch produces diagnostics instead of silently importing incompatible data. `CFG.importV3 = false` deliberately starts without migration and still leaves V3 untouched.
+At the first valid measurement, optionally read `batt_eff_state_v3` from `file`. Capacity, previous entity IDs and Node-RED timezone must match the V3 fingerprint. The `chargeEntityV3` / `dischargeEntityV3` settings are fingerprint checks for migration only, not daily-counter requests. A mismatch produces diagnostics instead of silently importing incompatible data. `CFG.importV3 = false` deliberately starts without migration and still leaves V3 untouched.
 
-Import the available daily charge/discharge totals and stored-energy deltas. For legacy-tagged records already present in V3, also retain V3's correction between legacy SOC boundaries, assigning each correction to the later legacy day. Missing required SOC boundaries invalidate results while affected records remain in the window.
+Import the available daily charge/discharge totals and stored-energy deltas. For legacy-tagged records already present in V3, also retain V3's correction between legacy SOC boundaries, assigning each correction to the later legacy day. Missing required SOC boundaries invalidate the original balance on output 2 while affected records remain in the window.
 
 V3 has no intra-day time series. The transition therefore distributes each imported total uniformly over its local calendar day; the final day ends at the last saved V3 measurement. This does not repair historical inaccuracies. Old totals expire proportionally, which can differ from the old calendar-day display, especially when the imported buffer was already stale. All imported data expires no later than 168 hours after the last V3 measurement.
 
@@ -168,25 +175,38 @@ V4 begins power integration at a new baseline. Do not retrospectively fill the t
 
 **The original V3 buffer remains unchanged.** On rollback, it is therefore current only up to the migration time; V4 does not maintain V3 daily records. Existing V4 state always takes precedence. Do not delete V4 casually to force another import.
 
-## New users and Home Assistant
+## Home Assistant sensors without Companion integration
 
-Without V3 records, the first valid sample establishes the baseline. Once accepted intervals contain at least **0.1 kWh of charge energy** and yield a plausible balance, output a number without waiting seven days. Discharging alone initially lacks the necessary denominator. The threshold prevents division by a near-zero throughput; it does not guarantee accuracy over a short observation period.
+The flow needs Node-RED, `node-red-contrib-home-assistant-websocket` (API schema verified against 0.80.3) and a working Home Assistant server connection. **No `hass-node-red` custom integration or Companion sensor is required.** Daily energy sensors are not queried or created.
 
-The old `sensor.batterie_lade_energie_pro_tag` and `sensor.batterie_entlade_energie_pro_tag` inputs are no longer queried or created. The HA output sensor still requires `node-red-contrib-home-assistant-websocket`, the **Node-RED Companion Integration** in Home Assistant and a working server connection. With that setup, the imported `ha-sensor` and entity configuration create the output sensor; existing names can affect its final entity ID. Replacing just the calculation Function preserves the existing output sensor.
+The sensor-preparation Function selects the mean when `msg.result.output === "mean_7d"`; otherwise it selects the original sensor, including optional watchdog warnings. Configure the `SENSOR` block in both preparation nodes. Default entity IDs are identical in the English/German flows:
 
-`window_complete` requires a full 168-hour window covered by newly accepted intervals; valid output can occur much earlier. `excluded_*` counts exclusions since the V4 start, not just within the current window. Partial-minute coverage at the window edge has the same documented approximation.
+| Value | Default entity ID |
+| --- | --- |
+| Rolling mean | `sensor.battery_efficiency_mean_7d` |
+| Original efficiency | `sensor.battery_efficiency` |
+
+Preparation creates `msg.payload = {protocol: "http", method: "post", path: "/states/sensor.…", data: {state, attributes}}`. The standard **API** node uses its selected server credentials and automatically addresses Home Assistant's `/api` prefix. Input `payload.data` is an object; do not wire the numeric calculation payload straight into the API node. The response is placed in `msg.ha_state`, after which this sensor branch ends. Scoped Catch messages enter diagnostics.
+
+A valid number is written as a state string, including a real `"0"`; null/invalid values become **`"unknown"`**, never `"0"`. Attributes include `%`, `state_class: measurement`, validity and quality. The mean additionally exposes source validity, source reason, paused collection, coverage, sample age and window boundaries. A valid retained mean is written normally while `source_valid` is false.
+
+These REST writes create/update **state-machine sensor entries**, without an entity registry entry or `unique_id`. They can be used by entity ID in dashboards and automations; some UI entity-management features are unavailable. After a Home Assistant restart, the next successful API write recreates the state. Keep the periodic trigger running and choose IDs not maintained by another active writer. The raw sensor's existing ID can be configured explicitly; retaining a Node-RED node ID alone does not preserve its HA entity ID.
+
+Without legacy records, sufficient valid intervals must first supply at least **0.1 kWh of charge energy** and a plausible original balance. The mean then needs a consecutive valid percentage interval; no seven-day startup wait is imposed. Discharge alone initially lacks the denominator. Partial-window output is possible and coverage remains disclosed.
+
+`window_complete` describes newly accepted original power coverage. `mean_window_complete` describes mean interval coverage. `excluded_*` counts exclusions since the V4 start, rather than just inside the current window.
 
 ## References
 
+- [Home Assistant REST API](https://developers.home-assistant.io/docs/api/rest/)
+- [Standard Home Assistant API node](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/API.html)
 - [Node-RED filesystem context](https://nodered.org/docs/api/context/store/localfilesystem)
-- [Home Assistant sensor node](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/sensor.html)
-- [Node-RED Companion Integration](https://github.com/zachowj/hass-node-red)
 
 [MIT license](../LICENSE) · [Trademark notice](../NOTICE.md) · [Scope and warranty](../DISCLAIMER.md)
 
 ## Exclusion diagnostics
 
-Upgrade by replacing the complete calculation Function body and rewiring the three outputs as described above. Keep capacity and existing context. As an alternative to the snapshot diagnostic output, the regulator's existing two-second trigger after its one-second delay can trigger SOC capture. A fixed delay cannot guarantee completed requests; snapshot validation therefore remains active.
+Replace calculation and SOC-preparation Functions and use the existing periodic timer one second after the SOC writer, as described above. Keep capacity and context. The snapshot builder continues to supply its flow context; no additional output-11 trigger is needed with this timer path. Its completion and freshness checks remain active.
 
 `recent_exclusions` contains up to ten contiguous exclusion episodes, newest first, including an open episode. It is persisted inside `batt_eff_state_v4` in `file` and included in successful and failed calculation outputs. Duplicate valid snapshots still emit no message. Without an initial measurement baseline there is no interval to exclude; startup errors remain in the ordinary `reason` field.
 

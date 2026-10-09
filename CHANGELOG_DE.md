@@ -2,7 +2,16 @@
 
 [English](CHANGELOG.md) | **Deutsch**
 
-## v5.0.0 — vorbereitet am 09.10.2026
+## v5.1.0 — 09.10.2026
+
+- Ausgang 1 bleibt bei kurzen SOC-/Quellausfällen aus gültiger Mittelwerthistorie verfügbar. Neue Aufnahme pausiert, ihr Interpolations-Ausgangspunkt wird gelöscht und das 168-Stunden-Fenster läuft weiter. Keine Nullwerte oder gehaltenen Messintervalle ergänzen.
+- Mittelwertgültigkeit von der aktuellen Quellgültigkeit trennen; Aufnahmestatus, letztes gültiges Intervall und Alter ausgeben. Fehlende, abgelaufene oder nicht sicher nutzbare Historie bleibt unbekannt.
+- Companion-Sensor-/Entitätsknoten durch normale HA-API-Schreibzugriffe mit vorgeschalteten Aufbereitungsfunktionen ersetzen. Keine Custom Integration `hass-node-red` erforderlich. Einheit %, Messwertklasse, Abdeckung und Quellinformationen ausgeben.
+- SOC-Vorbereitung erhält den ursprünglichen Zeitstempel und setzt bei Watchdog-Timeout nur den bisherigen Wirkungsgradschlüssel zurück. Warnung standardmäßig an Diagnose; Anschluss an bisherigen Sensor optional. Vorhandenen gemeinsamen Timer nach einer Sekunde SOC-Abstand verwenden; Import ergänzt nur manuellen Test-Inject.
+- SOC-Zeitstempel standardmäßig erforderlich. Release **5.1.0**, Berechnungsrevision **5.1**, Energie-Schema **4** und Mittelwert-Schema **1** unterscheiden; kompatible Energie- und V5-Mittelwertpuffer erhalten.
+- Beide Sprachfassungen mit **144 Tests** prüfen, deutsche/englische Installations- und Verdrahtungsanleitungen aktualisieren und versionierte Release-Dateien nach erfolgreicher Main-CI veröffentlichen.
+
+## v5.0.0 — Entwicklungsentwurf, nicht veröffentlicht (09.10.2026)
 
 - Zeitgewichteten gleitenden **7-Tage-Mittelwert** aus ungerundeten gültigen SOC-korrigierten Wirkungsgradwerten ergänzt. Die tatsächliche Zeit bestimmt die Gewichtung; ungültige Werte und Messlücken gehen nicht ein.
 - **Geänderte Ausgangsreihenfolge:** Ausgang 1 = Mittelwert, Ausgang 2 = bisheriger Wirkungsgrad, Ausgang 3 = Diagnose. Import-Flows enthalten einen eigenen HA-Mittelwertsensor und setzen bei Watchdog-Timeouts beide Sensoren zurück.

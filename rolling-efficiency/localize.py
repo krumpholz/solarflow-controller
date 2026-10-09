@@ -24,7 +24,7 @@ TEXT = {
 HEADER = ""
 
 def without_comments(source):
-    # These two controlled source files have no // inside executable strings.
+    # These controlled source files have no // inside executable strings.
     # Refuse unsupported changes rather than silently changing string values.
     source = re.sub(r'/\*.*?\*/', '', source, flags=re.S)
     lines = []

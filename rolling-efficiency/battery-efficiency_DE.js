@@ -1,5 +1,5 @@
 /*
- * Batterie Wirkungsgrad – gleitende 168 Stunden, Revision 5.0.
+ * Batterie Wirkungsgrad – gleitende 168 Stunden, Revision 5.1.
  * Deutsche Oberfläche, identischer englischer Rechenkern. MIT-Lizenz.
  * Kapazität und Leistung oben im CFG des Rechenkerns prüfen.
  * Snapshot-Werte aus dem Standard-Flow-Speicher, SOC aus memoryOnly.
@@ -8,7 +8,8 @@
  * Alte Tageswerte: gleichmäßige zeitliche Gewichtung als Übergangsnäherung.
  * Minutenpuffer: älteste angeschnittene Minute anteilig gewichten.
  * Drei Ausgänge: 7-Tage-Mittelwert / bisheriger Wirkungsgrad / Diagnose.
- * Mittelwert beginnt beim Update neu; Energiehistorie bleibt erhalten.
+ * Mittelwerthistorie bleibt bei kurzen SOC-Ausfällen verfügbar.
+ * Ein vorhandener V5-Mittelwertpuffer wird weiterverwendet.
  * Anleitung: README_DE.md.
  */
 const DE_TEXTE = {
@@ -42,9 +43,12 @@ const DE_TEXTE = {
     "invalid_v3_state": "V3-Puffer ungültig",
     "invalid_v3_cutover": "V3-Messzeitpunkt ungültig oder neuer als Snapshot",
     "v3_configuration_mismatch": "V3-Kapazität, Entitäten oder Zeitzone stimmen nicht überein",
-    "invalid_efficiency_sample": "Aktueller Wirkungsgrad ungültig – Mittelwert pausiert",
     "mean_baseline_initialized": "Mittelwert-Ausgangspunkt gesetzt – nächstes gültiges Intervall abwarten",
-    "mean_available": "Gleitender 7-Tage-Mittelwert berechnet"
+    "mean_available": "Gleitender 7-Tage-Mittelwert berechnet",
+    "mean_history_expired": "Keine gültigen Mittelwertintervalle mehr im 7-Tage-Fenster",
+    "mean_history_unavailable": "Mittelwerthistorie nicht sicher verfügbar",
+    "invalid_mean_history": "Mittelwerthistorie ungültig",
+    "Invalid sensor entity ID": "Ungültige Sensor-Entitäts-ID"
 };
 
 function deutsch(text) {
@@ -73,7 +77,7 @@ const CFG = {
     maxSnapshotAgeMs: 6500,
     maxIntervalMs: 10000,
     maxSocAgeMs: 120000,
-    requireSocTimestamp: false,
+    requireSocTimestamp: true,
     socStepTolerancePct: 2,
     socRebaseConfirmations: 3,
     socConfirmationTolerancePct: 1,
@@ -247,8 +251,8 @@ function updateMean(ts, raw, valid, accepted, previousSample) {
     m.last=valid ? {ts,eta:raw} : null;
     pruneMean(ts);
 }
-function meanOutput(ts, sourceValid) {
-    const m=state && state.mean, from=ts-WINDOW;
+function meanOutput(ts, sourceValid, historyTrusted = true) {
+    const m=historyTrusted && state && state.mean, from=ts-WINDOW;
     let weighted=0,covered=0,partial=false;
     for (const b of m ? m.buckets : []) {
         const f=overlap(b[0],b[1],from,ts)/(b[1]-b[0]);
@@ -256,11 +260,17 @@ function meanOutput(ts, sourceValid) {
         if (f>0 && f<1) partial=true;
     }
     const raw=covered>0 ? stablePercent(weighted/covered) : null;
-    const valid=sourceValid && finite(raw) && raw>=0 && raw<=100;
+
+    const valid=finite(raw) && raw>=0 && raw<=100;
     const complete=!!m && covered>=WINDOW-1;
+    const lastSample=covered>0 ? m.buckets[m.buckets.length-1][1] : null;
     return {eta_mean_7d_pct:valid ? round(raw,1) : null,eta_mean_7d_raw_pct:round(raw,3),
-        mean_valid:valid,mean_reason:!sourceValid ? "invalid_efficiency_sample" :
-            covered<=0 ? "mean_baseline_initialized" : "mean_available",
+        mean_valid:valid,mean_reason:!historyTrusted ? "mean_history_unavailable" :
+            covered<=0 ? (m && ts-m.created>=WINDOW ? "mean_history_expired" : "mean_baseline_initialized") :
+            valid ? "mean_available" : "invalid_mean_history",
+        mean_collection_paused:!sourceValid,
+        mean_last_sample_at:lastSample===null ? null : new Date(lastSample).toISOString(),
+        mean_sample_age_seconds:lastSample===null ? null : round(Math.max(0,ts-lastSample)/1000,3),
         mean_window_start:new Date(from).toISOString(),mean_window_end:new Date(ts).toISOString(),
         mean_window_complete:complete,mean_covered_hours:round(covered/HOUR),
         mean_coverage_pct:round(100*covered/WINDOW,3),
@@ -270,9 +280,9 @@ function meanOutput(ts, sourceValid) {
         mean_bucket_seconds:BUCKET/1000,mean_buffer_buckets:m ? m.buckets.length : 0,
         mean_boundary_weighting:"uniform_within_oldest_partial_minute",mean_partial_boundary_bucket:partial};
 }
-function outputs(result, failed=false) {
+function outputs(result) {
     const mean={payload:result.eta_mean_7d_pct,result:{...copy(result),
-        valid:result.mean_valid,reason:failed ? result.reason : result.mean_reason,
+        valid:result.mean_valid,reason:result.mean_reason,
         source_valid:result.valid,source_reason:result.reason,output:"mean_7d"}};
     const original={payload:result.eta_pct,result};
     return [mean,original,copy(original)];
@@ -324,20 +334,27 @@ function auditOutput() {
 }
 function save() { flow.set(KEY,state,FILE); }
 function fail(reason, detail, block = true, values = {}) {
+
+
+    const keepHistory=["expired_soc_capture","invalid_soc","soc_timestamp_required",
+        "stale_or_future_soc","missing_or_stale_snapshot","battery_fallback_excluded",
+        "invalid_battery_power","soc_jump_pending"].includes(reason);
+    let mean=meanOutput(now,false,false);
     try {
         if (state) {
             if (state.last && block) { note(reason,{...values,...(detail ? {error_message:String(detail).slice(0,500)} : {})}); state.blocked=true; }
             if (state.mean) state.mean.last=null;
             pruneMean(now);save();
         }
+        mean=meanOutput(now,false,keepHistory);
         flow.set("la_ela_es",null,FILE);
-        flow.set("la_ela_es_mean_7d",null,FILE);
-    } catch (error) { detail = error.message; }
+        flow.set("la_ela_es_mean_7d",mean.eta_mean_7d_pct,FILE);
+    } catch (error) { detail = error.message; mean=meanOutput(now,false,false); }
     node.status({fill:"yellow",shape:"ring",text:reason});
-    const result={version:4,release_version:"5.0.0",calculation_revision:"5.0",valid:false,reason,
+    const result={version:4,release_version:"5.1.0",calculation_revision:"5.1",valid:false,reason,
         eta_pct:null,timestamp:new Date(now).toISOString(),detail,covered_hours:null,
-        soc_freshness_verified:false,...meanOutput(now,false),...auditOutput()};
-    return outputs(result,true);
+        soc_freshness_verified:false,...mean,...auditOutput()};
+    return outputs(result);
 }
 try {
     if (![CFG.capacityKWh,CFG.maxPowerKW,CFG.minChargeKWh].every(v=>finite(v)&&v>0) ||
@@ -471,7 +488,8 @@ try {
         !plausible ? "efficiency_out_of_range" : valid ? "calculation_available" : reason;
     const eta=valid ? round(raw,1) : null;
     updateMean(ts,raw,valid,accepted,prev);
-    const mean=meanOutput(ts,valid);
+    pruneMean(now);
+    const mean=meanOutput(now,valid);
     save();
 
     flow.set("batt_eff_last_completed_v3",now,MEM);
@@ -480,7 +498,7 @@ try {
     flow.set("sum_batt_ela_7d",round(discharge,3),FILE);
     flow.set("la_ela_es",eta,FILE);
     flow.set("la_ela_es_mean_7d",mean.eta_mean_7d_pct,FILE);
-    const result={version:4,release_version:"5.0.0",calculation_revision:"5.0",valid,reason:resultReason,interval_status:reason,
+    const result={version:4,release_version:"5.1.0",calculation_revision:"5.1",valid,reason:resultReason,interval_status:reason,
         timestamp:new Date(ts).toISOString(),eta_pct:eta,eta_raw_pct:round(raw,3),
         efficiency_arithmetic_tolerance_pct:PCT_ARITHMETIC_TOLERANCE,
         window:"rolling_168_hours",window_start:new Date(from).toISOString(),window_end:new Date(ts).toISOString(),

@@ -19,3 +19,7 @@ Mean tests must verify elapsed-time weighting, unrounded source values, excluded
 Include a minimal reproduction for bugs, with configuration, software versions and sanitized diagnostics. Never commit credentials, personal live buffers, installation exports or raw operational logs. Regression fixtures contain synthetic data.
 
 Contributions are provided under the [MIT License](LICENSE). See [project notice](NOTICE.md).
+
+Sensor payload preparation lives in `rolling-efficiency/prepare-sensor.js`; `build.py` also creates its German wrapper. Keep the mean usable during short source failures while excluding missing duration. Test clock-based expiry, mandatory original SOC timestamps, API unknown/zero handling and warning wiring. Sensor states written through the standard API have no entity-registry entry; do not claim Companion or registry features.
+
+After all four matrix jobs pass on a push to main, the release job reads `VERSION`, creates the corresponding tag/release with bilingual notes and uploads the generated flow/Function files. Existing releases are left unchanged. Update VERSION, calculation revision, changelogs and both release-note files together before merging a release.

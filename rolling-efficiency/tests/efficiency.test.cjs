@@ -41,7 +41,7 @@ for(const language of ['EN','DE']) {
  test(language+' persisted restart rejects replay, then continues once',()=>{let r=rig({code});r.tick({id:'old'});r.tick({id:'latest'});const serialized=JSON.stringify([...r.data]);r=rig({code,time:r.now,data:new Map(JSON.parse(serialized))});assert.equal(r.tick({id:'latest'}),null);r.tick({id:'next'});close(r.state().buckets.reduce((s,b)=>s+b[2],0),1000*6/3600000);});
  test(language+' SOC jump needs three distinct samples and excludes affected energy',()=>{const r=rig({code});r.tick({soc:50});assert.equal(result(r.tick({soc:80})).reason,'soc_jump_pending');assert.equal(result(r.tick({soc:80})).reason,'soc_jump_pending');assert.equal(result(r.tick({soc:80})).interval_status,'confirmed_soc_jump_excluded');r.tick({soc:80});assert.equal(r.state().excludedIntervals,3);close(r.state().buckets[0][4],0);close(r.state().buckets[0][2],1000*2/3600000);});
  test(language+' transient SOC spike is not counted as stored energy',()=>{const r=rig({code});r.tick({soc:50});r.tick({soc:80});r.tick({soc:50});close(r.state().buckets[0][4],0);});
- test(language+' missing timestamp permitted but never verified',()=>{const r=rig({code});const o=r.tick({message:{_eff:{ts:r.now+2000,soc:50,socTs:null}}});assert.equal(result(o).soc_freshness_verified,false);});
+ test(language+' explicit legacy option permits missing timestamp but never verifies it',()=>{const r=rig({code:code.replace('requireSocTimestamp: true','requireSocTimestamp: false')});const o=r.tick({message:{_eff:{ts:r.now+2000,soc:50,socTs:null}}});assert.equal(result(o).soc_freshness_verified,false);});
  test(language+' stale SOC cannot be made fresh by power polling',()=>{const r=rig({code});r.tick();const o=r.tick({message:{_eff:{ts:r.now+2000,soc:50,socTs:r.now-130000}}});assert.equal(result(o).reason,'stale_or_future_soc');});
  test(language+' v3 import preserves totals, legacy correction and original buffer',()=>{const r=rig({code});const t=r.now;const d0=new Date(t);d0.setDate(d0.getDate()-1);const old=v3(t,[day(local(+d0),1,.8,-2.2464,{legacy:true,legacySocKnown:true,legacySocStart:82,legacySocEnd:56}),day(local(t),4,2,-.864,{legacy:true,legacySocKnown:true,legacySocStart:88,legacySocEnd:78})]);r.flow.set('batt_eff_state_v3',old,'file');const before=JSON.stringify(old);const out=result(r.tick());close(out.sum_charge_kwh_7d,5);close(out.delta_stored_energy_kwh,-.3456);assert.equal(JSON.stringify(old),before);r.boot();const after=result(r.tick());close(after.imported_charge_kwh,5);});
  test(language+' missing legacy SOC stays invalid',()=>{const r=rig({code});r.flow.set('batt_eff_state_v3',v3(r.now,[day(local(r.now),1,.8,0,{legacy:true,legacySocKnown:false})]),'file');assert.equal(result(r.tick()).reason,'legacy_soc_boundaries_missing');});
@@ -70,7 +70,8 @@ test('all generated function bodies compile and both graphs have no dangling ref
    if(n.server)assert.ok(ids.has(n.server));if(n.entityConfig)assert.ok(ids.has(n.entityConfig));
   }
   assert.equal(nodes.some(n=>n.type==='api-current-state'),false);
-  assert.equal(nodes.find(n=>n.type==='inject').repeat,'2');
+  assert.equal(nodes.find(n=>n.type==='inject').repeat,'');
+  assert.equal(nodes.find(n=>n.type==='inject').once,false);
  }
 });
 test('German wrapper contains the identical executable calculation core',()=>{
@@ -171,7 +172,7 @@ for (const lang of ['','_DE']) {
  test('exported Function bodies exactly match canonical language sources',()=>{
   for(const lang of ['', '_DE']) {
    const nodes=JSON.parse(fs.readFileSync(path.join(ROOT,`flow${lang}.json`),'utf8'));
-   for(const [id,file] of [['v4e46be25028e13f5d','battery-efficiency'],['v4effprepare000003','prepare-cycle']]) {
+   for(const [id,file] of [['v4e46be25028e13f5d','battery-efficiency'],['v4effprepare000003','prepare-cycle'],['v51effmeanprep01','prepare-sensor'],['v51effrawprep001','prepare-sensor']]) {
     assert.equal(nodes.find(n=>n.id===id).func,fs.readFileSync(path.join(ROOT,`${file}${lang}.js`),'utf8'));
    }
   }
@@ -232,18 +233,20 @@ for (const language of ['EN','DE']) {
   close(m.buckets.reduce((sum,b)=>sum+b[2],0)-before,83*6000,1e-6);
   assert.equal(m.buckets.at(-2)[1]%60000,0);
  });
- test(language+' failures clear both outputs and preserve history without filling the missing time',()=>{
+ test(language+' failures retain the mean and clear the original without filling missing time',()=>{
   const {r,eta}=meanRig(code);eta(80);const before=JSON.stringify(r.state().mean.buckets);
-  const bad=r.tick({source:'esp',p:0});assert.equal(bad[0].payload,null);assert.equal(bad[1].payload,null);
+  const bad=r.tick({source:'esp',p:0});assert.equal(bad[0].payload,80);assert.equal(bad[1].payload,null);
+  assert.equal(bad[0].result.valid,true);assert.equal(bad[0].result.source_valid,false);
+  assert.equal(bad[0].result.reason,'mean_available');assert.equal(bad[0].result.source_reason,'battery_fallback_excluded');
   assert.equal(bad[2].result.reason,'battery_fallback_excluded');assert.equal(r.state().mean.last,null);
-  assert.equal(r.flow.get('la_ela_es_mean_7d','file'),null);assert.equal(JSON.stringify(r.state().mean.buckets),before);
-  assert.equal(r.tick({p:0})[0].payload,null);eta(80);assert.equal(JSON.stringify(r.state().mean.buckets),before);
+  assert.equal(r.flow.get('la_ela_es_mean_7d','file'),80);assert.equal(JSON.stringify(r.state().mean.buckets),before);
+  assert.equal(r.tick({p:0})[0].payload,80);eta(80);assert.equal(JSON.stringify(r.state().mean.buckets),before);
   const out=eta(80);assert.equal(out[0].payload,80);assert.equal(r.state().mean.buckets.reduce((s,b)=>s+b[3],0),4000);
   assert.equal(out[0].result.mean_window_complete,false);
  });
  test(language+' out-of-range efficiency and SOC jumps never contribute to mean history',()=>{
   const {r,eta}=meanRig(code);eta(90);const before=JSON.stringify(r.state().mean.buckets);
-  const bad=eta(101);assert.equal(result(bad).reason,'efficiency_out_of_range');assert.equal(bad[0].payload,null);
+  const bad=eta(101);assert.equal(result(bad).reason,'efficiency_out_of_range');assert.equal(bad[0].payload,85);
   assert.equal(JSON.stringify(r.state().mean.buckets),before);assert.equal(r.state().mean.last,null);
   eta(90);assert.equal(JSON.stringify(r.state().mean.buckets),before);eta(90);
   const duration=r.state().mean.buckets.reduce((s,b)=>s+b[3],0);
@@ -317,31 +320,36 @@ for (const language of ['EN','DE']) {
  });
 }
 
-test('both import flows preserve existing sensor IDs and wire three calculation outputs in order',()=>{
+test('both flows use standard HA API nodes and route warnings only to diagnostics',()=>{
  for(const lang of ['', '_DE']) {
   const nodes=JSON.parse(fs.readFileSync(path.join(ROOT,`flow${lang}.json`),'utf8'));
   const calc=nodes.find(n=>n.id==='v4e46be25028e13f5d');assert.equal(calc.outputs,3);
   assert.equal(calc.outputLabels.length,3);
-  assert.deepEqual(calc.wires,[['v5effmean00000001'],['v40e16d9dcd078a8e9'],['v4effdiagnostics03']]);
-  assert.equal(nodes.find(n=>n.id==='v40e16d9dcd078a8e9').entityConfig,'v4bb523511b4c4476f');
+  assert.deepEqual(calc.wires,[['v51effmeanprep01'],['v51effrawprep001'],['v4effdiagnostics03']]);
+  assert.equal(nodes.some(n=>['ha-sensor','ha-entity-config','api-current-state'].includes(n.type)),false);
   const warning=nodes.find(n=>n.id==='v4effprepare000003').wires[1];
-  for(const id of ['v5effmean00000001','v40e16d9dcd078a8e9','v4effdiagnostics03'])assert.ok(warning.includes(id));
-  for(const n of nodes.filter(n=>n.type==='ha-sensor')) {
-   const config=nodes.find(c=>c.id===n.entityConfig);
-   assert.equal(config.haConfig.find(p=>p.property==='unit_of_measurement').value,'%');
+  assert.deepEqual(warning,['v4effdiagnostics03']);
+  assert.equal(nodes.filter(n=>n.type==='ha-api').length,2);
+  for(const n of nodes.filter(n=>n.type==='ha-api')) {
+   assert.equal(n.version,1);assert.equal(n.protocol,'http');assert.equal(n.method,'post');
+   assert.equal(n.responseType,'json');assert.equal(n.dataType,'json');
+   assert.match(n.path,/^states\/sensor\./);
+   assert.equal(n.outputProperties[0].property,'ha_state');
   }
+  assert.deepEqual(nodes.find(n=>n.type==='catch').wires,[['v4effdiagnostics03']]);
  }
 });
-test('watchdog clears both persistent output keys and warns both sensors after 15 seconds',()=>{
+test('watchdog clears only original output key and never declares mean history invalid',()=>{
  for(const lang of ['', '_DE']) {
   const r=rig(),ctx=new Map();class Clock extends Date{static now(){return r.now;}}
   const prep=fs.readFileSync(path.join(ROOT,`prepare-cycle${lang}.js`),'utf8');
   const f=new vm.Script('(function(msg){'+prep+'})').runInNewContext({Date:Clock,flow:r.flow,context:{get:k=>ctx.get(k),set:(k,v)=>ctx.set(k,v)},node:{status(){},error(){}}});
-  f({});r.flow.set('la_ela_es',80,'file');r.flow.set('la_ela_es_mean_7d',79,'file');
-  r.tick({dt:16000,p:null});const out=f({});assert.equal(out[1].payload,null);
-  assert.equal(out[1].result.valid,false);assert.equal(out[1].result.mean_valid,false);
+  f({});r.tick({dt:16000,p:null});
+  r.flow.set('la_ela_es',80,'file');r.flow.set('la_ela_es_mean_7d',79,'file');
+  const out=f({});assert.equal(out[1].payload,null);
+  assert.equal(out[1].result.valid,false);assert.equal(out[1].result.mean_valid,undefined);
   assert.equal(out[1].result.reason,'measurement_timeout');assert.equal(r.flow.get('la_ela_es','file'),null);
-  assert.equal(r.flow.get('la_ela_es_mean_7d','file'),null);
+  assert.equal(r.flow.get('la_ela_es_mean_7d','file'),79);
  }
 });
 
@@ -359,7 +367,7 @@ for(const language of ['EN','DE']) {
  test(language+' exact zero-percent endpoint is accepted, but real overshoot remains invalid',()=>{
   const {eta}=meanRig(code);for(const v of [64,48,32,16])eta(v);
   const zero=eta(0);assert.equal(zero[1].payload,0);assert.equal(result(zero).valid,true);
-  const below=eta(-0.00001);assert.equal(below[0].payload,null);assert.equal(below[1].payload,null);
+  const below=eta(-0.00001);assert.equal(below[0].result.valid,true);assert.equal(below[1].payload,null);
   assert.equal(result(below).reason,'efficiency_out_of_range');
   const b=meanRig(code);b.eta(90);b.eta(100);const above=b.eta(100.00001);
   assert.equal(above[1].payload,null);assert.equal(result(above).reason,'efficiency_out_of_range');
@@ -383,5 +391,142 @@ for(const language of ['EN','DE']) {
   assert.equal(result(out).valid,true);assert.equal(out[0].payload,80);
   assert.equal(JSON.stringify(s.mean.buckets),before);assert.equal(s.mean.last.ts,r.now);
   r.tick({p:0});assert.equal(s.mean.buckets.reduce((sum,b)=>sum+b[3],0),4000);
+ });
+}
+
+function capture(r,code) {
+ const ctx=new Map();class Clock extends Date{static now(){return r.now;}}
+ return new vm.Script('(function(msg){'+code+'})').runInNewContext({Date:Clock,flow:r.flow,
+  context:{get:k=>ctx.get(k),set:(k,v)=>ctx.set(k,v)},node:{status(){},error(){}}});
+}
+function sensor(code,errors=[]) {
+ return new vm.Script('(function(msg){'+code+'})').runInNewContext({
+  node:{status(){},error:(...args)=>errors.push(args)}});
+}
+for(const lang of ['', '_DE']) {
+ const code=fs.readFileSync(path.join(ROOT,`battery-efficiency${lang}.js`),'utf8');
+ const prep=fs.readFileSync(path.join(ROOT,`prepare-cycle${lang}.js`),'utf8');
+ const format=fs.readFileSync(path.join(ROOT,`prepare-sensor${lang}.js`),'utf8');
+ test(lang+' existing timer accepts SOC observed one second before capture without restamping it',()=>{
+  const r=rig({code});r.flow.set('batt_level',42.5,'memoryOnly');
+  r.flow.set('batt_level_ts',r.now-1000,'memoryOnly');const out=capture(r,prep)({payload:123});
+  assert.equal(out[0]._eff.socTs,r.now-1000);assert.equal(out[0]._eff.ts,r.now);
+  assert.equal(out[0]._eff.soc,42.5);assert.equal(out[0].payload,null);assert.equal(out[1],null);
+  r.flow.set('batt_level',90,'memoryOnly');assert.equal(out[0]._eff.soc,42.5);
+  const calculated=r.tick({dt:0,p:0,soc:42.5,message:out[0]});
+  assert.equal(result(calculated).soc_freshness_verified,true);
+  assert.equal(result(calculated).reason,'insufficient_charge_energy');
+ });
+ test(lang+' missing mandatory SOC timestamp pauses collection but retains historical mean',()=>{
+  const {r,eta}=meanRig(code);eta(80);const before=JSON.stringify(r.state().mean.buckets);
+  const out=r.tick({p:0,message:{_eff:{ts:r.now+2000,soc:50,socTs:null}}});
+  assert.equal(out[0].payload,80);assert.equal(out[1].payload,null);
+  assert.equal(out[0].result.source_reason,'soc_timestamp_required');
+  assert.equal(out[0].result.mean_collection_paused,true);
+  assert.equal(JSON.stringify(r.state().mean.buckets),before);
+ });
+ test(lang+' SOC capture forwards invalid readings for historical evaluation and rejects numeric overflow',()=>{
+  const r=rig({code}),run=capture(r,prep);
+  for(const v of [null,'unknown','',true,'1e999',Infinity]) {
+   r.flow.set('batt_level',v,'memoryOnly');const out=run({});
+   assert.ok(out[0]);assert.equal(out[0]._eff.soc,null);
+  }
+ });
+ test(lang+' short source failures retain mean availability without contributing zero or held samples',()=>{
+  for(const args of [{soc:null},{p:null},{p:3000},{source:'esp'},
+   {dt:8000,meta:{snapshot_last_ok_quality:'invalid'}},
+   {message:{_eff:{ts:Date.parse('2026-09-22T10:00:06Z'),soc:50,socTs:0}}}]) {
+   const {r,eta}=meanRig(code);eta(80);const before=JSON.stringify(r.state().mean.buckets);
+   const out=r.tick({p:0,...args});assert.equal(out[0].payload,80);
+   assert.equal(out[0].result.valid,true);assert.equal(out[0].result.source_valid,false);
+   assert.equal(out[0].result.reason,'mean_available');assert.equal(out[1].payload,null);
+   assert.equal(r.state().mean.last,null);assert.equal(JSON.stringify(r.state().mean.buckets),before);
+   assert.equal(r.flow.get('la_ela_es_mean_7d','file'),80);
+  }
+ });
+ test(lang+' continuing timer moves the window and discloses sample age during a SOC outage',()=>{
+  const {r,eta}=meanRig(code);eta(80);const end=r.now,before=JSON.stringify(r.state().mean.buckets);
+  let out;for(let i=0;i<20;i++)out=r.tick({p:0,soc:null});
+  assert.equal(out[0].payload,80);assert.equal(out[0].result.mean_sample_age_seconds,40);
+  assert.equal(out[0].result.mean_last_sample_at,new Date(end).toISOString());
+  assert.equal(Date.parse(out[0].result.mean_window_end),r.now);
+  assert.equal(Date.parse(out[0].result.mean_window_end)-Date.parse(out[0].result.mean_window_start),168*H);
+  assert.equal(JSON.stringify(r.state().mean.buckets),before);
+ });
+ test(lang+' partial oldest mean bucket expires against the clock while SOC remains invalid',()=>{
+  const {r}=meanRig(code);fullMean(r);r.state().mean.buckets[0][2]=60*60000;r.boot();
+  const out=r.tick({p:0,soc:null,dt:30000}),coverage=168*H-30000;
+  close(out[0].result.eta_mean_7d_raw_pct,Number(((80*coverage-20*30000)/coverage).toFixed(3)));
+  close(out[0].result.mean_covered_hours,Number((coverage/H).toFixed(6)));
+  assert.equal(out[0].result.mean_window_complete,false);assert.equal(out[0].result.mean_sample_age_seconds,30);
+ });
+ test(lang+' all expired history becomes unknown during an ongoing outage',()=>{
+  const {r,eta}=meanRig(code);eta(80);const out=r.tick({p:0,soc:null,dt:8*24*H});
+  assert.equal(out[0].payload,null);assert.equal(out[0].result.valid,false);
+  assert.equal(out[0].result.reason,'mean_history_expired');assert.equal(out[0].result.source_reason,'invalid_soc');
+  assert.equal(r.state().mean.buckets.length,0);assert.equal(r.flow.get('la_ela_es_mean_7d','file'),null);
+ });
+ test(lang+' serialized restart during an outage retains mean and does not bridge recovery',()=>{
+  const {r,eta}=meanRig(code);eta(80);const duration=r.state().mean.buckets.reduce((s,b)=>s+b[3],0);
+  const restored=rig({code,time:r.now,data:new Map(JSON.parse(JSON.stringify([...r.data])))});
+  const out=restored.tick({soc:null,p:0});assert.equal(out[0].payload,80);
+  restored.tick({p:0});restored.tick({p:0});
+  assert.equal(restored.state().mean.buckets.reduce((s,b)=>s+b[3],0),duration);
+  restored.tick({p:0});assert.equal(restored.state().mean.buckets.reduce((s,b)=>s+b[3],0),duration+2000);
+ });
+ test(lang+' runtime/context failure cannot claim that mean history is trusted',()=>{
+  const {r,eta}=meanRig(code);eta(80);const original=r.flow.get;
+  const duration=r.state().mean.buckets.reduce((s,b)=>s+b[3],0);
+  r.flow.get=(k,...args)=>{if(k==='p_batterie')throw Error('context read failed');return original(k,...args);};
+  const out=r.tick({p:0});assert.equal(out[0].payload,null);
+  assert.equal(out[0].result.reason,'mean_history_unavailable');
+  assert.equal(out[0].result.source_reason,'context_or_runtime_error');
+  assert.equal(r.flow.get('la_ela_es_mean_7d','file'),null);
+  r.flow.get=original;const resumed=r.tick({p:0});
+  assert.equal(result(resumed).interval_status,'measurement_gap_excluded');
+  assert.equal(resumed[0].payload,80);
+  assert.equal(r.state().mean.buckets.reduce((s,b)=>s+b[3],0),duration);
+ });
+ test(lang+' mean can remain available after charge throughput becomes insufficient',()=>{
+  const {r,eta}=meanRig(code);eta(80);r.state().buckets=[];r.boot();
+  const out=r.tick({p:0});assert.equal(out[0].payload,80);assert.equal(out[1].payload,null);
+  assert.equal(out[0].result.source_reason,'insufficient_charge_energy');
+ });
+ test(lang+' API payload publishes retained mean with valid true and source valid false',()=>{
+  const {r,eta}=meanRig(code);eta(80);const out=r.tick({soc:null,p:0});
+  const request=sensor(format)(out[0]).payload;
+  assert.equal(request.protocol,'http');assert.equal(request.method,'post');
+  assert.equal(request.path,'/states/sensor.battery_efficiency_mean_7d');
+  assert.equal(request.data.state,'80');assert.equal(request.data.attributes.valid,true);
+  assert.equal(request.data.attributes.source_valid,false);assert.equal(request.data.attributes.collection_paused,true);
+  assert.equal(request.data.attributes.quality,'mean_available');
+  assert.equal(request.data.attributes.unit_of_measurement,'%');assert.equal(request.data.attributes.state_class,'measurement');
+  assert.equal(request.data.attributes.sample_age_seconds,2);
+ });
+ test(lang+' API payload accepts true zero but maps invalid readings to unknown',()=>{
+  const run=sensor(format);
+  assert.equal(run({payload:0,result:{valid:true,output:'mean_7d'}}).payload.data.state,'0');
+  for(const value of [null,undefined,'0',true,NaN,Infinity,-1,101]) {
+   const request=run({payload:value,result:{valid:true}}).payload;
+   assert.equal(request.data.state,'unknown');assert.equal(request.data.attributes.valid,false);
+  }
+  assert.equal(run({payload:80,result:{valid:false}}).payload.data.state,'unknown');
+ });
+ test(lang+' optional watchdog sensor path addresses only the original sensor',()=>{
+  const r=rig({code}),run=capture(r,prep);run({});r.tick({dt:16000,soc:null});
+  const warning=run({})[1],request=sensor(format)(warning).payload;
+  assert.equal(request.path,'/states/sensor.battery_efficiency');assert.equal(request.data.state,'unknown');
+ });
+ test(lang+' sensor target IDs are configurable and invalid domains stop the request',()=>{
+  const errors=[],good=format.replace('sensor.battery_efficiency_mean_7d','sensor.mein_mittelwert');
+  assert.equal(sensor(good)({payload:80,result:{valid:true,output:'mean_7d'}}).payload.path,'/states/sensor.mein_mittelwert');
+  const bad=format.replace('sensor.battery_efficiency_mean_7d','switch.battery');
+  assert.equal(sensor(bad,errors)({payload:80,result:{valid:true,output:'mean_7d'}}),null);assert.equal(errors.length,1);
+ });
+ test(lang+' release and calculation versions advance while persisted schemas stay compatible',()=>{
+  const {r,eta}=meanRig(code),out=eta(80);
+  for(const msg of out){assert.equal(msg.result.release_version,'5.1.0');assert.equal(msg.result.calculation_revision,'5.1');}
+  assert.equal(r.state().version,4);assert.equal(r.state().mean.version,1);
+  assert.equal(fs.readFileSync(path.join(ROOT,'..','VERSION'),'utf8').trim(),'5.1.0');
  });
 }

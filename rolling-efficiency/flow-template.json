@@ -10,14 +10,14 @@
     "initialize": "",
     "finalize": "",
     "libs": [],
-    "x": 800,
-    "y": 260,
+    "x": 720,
+    "y": 240,
     "wires": [
       [
-        "v5effmean00000001"
+        "v51effmeanprep01"
       ],
       [
-        "v40e16d9dcd078a8e9"
+        "v51effrawprep001"
       ],
       [
         "v4effdiagnostics03"
@@ -31,44 +31,28 @@
   },
   {
     "id": "v40e16d9dcd078a8e9",
-    "type": "ha-sensor",
     "z": "577158dd0ea2615a",
-    "name": "Battery Efficiency",
-    "entityConfig": "v4bb523511b4c4476f",
-    "version": 0,
-    "state": "payload",
-    "stateType": "msg",
-    "attributes": [
+    "type": "ha-api",
+    "name": "API: Write Efficiency Sensor",
+    "server": "v44c54b454.60653c",
+    "version": 1,
+    "debugenabled": false,
+    "protocol": "http",
+    "method": "post",
+    "path": "states/sensor.battery_efficiency",
+    "data": "",
+    "dataType": "json",
+    "responseType": "json",
+    "outputProperties": [
       {
-        "property": "quality",
-        "value": "result.reason",
-        "valueType": "msg"
-      },
-      {
-        "property": "valid",
-        "value": "result.valid",
-        "valueType": "msg"
-      },
-      {
-        "property": "last_measurement",
-        "value": "result.timestamp",
-        "valueType": "msg"
-      },
-      {
-        "property": "covered_hours",
-        "value": "result.covered_hours",
-        "valueType": "msg"
-      },
-      {
-        "property": "soc_freshness_verified",
-        "value": "result.soc_freshness_verified",
-        "valueType": "msg"
+        "property": "ha_state",
+        "propertyType": "msg",
+        "value": "",
+        "valueType": "results"
       }
     ],
-    "inputOverride": "allow",
-    "outputProperties": [],
-    "x": 1170,
-    "y": 220,
+    "x": 1310,
+    "y": 240,
     "wires": [
       []
     ]
@@ -96,47 +80,6 @@
     "enableGlobalContextStore": true
   },
   {
-    "id": "v4bb523511b4c4476f",
-    "type": "ha-entity-config",
-    "server": "v44c54b454.60653c",
-    "deviceConfig": "",
-    "name": "Battery Efficiency Sensor",
-    "version": 6,
-    "entityType": "sensor",
-    "haConfig": [
-      {
-        "property": "name",
-        "value": "Battery Efficiency"
-      },
-      {
-        "property": "icon",
-        "value": "mdi:battery-sync"
-      },
-      {
-        "property": "entity_picture",
-        "value": ""
-      },
-      {
-        "property": "entity_category",
-        "value": ""
-      },
-      {
-        "property": "device_class",
-        "value": ""
-      },
-      {
-        "property": "unit_of_measurement",
-        "value": "%"
-      },
-      {
-        "property": "state_class",
-        "value": ""
-      }
-    ],
-    "resend": false,
-    "debugEnabled": false
-  },
-  {
     "id": "v4b4c87ebe49580577",
     "type": "global-config",
     "env": [],
@@ -155,15 +98,13 @@
     "initialize": "",
     "finalize": "",
     "libs": [],
-    "x": 290,
-    "y": 380,
+    "x": 330,
+    "y": 240,
     "wires": [
       [
         "v4e46be25028e13f5d"
       ],
       [
-        "v5effmean00000001",
-        "v40e16d9dcd078a8e9",
         "v4effdiagnostics03"
       ]
     ],
@@ -181,43 +122,43 @@
     "tosidebar": true,
     "console": false,
     "tostatus": false,
-    "complete": "result",
+    "complete": "true",
     "targetType": "msg",
     "statusVal": "",
     "statusType": "auto",
-    "x": 1170,
-    "y": 320,
+    "x": 1240,
+    "y": 380,
     "wires": []
   },
   {
     "id": "v4effinstructions3",
     "type": "comment",
     "z": "577158dd0ea2615a",
-    "name": "Connect snapshot diagnostic output to SOC capture; read README",
-    "info": "Same flow tab as snapshot and SOC writer. Connect output 11 of the V1.3 snapshot builder to SOC capture. Calculation outputs: 1 mean, 2 original sensor, 3 diagnostics. Set capacity and stores. Disable old efficiency writer. Mean history starts at upgrade. See rolling-efficiency/README.md.",
-    "x": 590,
-    "y": 80,
+    "name": "Connect the existing timer after SOC capture; read README",
+    "info": "Same flow tab as snapshot and SOC writer. Existing cycle: write SOC and original timestamp, then trigger capture/calculation 1 s later. Snapshot must be complete. No additional periodic timer and no daily-counter requests. Calculation outputs: 1 mean/automation, 2 original efficiency, 3 diagnostics. Capture warning output 2: diagnostics only; optionally original sensor preparation. Standard HA API replaces Companion sensors. Configure entity IDs in sensor preparation. Preserve context and disable the old writer. See rolling-efficiency/README.md.",
+    "x": 620,
+    "y": 40,
     "wires": []
   },
   {
     "id": "v4efftrigger000003",
     "type": "inject",
     "z": "577158dd0ea2615a",
-    "name": "Snapshot watchdog every 2 seconds",
+    "name": "Manual Snapshot Check",
     "props": [
       {
         "p": "payload"
       }
     ],
-    "repeat": "2",
+    "repeat": "",
     "crontab": "",
     "once": false,
     "onceDelay": 0.1,
     "topic": "",
     "payload": "",
     "payloadType": "date",
-    "x": 170,
-    "y": 160,
+    "x": 210,
+    "y": 100,
     "wires": [
       [
         "v4effprepare000003"
@@ -226,97 +167,88 @@
   },
   {
     "id": "v5effmean00000001",
-    "type": "ha-sensor",
     "z": "577158dd0ea2615a",
-    "name": "Battery Efficiency 7-Day Mean",
-    "entityConfig": "v5effmeancfg00001",
-    "version": 0,
-    "state": "payload",
-    "stateType": "msg",
-    "attributes": [
+    "type": "ha-api",
+    "name": "API: Write Mean Sensor",
+    "server": "v44c54b454.60653c",
+    "version": 1,
+    "debugenabled": false,
+    "protocol": "http",
+    "method": "post",
+    "path": "states/sensor.battery_efficiency_mean_7d",
+    "data": "",
+    "dataType": "json",
+    "responseType": "json",
+    "outputProperties": [
       {
-        "property": "quality",
-        "value": "result.reason",
-        "valueType": "msg"
-      },
-      {
-        "property": "valid",
-        "value": "result.valid",
-        "valueType": "msg"
-      },
-      {
-        "property": "last_measurement",
-        "value": "result.timestamp",
-        "valueType": "msg"
-      },
-      {
-        "property": "covered_hours",
-        "value": "result.mean_covered_hours",
-        "valueType": "msg"
-      },
-      {
-        "property": "coverage_pct",
-        "value": "result.mean_coverage_pct",
-        "valueType": "msg"
-      },
-      {
-        "property": "window_complete",
-        "value": "result.mean_window_complete",
-        "valueType": "msg"
-      },
-      {
-        "property": "source_valid",
-        "value": "result.source_valid",
-        "valueType": "msg"
+        "property": "ha_state",
+        "propertyType": "msg",
+        "value": "",
+        "valueType": "results"
       }
     ],
-    "inputOverride": "allow",
-    "outputProperties": [],
-    "x": 1170,
-    "y": 140,
+    "x": 1310,
+    "y": 160,
     "wires": [
       []
     ]
   },
   {
-    "id": "v5effmeancfg00001",
-    "type": "ha-entity-config",
-    "server": "v44c54b454.60653c",
-    "deviceConfig": "",
-    "name": "Battery Efficiency 7-Day Mean Sensor",
-    "version": 6,
-    "entityType": "sensor",
-    "haConfig": [
-      {
-        "property": "name",
-        "value": "Battery Efficiency 7-Day Mean"
-      },
-      {
-        "property": "icon",
-        "value": "mdi:battery-sync"
-      },
-      {
-        "property": "entity_picture",
-        "value": ""
-      },
-      {
-        "property": "entity_category",
-        "value": ""
-      },
-      {
-        "property": "device_class",
-        "value": ""
-      },
-      {
-        "property": "unit_of_measurement",
-        "value": "%"
-      },
-      {
-        "property": "state_class",
-        "value": ""
-      }
+    "id": "v51effmeanprep01",
+    "type": "function",
+    "z": "577158dd0ea2615a",
+    "name": "Prepare Mean Sensor",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 1040,
+    "y": 160,
+    "wires": [
+      [
+        "v5effmean00000001"
+      ]
+    ]
+  },
+  {
+    "id": "v51effrawprep001",
+    "type": "function",
+    "z": "577158dd0ea2615a",
+    "name": "Prepare Efficiency Sensor",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 1040,
+    "y": 240,
+    "wires": [
+      [
+        "v40e16d9dcd078a8e9"
+      ]
+    ]
+  },
+  {
+    "id": "v51effapierrors01",
+    "type": "catch",
+    "z": "577158dd0ea2615a",
+    "name": "Sensor API Errors",
+    "scope": [
+      "v5effmean00000001",
+      "v40e16d9dcd078a8e9",
+      "v51effmeanprep01",
+      "v51effrawprep001"
     ],
-    "resend": false,
-    "debugEnabled": false
+    "uncaught": false,
+    "x": 990,
+    "y": 440,
+    "wires": [
+      [
+        "v4effdiagnostics03"
+      ]
+    ]
   }
 ]

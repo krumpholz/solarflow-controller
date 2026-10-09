@@ -1,23 +1,23 @@
-# SolarFlow Controller v5.0.0 — vorbereitete Veröffentlichung
+# SolarFlow Controller v5.1.0
 
 [English](RELEASE_NOTES.md) | **Deutsch**
 
+Release **5.1.0** enthält Berechnungsrevision **5.1**, Energie-Pufferschema **4** und Mittelwert-Schema **1**. Kompatible Energiehistorie und vorhandene V5-Mittelwerthistorie bleiben erhalten.
+
 ## Änderungen gegenüber v4.0.0
 
-- Zeitgewichteten gleitenden **7-Tage-Mittelwert** der bisherigen SOC-korrigierten 168-Stunden-Energiebilanz ergänzt. Ungerundete gültige Prozentwerte werden mit tatsächlichen Zeitabständen linear integriert. Erst die Ausgabe wird auf eine Nachkommastelle gerundet.
-- **Drei Ausgänge in neuer Reihenfolge:** 1 = Mittelwert, 2 = bisheriger Wirkungsgrad, 3 = Diagnose. Der Import enthält einen neuen HA-Mittelwertsensor. Die bisherigen Sensor-IDs und der Kontextschlüssel des bisherigen Wirkungsgrads bleiben erhalten.
-- Begrenzte Minutenaggregate und Mittelwert-Ausgangspunkt werden im vorhandenen dauerhaften V4-Zustand gespeichert. Energiehistorie, V3-Übernahme und Ausschlussdiagnose laufen weiter; der Prozentmittelwert beginnt beim Update mit neuen Beobachtungen.
-- Ungültige Messungen werden aus beiden Historien und ungültige Wirkungsgradwerte aus dem Mittelwert ausgeschlossen; Fehler und Watchdog-Timeout setzen beide Ausgabewerte zurück. Keine Fortschreibung eines alten Wertes über eine Ausfallzeit.
-- Gleitkomma-Überschreitungen an exakten 0/100-%-Grenzen mit 1e-9 Prozentpunkten Rechentoleranz korrigiert. Tatsächlich unplausible Ergebnisse bleiben ungültig.
-- Mittelwertabdeckung, bisherige Aufbauzeit und Vollständigkeit des Fensters ausgewiesen. Die älteste angeschnittene Minute wird wie im Energiepuffer gleichmäßig gewichtet.
-- Automatisierte Regressionstests erweitert und eine GitHub-Actions-Matrix für reproduzierbaren Build sowie UTC/Berlin ergänzt. Beide Sprachfassungen und Import-Flows werden aus dem zentralen Rechenkern erzeugt.
+- Dauerhaften, zeitgewichteten gleitenden **7-Tage-Mittelwert** ungerundeter gültiger Prozentwerte der bisherigen SOC-korrigierten 168-Stunden-Bilanz ergänzen. **Ausgang 1 = Mittelwert, Ausgang 2 = bisheriger Wirkungsgrad, Ausgang 3 = Diagnose.**
+- Gültige gespeicherte Mittelwerthistorie bei kurzen SOC-/Quellausfällen verfügbar halten. Aufnahme pausieren und Interpolations-Ausgangspunkt löschen. Zeitfenster weiterlaufen lassen, abgelaufene Intervalle entfernen und Abdeckung, Quellgültigkeit sowie Messwertalter ausweisen. Fehlende Werte weder als 0 % einrechnen noch durch gehaltene Werte mit erfundener Abdeckung ersetzen.
+- Companion-Sensoren durch Aufbereitungsfunktionen und **normale Home-Assistant-API**-Schreibzugriffe ersetzen. Keine Custom Integration `hass-node-red` erforderlich. Dies sind Sensorzustände ohne Entitätsregistereintrag/Unique-ID; nach HA-Neustart stellt das nächste erfolgreiche Schreiben sie wieder her.
+- SOC-Vorbereitung aktualisieren: originalen Zeitstempel erhalten, in der Berechnung standardmäßig verlangen und vorhandenen gemeinsamen Timer etwa eine Sekunde später nutzen. Tageszählerabfragen entfernen. Importierter Inject nur manuell.
+- Ausgang „fehlende Messung“ an die Diagnose führen. Verbindung zum bisherigen Sensor optional; keine Warnungsverbindung zum Mittelwertsensor. Watchdog setzt nur den bisherigen Wirkungsgradschlüssel zurück.
+- Leistungsintegration, SOC-Korrektur, V3-Übernahme und Ausschlussdiagnose beibehalten. Nur Gleitkomma-Überschreitungen innerhalb von 1e-9 Prozentpunkten an exakten 0/100-%-Grenzen auflösen; echte Bereichsüberschreitungen bleiben ungültig.
+- **144 automatisierte Tests**, deutsche/englische Importflows, Installationsanleitungen und Verdrahtungsschemata bereitstellen. GitHub Actions prüft Node.js 22/24 in UTC/Berlin und veröffentlicht versionierte Release-Dateien nach erfolgreichen Main-Tests.
 
 ## Umstieg
 
-Die [Anleitung](rolling-efficiency/README_DE.md) beachten. Die Berechnungsfunktion auf drei Ausgänge stellen und den bisherigen Sensor auf **Ausgang 2**, die Diagnose auf **Ausgang 3** umstecken. **Ausgang 1** liefert den neuen Mittelwert. SOC-/Watchdog-Code ersetzen und dessen Warnungsausgang mit beiden Sensoren und der Diagnose verbinden. Kapazität, Flow-Tab und Kontext erhalten; nur eine Berechnung betreiben.
+Berechnung, SOC-Vorbereitung und Sensorpfade gemeinsam gemäß [Anleitung](rolling-efficiency/README_DE.md) und [Verdrahtung](rolling-efficiency/WIRING_DE.md) ersetzen. Drei Berechnungs- und zwei Vorbereitungsausgänge einstellen. Kapazität, Leistungsgrenzen, originalen SOC-Zeitstempel und Sensor-Entitäts-IDs konfigurieren; in beiden API-Nodes den vorhandenen HA-Server auswählen. Automatik an Berechnungsausgang 1 vor der API-Aufbereitung abzweigen. Flow-Tab/Kontext beibehalten und nur einen Schreiber betreiben.
 
-Release v5.0.0 verwendet Berechnungsrevision **5.0**, Energie-Pufferschema **4** und ergänztes Mittelwert-Pufferschema **1**. Die geänderte Ausgangsreihenfolge begründet den Sprung der Hauptversion. Aus den bisherigen Energiesummen lässt sich kein zuverlässiger historischer Prozentmittelwert rekonstruieren.
+Bei V3/V4 mit reiner Energiehistorie beginnt der Mittelwert mit neuen gültigen Intervallen. Aus dem v5.0.0-Entwicklungsentwurf bleiben beide Historien ohne Rücksetzung erhalten. Der Aufbau benötigt zwei aufeinanderfolgende gültige Wirkungsgradbeobachtungen, keine sieben Tage. Ohne verbleibende gültige Historie oder bei nicht sicher nutzbarem Zustand/Konfiguration/Laufzeit wird Ausgang 1 unbekannt. Vollständigkeitsflags zeigen tatsächliche Intervallabdeckung statt vergangener Aufbauzeit.
 
-Der Mittelwert beginnt nach zwei aufeinanderfolgenden gültigen Wirkungsgradbeobachtungen und wächst danach auf volle sieben Tage. `mean_window_complete` erfordert 168 Stunden gültig abgedeckter Zeit innerhalb des jüngsten 168-Stunden-Fensters. Die Glättung dämpft kurzfristige Schwankungen, behält aber systematische SOC-Fehler und reagiert langsam auf dauerhafte Änderungen: Gemittelt wird eine Bilanz, die selbst bereits sieben Tage umfasst.
-
-Dieses Release ist zur Prüfung vorbereitet; ein abgeschlossener Siebentage-Feldtest wird damit nicht behauptet. Die synthetischen automatisierten Regressionstests sind in [TESTING_DE.md](rolling-efficiency/TESTING_DE.md) dokumentiert. Historische Übernahme und Minutengrenzen-Gewichtung bleiben Näherungen; die Kennzahl bleibt eine SOC-korrigierte Energiebilanz.
+Der Betreiber hat den Ersatznode für die SOC-Vorbereitung live getestet. Die synthetische Testsuite behauptet keinen Live-Gesamttest der HA-Anbindung oder siebentägigen Hardwarelauf. Siehe [Prüfung](rolling-efficiency/TESTING_DE.md). Glättung beseitigt keine systematischen SOC-/Kapazitätsfehler und reagiert langsamer auf dauerhafte Änderungen, weil die zugrunde liegende Bilanz bereits sieben Tage umfasst.

@@ -1,6 +1,6 @@
-# Batterie-Wirkungsgrad und gleitender 7-Tage-Mittelwert – Release v5.0.0
+# Batterie-Wirkungsgrad und gleitender 7-Tage-Mittelwert – Release v5.1.0
 
-Release **v5.0.0** verwendet Berechnungsrevision **5.0**, Energie-Pufferschema **4** und ergänztes Mittelwert-Pufferschema **1**. Bestehende V4-Energiepuffer werden weiterverwendet. Die Ausgangsreihenfolge ändert sich; die Mittelwerthistorie beginnt beim Update.
+Release **v5.1.0** verwendet Berechnungsrevision **5.1**, Energie-Pufferschema **4** und ergänztes Mittelwert-Pufferschema **1**. Bestehende Energie- und V5-Mittelwertpuffer werden weiterverwendet. Ausgangsreihenfolge: Mittelwert / bisheriger Wert / Diagnose. Nur ohne vorhandenen Mittelwertpuffer beginnt eine neue Mittelwerthistorie.
 
 [English](README.md) | **Deutsch**
 
@@ -8,16 +8,19 @@ Gleitende 168-Stunden-Energiebilanz aus dem vorzeichenbehafteten Leistungswert d
 
 ## Bestehende Installation umstellen
 
-1. Alten Flow exportieren und Node-RED-Kontext sichern. Im selben Flow-Tab bleiben; dort liegt der vorhandene Puffer.
-2. Den **gesamten** Funktionscode von **Batterie Wirkungsgrad** durch [battery-efficiency_DE.js](battery-efficiency_DE.js) ersetzen. **Drei Ausgänge** einstellen. `capacityKWh: 8.640` und `maxPowerKW: 2.4` an die Anlage anpassen.
-3. Ausgang 1 von **SOC erfassen und Messzyklus starten** direkt mit **Batterie Wirkungsgrad** verbinden. Die beiden bisherigen Tageszähler-Abfragen aus diesem Berechnungszweig entfernen. Keine zweite alte Berechnung parallel auf dieselben Ausgaben/Kontextwerte schreiben lassen.
-4. Für jeden 2-Sekunden-Snapshot **Ausgang 11 (Diagnose, Index 10)** von **Messwerte berechnen V1.3** zusätzlich mit dem Eingang von **SOC erfassen und Messzyklus starten** verbinden. Den bisherigen 5-Sekunden-Timer als Auslöser dieses Zweigs abtrennen. Der Snapshot-Ausgang wird erst nach dem Schreiben aller benötigten Flow-Werte ausgegeben. Die bestehenden anderen Verbindungen des Snapshot-Nodes bleiben erhalten.
-5. **Ausgang 1** der Berechnung mit dem neuen Mittelwertsensor oder einer Automatik verbinden. **Lade Entlade Effizenz** auf **Ausgang 2**, **Wirkungsgrad Diagnose** auf **Ausgang 3** umstecken. SOC-Erfassung durch [prepare-cycle_DE.js](prepare-cycle_DE.js) ersetzen. Deren Warnungsausgang (Ausgang 2) mit **beiden** HA-Sensoren und der Diagnose verbinden. Der alte Vorbereitungsknoten löst Berechnungen weiterhin aus, setzt bei seinem eigenen Watchdog-Timeout aber den neuen Mittelwertsensor noch nicht zurück.
-6. Optional den bisherigen Timer als separaten 2-Sekunden-Watchdog an **SOC erfassen** anschließen. Doppelte Snapshot-Zyklen werden nicht erneut integriert. Bei ausbleibenden Snapshots liefert diese zusätzliche Abfrage `null`, statt einen alten Prozentwert unbegrenzt anzuzeigen. Der komplette Import enthält diesen Timer. Ohne einen weiterlaufenden Auslöser kann kein Function-Node den Ausfall seiner eigenen Eingaben anzeigen.
+1. Alten Flow exportieren und Node-RED-Kontext sichern. Flow-Tab, Kontextspeicher und eingestellte Batteriekapazität beibehalten. Nur eine Berechnung darf den Wirkungsgradzustand schreiben.
+2. Den **gesamten** Berechnungscode durch [battery-efficiency_DE.js](battery-efficiency_DE.js) ersetzen. **Drei Ausgänge**, `capacityKWh` und `maxPowerKW` einstellen; Vorgaben sind 8,640 kWh und 2,4 kW. Revision 5.1 verlangt standardmäßig einen SOC-Zeitstempel (`requireSocTimestamp: true`).
+3. **SOC erfassen und Messzyklus starten** durch [prepare-cycle_DE.js](prepare-cycle_DE.js) ersetzen und **zwei Ausgänge** einstellen. Ausgang 1 **direkt** mit der Berechnung verbinden. Beide Tageszähler-Abfragen aus diesem Pfad entfernen. Die Vorbereitung übernimmt `batt_level_ts` unverändert und erneuert diesen Zeitstempel nicht.
+4. Den **vorhandenen gemeinsamen Timer** nutzen: SOC samt Zeitstempel schreiben, etwa **eine Sekunde später** die Vorbereitung aufrufen. Dann muss der Leistungs-Snapshot vollständig vorliegen. Eine feste Verzögerung garantiert keine erfolgreichen Abfragen; die Snapshot-Prüfungen bleiben aktiv. Der importierte Inject-Knoten dient nur als manueller Testknopf: **keine Wiederholung und kein Startimpuls**. Den vorhandenen periodischen Auslöser auch bei fehlenden neuen SOC- oder Leistungsmessungen weiterlaufen lassen.
+5. Berechnungsausgang **1** an **Mittelwert für HA aufbereiten** und die Automatik anschließen; Ausgang **2** an **Wirkungsgrad für HA aufbereiten**; Ausgang **3** an die Diagnose. Beide Aufbereitungen verwenden [prepare-sensor_DE.js](prepare-sensor_DE.js) und führen zu normalen HA-API-Knoten. Die Automatik vor der Sensor-Aufbereitung abzweigen, weil diese `msg.payload` in eine API-Anfrage umwandelt.
+6. Warnungsausgang **2** der SOC-Vorbereitung standardmäßig **nur an die Diagnose** anschließen. Optional zusätzlich an **Wirkungsgrad für HA aufbereiten**, um den bisherigen Sensor auf unbekannt zu setzen. Keine Verbindung zur Mittelwert-Aufbereitung oder zum Mittelwert-API-Knoten. Der Watchdog setzt nur `la_ela_es` zurück; `la_ela_es_mean_7d` verwaltet allein die Berechnung.
+7. Companion-Knoten `ha-sensor` / `ha-entity-config` durch den normalen API-Pfad aus [flow_DE.json](flow_DE.json) ersetzen. In beiden API-Knoten den vorhandenen HA-Server auswählen. Entitäts-IDs im Block `SENSOR` der Aufbereitungsfunktionen konfigurieren; für den bisherigen Sensor gegebenenfalls dessen tatsächliche ID übernehmen. Eine weiterhin von einer anderen Integration verwaltete Entität kann API-Schreibwerte überschreiben; deren alten Schreiber abschalten.
 
-**Nur Funktionscode tauschen und die Zähler umgehen funktioniert zum Einstieg.** Solange jedoch nur alle fünf Sekunden abgefragt wird, integriert die Funktion nur diese ausgewählten Leistungswerte. Dazwischenliegende 2-Sekunden-Messpunkte lassen sich aus dem überschriebenen Flow-Kontext nicht nachträglich zurückholen. Die ereignisgesteuerte Verbindung in Schritt 4 erfasst jeden erfolgreichen Snapshot.
+Siehe [Verdrahtungsschema](WIRING_DE.md) und [Sensor-Anbindung ohne Companion-Integration](#home-assistant-sensoren-ohne-companion-integration). Der anlagenspezifische Modbus-/Snapshot-Builder und SOC-Schreiber sind nicht im Import enthalten. Die neuen Nodes auf deren Flow-Tab platzieren und nur eine Sprachversion aktivieren.
 
-Neuinstallationen können alternativ [flow_DE.json](flow_DE.json) importieren. Nur eine Sprachversion aktivieren, denselben Flow-Tab wie Snapshot und SOC-Schreiber verwenden und den vorhandenen Home-Assistant-Server auswählen. Der Export enthält weder deinen Modbus-Snapshot-Builder noch dessen Geräte-/Netzwerkkonfiguration. Eine separate Reglerinstallation ist erforderlich, um die unten genannten Snapshot-Werte bereitzustellen.
+Ohne vorhandenen periodischen Berechnungsauslöser einen Takt von etwa zwei Sekunden nach der SOC-Aktualisierung einrichten. Ein Auslöser ausschließlich von Snapshot-Ausgang 11 verarbeitet erfolgreiche Snapshots zeitnah, benötigt aber weiterlaufende Timer-Aufrufe für die Mittelwertauswertung bei ausbleibenden Snapshots. Einen Hauptauslösepfad verwenden und keinen zweiten Timer zu einer bereits getakteten Anlage ergänzen. Wiederholte Snapshot-IDs werden nicht doppelt integriert; überschriebene Zwischenmesspunkte lassen sich nicht rekonstruieren.
+
+**Umstieg von v5.0.0:** Energie- und Mittelwerthistorie beibehalten; beide Schemata bleiben gleich. Berechnung, SOC-Vorbereitung und Sensor-Knoten gemeinsam ersetzen. Beim Umstieg von V4 oder V3 bleibt kompatible Energiehistorie erhalten; die Mittelwerthistorie beginnt dagegen mit neuen gültigen Prozentintervallen. Frühere Energiesummen ergeben keine rekonstruierbare Mittelwerthistorie.
 
 ## Erforderliche externe Werte
 
@@ -38,9 +41,9 @@ Im expliziten Store **`memoryOnly`** werden zusätzlich benötigt:
 | Schlüssel | Bedeutung |
 | --- | --- |
 | `batt_level` | Batterie-SOC von 0 bis 100 % |
-| `batt_level_ts` | Optional: Unixzeit der SOC-Beobachtung in ms; wenn vorhanden höchstens 120 s alt |
+| `batt_level_ts` | SOC-Beobachtungszeit als Unixzeit in ms; standardmäßig erforderlich und bei Erfassung höchstens 120 s alt |
 
-Der vorhandene SOC-Vorbereitungsknoten übergibt diese Werte in `msg._eff`. Ohne dieses Objekt liest die Berechnung die beiden SOC-Variablen selbst. Der BLE-Sensor `sensor.bluetooth_solarflow_solarflow_batterie_soc` kann weiterhin über **SOC -> EMS** liefern. Ein bei jeder HA-Abfrage neu erzeugter SOC-Zeitstempel bestätigt nur den Abfragezeitpunkt, nicht die Aktualität der Messung im BLE-Gerät. `soc_freshness_verified` prüft ausschließlich das Alter des bereitgestellten Zeitstempels.
+Die Vorbereitung übergibt diese Werte in `msg._eff` und behält den ursprünglichen Beobachtungszeitstempel bei. Ein eine Sekunde alter SOC-Zeitstempel ist gültig. Mit `requireSocTimestamp: true` pausieren fehlende, zukünftige oder veraltete Zeitstempel die Aufnahme; gültige Mittelwerthistorie kann weiterhin verfügbar sein. Die Option nur bei einem bewusst gewählten Altaufbau ohne Zeitstempel auf false stellen; ungeprüfte SOC-Aktualität bleibt ausgewiesen. Ohne dieses Objekt liest die Berechnung die beiden SOC-Variablen selbst. Der BLE-Sensor `sensor.bluetooth_solarflow_solarflow_batterie_soc` kann weiterhin über **SOC -> EMS** liefern. Ein bei jeder HA-Abfrage neu erzeugter SOC-Zeitstempel bestätigt nur den Abfragezeitpunkt, nicht die Aktualität der Messung im BLE-Gerät. `soc_freshness_verified` prüft ausschließlich das Alter des bereitgestellten Zeitstempels.
 
 Die vom Snapshot ebenfalls bereitgestellten `p_batt_in` und `p_batt_out` werden nicht separat benötigt: Beide Richtungen ergeben sich eindeutig aus `p_batterie`. Die Messgrenze muss für Laden und Entladen identisch sein. AC-Messung, DC-Telemetrie und Leistungssollwerte dürfen nicht gemischt werden.
 
@@ -61,7 +64,7 @@ contextStorage: {
 
 Der V4-Zustand liegt vollständig in `flow.batt_eff_state_v4` im Store `file`: Energie-Minutenpuffer, Leistungs-/SOC-Ausgangspunkt, Übernahmemarker, Ausschlusszähler und ergänztes Objekt `mean` (Schema 1, Prozent-Zeit-Integrale, Abdeckung und letzter gültiger Mittelwert-Messpunkt). Die Dateiablage schreibt zeitverzögert; bei Stromausfall können noch nicht geschriebene Sekunden verloren gehen. Ein normaler Neustart lädt den gespeicherten Zustand, importiert V3 nicht nochmals und ignoriert wiederholte Snapshot-Zyklen. Eine Lücke über zehn Sekunden wird auf beiden Seiten der Energiebilanz ausgeschlossen. Nur eine aktive V4-Funktion darf diesen Zustand schreiben.
 
-Die bisherigen Ausgabevariablen bleiben im Store `file`: `sum_batt_la_7d`, `sum_batt_ela_7d` in kWh und `la_ela_es` als bisheriger Prozentwert oder `null`. Neu ist `la_ela_es_mean_7d` als Mittelwert in Prozent oder `null`. Berechnungsfehler und Watchdog-Timeout setzen beide Prozentwerte zurück. Der alte Schlüssel wird nicht mit dem Mittelwert überschrieben.
+Die bisherigen Ausgabevariablen bleiben im Store `file`: `sum_batt_la_7d`, `sum_batt_ela_7d` in kWh und `la_ela_es` als bisheriger Prozentwert oder `null`. Neu ist `la_ela_es_mean_7d` als Mittelwert in Prozent oder `null`. Messfehler setzen den bisherigen Schlüssel zurück; gültige Mittelwerthistorie bleibt im Mittelwertschlüssel verfügbar. Der Watchdog schreibt niemals den Mittelwertschlüssel. Nur fehlende, abgelaufene oder nicht sicher nutzbare Historie ergibt einen null-Mittelwert. Der bisherige Schlüssel behält seine Bedeutung.
 
 ## Berechnung und Genauigkeit
 
@@ -95,7 +98,7 @@ Das Fenster endet am letzten verarbeiteten Snapshot und beginnt exakt 168 Stunde
 - Snapshots älter als 6,5 s, ungültige Werte und ESP-Ersatzwerte werden abgelehnt. Der ESP-Fallback kann wiederholte Telemetrie oder eine abweichende Messgrenze enthalten; er wird deshalb nicht als frische Modbus-Messung integriert.
 - Maximal zehn Sekunden zwischen gültigen Punkten sind erlaubt. Kürzere Abstände werden linear überbrückt; längere Lücken und ausdrücklich ungültige Zwischenmeldungen starten einen neuen Ausgangspunkt. Dabei werden Energie und SOC-Änderung gemeinsam ausgeschlossen.
 - Ein SOC-Schritt über zwei Prozentpunkte plus physikalischem Zuwachs mit 20 % Reserve wird zunächst ausgeschlossen. Drei aufeinanderfolgende ähnliche Werte bestätigen den neuen SOC-Ausgangspunkt. Langsame BMS-Korrekturen unter dieser Grenze sind damit nicht vollständig erkennbar.
-- Ein negativer Wirkungsgrad oder ein Wert über 100 % wird als `null` ausgegeben, nicht auf 0/100 begrenzt. Nur rechnerische Überschreitungen innerhalb von **1e-9 Prozentpunkten** einer exakten 0/100-Grenze werden auf diese Grenze zurückgeführt, damit Gleitkomma-Subtraktion keine falsche Ablehnung erzeugt. Diagnose: `efficiency_arithmetic_tolerance_pct`. Die angezeigte Kapazität von 8,640 kWh ist eine Installationsvorgabe, kein universeller SolarFlow-Wert.
+- Ein negativer bisheriger Wirkungsgrad oder ein Wert über 100 % wird an Ausgang 2 als `null` ausgegeben, nicht auf 0/100 begrenzt; die Verfügbarkeit der Mittelwerthistorie wird getrennt geprüft. Nur rechnerische Überschreitungen innerhalb von **1e-9 Prozentpunkten** einer exakten 0/100-Grenze werden auf diese Grenze zurückgeführt, damit Gleitkomma-Subtraktion keine falsche Ablehnung erzeugt. Diagnose: `efficiency_arithmetic_tolerance_pct`. Die angezeigte Kapazität von 8,640 kWh ist eine Installationsvorgabe, kein universeller SolarFlow-Wert.
 
 ## Gleitender 7-Tage-Prozentmittelwert
 
@@ -113,13 +116,15 @@ Beispiel: 80 → 84 % über 2 Sekunden ergibt 82 × 2; 84 → 76 % über 8 Sekun
 
 ### Verfügbarkeit, Lücken und Neustart
 
-- Der erste gültige Prozentwert setzt den Mittelwert-Ausgangspunkt. Der nächste aufeinanderfolgende gültige Wert trägt sein Intervall bei und macht den Mittelwert verfügbar. Vorhandene Mittelwerthistorie kann nach Wiederaufnahme gültiger Messungen weiterverwendet werden.
-- Ungültige Messungen, SOC-Sprungprüfung, unplausibler Wirkungsgrad, zu geringe Ladeenergie und ausgeschlossene Messintervalle tragen keine Mittelwertdauer bei. Der vorherige Mittelwert-Ausgangspunkt wird gelöscht. Der nächste gültige Prozentwert setzt einen neuen Ausgangspunkt; die Lücke wird nicht überbrückt.
-- Bei aktuell ungültiger Berechnung liefern Ausgang 1 und 2 beide `payload: null`, auch wenn ein früher gültiger Mittelwert noch in der Historie liegt. Ausgang 3 beschreibt die Ursache. Fehler werden nicht als Null-Prozent-Messpunkte eingerechnet.
-- Nach Neustart bleibt die gespeicherte Mittelwerthistorie erhalten. Ein kurzes akzeptiertes Intervall kann am gespeicherten Ausgangspunkt fortsetzen; eine Lücke über zehn Sekunden nicht. Doppelte Snapshots ergänzen weder Daten noch Abdeckung.
-- Die vorhandene V4-Energiehistorie bleibt erhalten. Die neue Mittelwerthistorie beginnt beim Update. Weder V4-Minutenenergiesummen noch übernommene V3-Tageswerte enthalten den früheren Prozentwertverlauf; ein historischer Mittelwert wird nicht erfunden.
-- Der Mittelwert kann schon während des Aufbaus angezeigt werden und umfasst dann weniger als sieben Tage. Ein vollständiges Fenster braucht 168 Stunden gültig abgedeckter Mittelwertintervalle mit einer Millisekunde Rechentoleranz. Lücken bleiben bis zum Herauslaufen sichtbar. `mean_history_hours` allein belegt keine Abdeckung.
-- Beide Historien halten jeweils ungefähr 10.081 Minutenaggregate. Abdeckung und Speicher bleiben begrenzt. Der periodische Snapshot-Watchdog setzt bei ausbleibenden Messungen beide Ausgabesensoren zurück; die Berechnung braucht weiterhin einen Auslöser, um den Ausfall festzustellen.
+- Der erste gültige bisherige Prozentwert setzt den Mittelwert-Ausgangspunkt. Das nächste aufeinanderfolgende akzeptierte Intervall mit gültigen Endpunkten macht den Mittelwert verfügbar. Anfangs- oder historische Prozentwerte werden nicht erfunden.
+- **Die Verfügbarkeit hängt von gültigen gespeicherten Mittelwertintervallen ab und ist unabhängig von der aktuellen SOC-/Quellgültigkeit.** Kurze SOC-Ausfälle, veraltete Leistung, Ersatzwerte, SOC-Sprungprüfung, unplausibler bisheriger Wirkungsgrad oder zu geringe Ladeenergie pausieren die Aufnahme, lassen Ausgang 1 bei verbleibender Historie aber verfügbar. Gleichzeitig darf Ausgang 2 null sein. Ausgang 1 meldet dann `valid: true`, `source_valid: false`, `reason: mean_available` und die tatsächliche `source_reason`.
+- Ungültige oder ausgeschlossene Intervalle tragen keine Dauer bei. Der Interpolations-Ausgangspunkt wird gelöscht; der erste folgende gültige bisherige Prozentwert setzt einen neuen. Weder ein gehaltener Prozentwert noch 0 % werden während der Lücke eingerechnet. Die Wiederaufnahme überbrückt keine Lücke.
+- Das Mittelwertfenster endet an der **aktuellen Auswertungszeit**, auch bei fehlerhaften Quellen. Weiterlaufende Timer-Aufrufe entfernen Altdaten und aktualisieren Abdeckung und Messwertalter. Durch herauslaufende Intervalle kann sich der Mittelwert ändern. Ohne gültige Intervalle in den letzten 168 Stunden wird Ausgang 1 null; beschädigter Zustand, Konfigurations- oder Laufzeit-/Kontextfehler erlauben ebenfalls keine Zusage einer sicher nutzbaren Historie.
+- Der SOC-Watchdog setzt nur den bisherigen Ausgabeschlüssel zurück. Seine Warnung beschreibt die Quelle, nicht die Gültigkeit der Mittelwerthistorie. Kein Warnungskabel führt zum Mittelwertsensor. API-Fehler gehen an die Diagnose und setzen keine Berechnungshistorie zurück.
+- Neustarts erhalten die Mittelwerthistorie auch während eines Quellausfalls. Ein kurzes akzeptiertes Intervall kann am gespeicherten Ausgangspunkt fortsetzen, eine Lücke über zehn Sekunden nicht. Doppelte gültige Snapshots ergänzen weder Daten noch Abdeckung.
+- Vorhandene V5-Mittelwerthistorie wird weiterverwendet. Beim Umstieg von V3/V4 mit reiner Energiehistorie beginnt der Mittelwert mit neuen Beobachtungen; Energiesummen ergeben keine rekonstruierbaren früheren Prozentwerte.
+- Während des Aufbaus ist ein Teilfenster möglich. Ein vollständiges Fenster benötigt 168 Stunden gültige Intervallabdeckung mit einer Millisekunde Rechentoleranz. Lücken bleiben bis zum Herauslaufen sichtbar; `mean_history_hours` allein belegt keine Abdeckung.
+- Beide Historien speichern jeweils ungefähr 10.081 Minutenaggregate. Die älteste angeschnittene Minute behält die ausgewiesene gleichmäßige zeitanteilige Näherung.
 
 ### Ausgänge und Diagnose
 
@@ -139,7 +144,9 @@ Alle Ausgänge verwenden `msg.payload` für den veröffentlichten Prozentwert od
 | `mean_window_start`, `mean_window_end` | Exakte UTC-Fenstergrenzen mit 168 Stunden Abstand |
 | `mean_window_complete` | Vollständig abgedecktes Mittelwertfenster; getrennt vom bisherigen `window_complete` |
 | `mean_covered_hours`, `mean_coverage_pct` | Aktuell vertretene gültige Mittelwertintervalle ohne Lücken |
-| `mean_started_at`, `mean_history_hours` | Beginn der neuen Historie und seitdem vergangene Zeit |
+| `mean_started_at`, `mean_history_hours` | Beginn und vergangene Zeit; kein Abdeckungsnachweis |
+| `mean_collection_paused` | Aktuelle bisherige Quelle ungültig; Mittelwert darf gültig bleiben |
+| `mean_last_sample_at`, `mean_sample_age_seconds` | Letztes gespeichertes Mittelwertintervall-Ende und dessen Alter |
 | `mean_method`, `mean_source` | Linearer zeitgewichteter Mittelwert der bisherigen gleitenden Bilanz |
 | `mean_buffer_buckets`, `mean_partial_boundary_bucket`, `mean_boundary_weighting` | Speichergröße und ausgewiesene Näherung der ältesten Randminute |
 
@@ -158,9 +165,9 @@ Der neue Mittelwert glättet SOC-Rasterung und kurzfristige lastabhängige Schwa
 
 ## Übernahme des V3-Puffers
 
-Bei der ersten gültigen Messung liest V4 optional `batt_eff_state_v3` aus `file`. Kapazität, bisherige Entitätsnamen und Node-RED-Zeitzone müssen zum V3-Fingerprint passen. Eine Abweichung führt zur Diagnose statt zu einer stillen Fehlübernahme. `CFG.importV3 = false` startet V4 bewusst ohne Import, verändert aber keinen V3-Puffer.
+Bei der ersten gültigen Messung liest V4 optional `batt_eff_state_v3` aus `file`. Kapazität, bisherige Entitätsnamen und Node-RED-Zeitzone müssen zum V3-Fingerprint passen. `chargeEntityV3` / `dischargeEntityV3` dienen ausschließlich der Fingerprint-Prüfung bei Übernahme und lösen keine Tageszähler-Abfragen aus. Eine Abweichung führt zur Diagnose statt zu einer stillen Fehlübernahme. `CFG.importV3 = false` startet V4 bewusst ohne Import, verändert aber keinen V3-Puffer.
 
-Alle vorhandenen Tagesenergien und SOC-Deltas werden übernommen. Bei bereits in V3 enthaltenen Legacy-Tagen wird auch dessen Korrektur zwischen den Legacy-SOC-Grenzen berücksichtigt. Diese Korrektur wird jeweils dem späteren Legacy-Tag zugeordnet. Fehlen erforderliche Grenzen, bleibt die Ausgabe ungültig, solange betroffene Daten im Fenster liegen.
+Alle vorhandenen Tagesenergien und SOC-Deltas werden übernommen. Bei bereits in V3 enthaltenen Legacy-Tagen wird auch dessen Korrektur zwischen den Legacy-SOC-Grenzen berücksichtigt. Diese Korrektur wird jeweils dem späteren Legacy-Tag zugeordnet. Fehlen erforderliche Grenzen, bleibt die bisherige Bilanz an Ausgang 2 ungültig, solange betroffene Daten im Fenster liegen.
 
 V3 enthält keine untertägigen Zeitreihen. Daher verteilt die Übergangsrechnung jede übernommene Tagessumme gleichmäßig auf ihren lokalen Kalendertag; der letzte Tag endet am letzten gespeicherten V3-Messpunkt. Die bereits bekannte historische Ungenauigkeit wird dadurch nicht repariert. Alte Summen fallen nun zeitanteilig heraus. Dies kann von der alten Tagesfenster-Anzeige abweichen, besonders wenn der V3-Puffer beim Umstieg bereits veraltet war. Nach spätestens 168 Stunden ab dem letzten V3-Messpunkt ist die Übergangsnäherung ausgelaufen.
 
@@ -168,21 +175,34 @@ V4 beginnt seine Leistungsintegration erst mit einem neuen Ausgangspunkt. Die Ze
 
 **Der alte V3-Puffer bleibt unverändert erhalten.** Bei Rückkehr zum alten Code ist er deshalb nur bis zum Umstiegszeitpunkt aktuell; V4 schreibt die V3-Tageswerte nicht weiter. Ein gespeicherter V4-Zustand hat immer Vorrang vor V3. Ein erneuter Import darf nicht durch unbedachtes Löschen von V4 erzwungen werden.
 
-## Neue Nutzer und Home Assistant
+## Home Assistant Sensoren ohne Companion-Integration
 
-Ohne V3-Daten setzt die erste Messung den Ausgangspunkt. Sobald akzeptierte Intervalle mindestens **0,1 kWh Ladeenergie** enthalten und die Bilanz plausibel ist, wird ein Wert ausgegeben. Ein vollständiger Siebentagepuffer ist nicht erforderlich. Bei ausschließlich Entladung fehlt zunächst ein sinnvoller Nenner. Die Schwelle verhindert nur eine Division durch nahezu null und garantiert noch keine hohe Genauigkeit bei kurzer Beobachtung.
+Benötigt werden Node-RED, `node-red-contrib-home-assistant-websocket` (API-Schema gegen 0.80.3 geprüft) und eine funktionierende HA-Serververbindung. **Keine Custom Integration `hass-node-red` und kein Companion-Sensor erforderlich.** Tagesenergiesensoren werden weder abgefragt noch angelegt.
 
-Die bisherigen Eingabesensoren `sensor.batterie_lade_energie_pro_tag` und `sensor.batterie_entlade_energie_pro_tag` werden nicht mehr abgefragt oder angelegt. Für den HA-Ergebnissensor werden weiterhin `node-red-contrib-home-assistant-websocket`, die **Node-RED Companion Integration** in Home Assistant und eine funktionierende Serververbindung benötigt. Der importierte `ha-sensor` samt Entitätskonfiguration erstellt den Ergebnissensor bei korrekt eingerichteter Integration; die endgültige Entity-ID kann bei bereits bestehenden Namen abweichen. Beim reinen Austausch des Funktionscodes bleibt der vorhandene Ausgabesensor bestehen.
+Die Sensor-Aufbereitung wählt bei `msg.result.output === "mean_7d"` den Mittelwert, sonst den bisherigen Sensor einschließlich optionaler Watchdog-Warnungen. Den Block `SENSOR` in beiden Aufbereitungsnodes konfigurieren. Die Vorgabe-IDs sind in deutscher und englischer Fassung identisch:
 
-`window_complete` bezeichnet ein vollständig durch neue akzeptierte Intervalle abgedecktes 168-Stunden-Fenster. Eine gültige Ausgabe kann lange vorher erfolgen. `excluded_*` zählt Ausschlüsse seit dem V4-Start, nicht nur innerhalb des aktuellen Fensters. Die minutenweise Abdeckung am angeschnittenen Fensterrand unterliegt derselben beschriebenen Näherung.
+| Wert | Vorgabe-Entitäts-ID |
+| --- | --- |
+| Gleitender Mittelwert | `sensor.battery_efficiency_mean_7d` |
+| Bisheriger Wirkungsgrad | `sensor.battery_efficiency` |
+
+Die Vorbereitung bildet `msg.payload = {protocol: "http", method: "post", path: "/states/sensor.…", data: {state, attributes}}`. Der normale **API**-Knoten verwendet die Zugangsdaten seines ausgewählten Servers und ergänzt Home Assistants `/api`-Präfix. `payload.data` ist ein Objekt. Den numerischen Berechnungsausgang deshalb nicht direkt an den API-Knoten anschließen. Dessen Antwort liegt in `msg.ha_state`; dort endet der Sensorzweig. Fehler der angeschlossenen Aufbereitungs-/API-Knoten gehen über Catch an die Diagnose.
+
+Gültige Zahlen werden als Zustandsstring geschrieben, auch ein echter Wert `"0"`; null/ungültige Werte ergeben **`"unknown"`**, niemals `"0"`. Attribute enthalten `%`, `state_class: measurement`, Gültigkeit und Begründung. Der Mittelwert ergänzt Quellgültigkeit, Quellgrund, pausierte Aufnahme, Abdeckung, Messwertalter und Fenstergrenzen. Gültige Mittelwerthistorie wird auch bei `source_valid: false` normal geschrieben.
+
+Die REST-Aufrufe erzeugen/aktualisieren **Sensorzustände in der HA-Zustandsmaschine**, ohne Eintrag im Entitätsregister und ohne `unique_id`. Sie sind über ihre Entitäts-ID in Dashboards und Automationen nutzbar; einige Funktionen der Entitätsverwaltung stehen nicht zur Verfügung. Nach HA-Neustart erzeugt das nächste erfolgreiche API-Schreiben den Zustand erneut. Periodischen Auslöser weiterlaufen lassen und IDs ohne anderen aktiven Schreiber wählen. Die tatsächliche bisherige Sensor-ID kann ausdrücklich eingestellt werden; allein eine gleichbleibende Node-RED-Knoten-ID erhält keine HA-Entitäts-ID.
+
+Ohne Altdaten müssen gültige Intervalle zunächst mindestens **0,1 kWh Ladeenergie** und eine plausible bisherige Bilanz liefern. Der Mittelwert benötigt danach ein aufeinanderfolgendes gültiges Prozentintervall. Sieben Tage Aufbauzeit werden nicht vorausgesetzt. Bei ausschließlich Entladung fehlt zunächst der Nenner. Teilfenster sind möglich; ihre Abdeckung bleibt ausgewiesen.
+
+`window_complete` beschreibt die neu akzeptierte bisherige Leistungsabdeckung, `mean_window_complete` die Mittelwertintervall-Abdeckung. `excluded_*` zählt Ausschlüsse seit dem V4-Start statt nur im aktuellen Fenster.
+
+Quellen: [HA REST API](https://developers.home-assistant.io/docs/api/rest/), [Standard-API-Knoten](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/API.html), [Node-RED-Dateikontext](https://nodered.org/docs/api/context/store/localfilesystem).
 
 [MIT-Lizenz](../LICENSE) · [Markenhinweis](../NOTICE_DE.md) · [Messgrenzen und Gewährleistung](../DISCLAIMER_DE.md)
 
-Quellen: [Node-RED-Dateikontext](https://nodered.org/docs/api/context/store/localfilesystem), [HA-Sensor-Knoten](https://zachowj.github.io/node-red-contrib-home-assistant-websocket/node/sensor.html), [Node-RED-Begleitintegration](https://github.com/zachowj/hass-node-red).
-
 ## Ausschlussdiagnose
 
-Zum Update den vollständigen Code von **Batterie Wirkungsgrad** tauschen und die drei Ausgänge wie oben beschrieben umverdrahten. Kapazität und vorhandenen Kontext beibehalten. Alternativ zum Snapshot-Diagnoseausgang kann wie beim Regler der bestehende 2-Sekunden-Takt nach dessen 1-Sekunden-Verzögerung den SOC-Vorbereitungsknoten auslösen. Diese feste Verzögerung garantiert keine abgeschlossenen Abfragen; die Snapshot-Prüfungen bleiben deshalb aktiv.
+Berechnung und SOC-Vorbereitung ersetzen und den vorhandenen periodischen Timer eine Sekunde nach dem SOC-Schreiber wie oben beschrieben verwenden. Kapazität und Kontext beibehalten. Der Snapshot-Builder liefert weiter seine Flow-Kontextwerte; beim vorhandenen Timer-Pfad ist kein zusätzlicher Auslöser von Ausgang 11 erforderlich. Die Abschluss- und Aktualitätsprüfungen bleiben aktiv.
 
 `recent_exclusions` enthält bis zu zehn zusammenhängende Ausschlussereignisse, neuestes zuerst, einschließlich eines noch offenen Ereignisses. Die Liste wird in `batt_eff_state_v4` im Store `file` gespeichert und auf erfolgreichen sowie fehlerhaften Berechnungsausgaben mitgeliefert. Doppelte gültige Snapshots erzeugen weiterhin keine neue Nachricht. Ein noch nicht vorhandener Messausgangspunkt kann noch kein auszuschließendes Intervall besitzen; entsprechende Startfehler stehen im normalen `reason`.
 

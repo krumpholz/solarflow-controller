@@ -1,9 +1,7 @@
 /*
- * SOC erfassen und Snapshot auswerten – Vorbereitung für v5.1.0.
- * Zwei Ausgänge: Berechnung auslösen / fehlende Messung und Diagnose.
- * Ursprünglichen SOC-Zeitstempel beibehalten; keine Tageszählerabfragen.
- * Watchdog setzt nur bisherigen Wirkungsgrad zurück, niemals den Mittelwert.
- * Gleicher Flow-Tab wie Snapshot und SOC-Schreiber. MIT-Lizenz.
+ * Normalen HA-Sensor über den Standard-API-Knoten schreiben.
+ * Keine Node-RED-Companion-Integration erforderlich. MIT-Lizenz.
+ * Entitäts-IDs oben konfigurieren; Automatik vor der Aufbereitung abzweigen.
  */
 const DE_TEXTE = {
     "invalid_soc": "Ladezustand fehlt oder ist ungültig",
@@ -63,40 +61,42 @@ const knotenDeutsch = {
     error: (...args) => node.error(deutsch(args[0]), ...args.slice(1))
 };
 const ausgabe = (function(msg, node) {
-const now = Date.now();
-function number(v) {
-    if (typeof v === "number") return Number.isFinite(v) ? v : null;
-    if (typeof v !== "string" || !/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(v.trim())) return null;
-    const n=Number(v); return Number.isFinite(n) ? n : null;
+const SENSOR = {
+    meanEntityId: "sensor.battery_efficiency_mean_7d",
+    originalEntityId: "sensor.battery_efficiency",
+    meanName: "Batterie Wirkungsgrad 7-Tage-Mittelwert",
+    originalName: "Lade Entlade Effizenz"
+};
+const r=msg.result || {}, mean=r.output==="mean_7d";
+const entityId=mean ? SENSOR.meanEntityId : SENSOR.originalEntityId;
+if (!/^sensor\.[a-z0-9_]+$/.test(entityId)) {
+    node.error("Invalid sensor entity ID",msg);
+    return null;
 }
-try {
-    const seq = (context.get("sequence", "memoryOnly") || 0) + 1;
-    context.set("sequence", seq, "memoryOnly");
-    const boot = context.get("boot", "memoryOnly") || now;
-    context.set("boot", boot, "memoryOnly");
-
-    msg._eff = {
-        id: `${now}-${seq}`, ts: now,
-        soc: number(flow.get("batt_level", "memoryOnly")),
-        socTs: number(flow.get("batt_level_ts", "memoryOnly"))
-    };
-    msg.payload = null;
-    const completed = number(flow.get("batt_eff_last_completed_v4", "memoryOnly"))
-        ?? number(flow.get("batt_eff_last_completed_v3", "memoryOnly")) ?? boot;
-    let warning = null;
-    if (now - completed > 15000) {
-        flow.set("la_ela_es", null, "file");
-
-        warning = {payload: null, result: {valid: false, source_valid: false, reason: "measurement_timeout", timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}};
-        node.status({fill: "red", shape: "ring", text: "No completed measurement cycle"});
-    } else {
-        node.status({fill: "blue", shape: "dot", text: "Reading battery power snapshot"});
-    }
-    return [msg, warning];
-} catch (err) {
-    node.error(`Context configuration error: ${err.message}`);
-    return [null, {payload: null, result: {valid: false, source_valid: false, reason: "context_configuration_error", timestamp: new Date(now).toISOString(), covered_hours: null, soc_freshness_verified: false}}];
-}
+const value=msg.payload;
+const valid=r.valid===true && typeof value==="number" && Number.isFinite(value) && value>=0 && value<=100;
+const attributes={
+    friendly_name:mean ? SENSOR.meanName : SENSOR.originalName,
+    icon:"mdi:battery-sync",unit_of_measurement:"%",state_class:"measurement",
+    valid,quality:r.reason || "missing_diagnostics",last_measurement:r.timestamp || null,
+    release_version:r.release_version || "5.1.0",calculation_revision:r.calculation_revision || "5.1",
+    covered_hours:(mean ? r.mean_covered_hours : r.covered_hours) ?? null
+};
+if (r.grund) attributes.quality_de=r.grund;
+if (mean) Object.assign(attributes,{
+    coverage_pct:r.mean_coverage_pct ?? null,window_complete:r.mean_window_complete===true,
+    source_valid:r.source_valid===true,source_reason:r.source_reason || null,
+    collection_paused:r.mean_collection_paused===true,
+    last_valid_mean_sample:r.mean_last_sample_at || null,
+    sample_age_seconds:r.mean_sample_age_seconds ?? null,
+    window_start:r.mean_window_start || null,window_end:r.mean_window_end || null
+});
+else attributes.soc_freshness_verified=r.soc_freshness_verified===true;
+msg.payload={
+    protocol:"http",method:"post",path:`/states/${entityId}`,
+    data:{state:valid ? String(value) : "unknown",attributes}
+};
+return msg;
 
 })(msg, knotenDeutsch);
 // Bestehende maschinenlesbare Diagnosefelder erhalten; deutsche Texte ergänzen.

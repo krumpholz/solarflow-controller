@@ -2,7 +2,7 @@
 
 [English](README.md) | **Deutsch**
 
-Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v5.0.0** ergänzt einen zeitgewichteten gleitenden 7-Tage-Mittelwert der bisherigen SOC-korrigierten 168-Stunden-Energiebilanz. Der geglättete Wert liegt an Ausgang 1, die bisherige Bilanz an Ausgang 2 und die Diagnose an Ausgang 3. Dieses Repository enthält die Auswertung; der anlagenspezifische Regler und Snapshot-Builder sind nicht enthalten.
+Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v5.1.0** ergänzt einen zeitgewichteten gleitenden 7-Tage-Mittelwert der bisherigen SOC-korrigierten 168-Stunden-Energiebilanz. Der geglättete Wert liegt an Ausgang 1, die bisherige Bilanz an Ausgang 2 und die Diagnose an Ausgang 3. Dieses Repository enthält die Auswertung; der anlagenspezifische Regler und Snapshot-Builder sind nicht enthalten.
 
 ## Unterstützung
 
@@ -16,10 +16,10 @@ Deine Unterstützung hilft dabei, das Projekt zu pflegen, zu testen, zu dokument
 
 1. Die [Installations- und Berechnungsanleitung](rolling-efficiency/README_DE.md) lesen.
 2. Die dokumentierten Snapshot- und SOC-Kontextvariablen auf demselben Flow-Tab bereitstellen. Leistung in Watt: positiv beim Laden, negativ beim Entladen.
-3. Batteriekapazität, Leistungsgrenzen und dauerhaften Kontextspeicher konfigurieren. [flow_DE.json](rolling-efficiency/flow_DE.json) importieren, den Home-Assistant-Server auswählen und den Snapshot-Auslöser anschließen.
+3. Batteriekapazität, Leistungsgrenzen und dauerhaften Kontextspeicher konfigurieren. [flow_DE.json](rolling-efficiency/flow_DE.json) importieren, den Home-Assistant-Server auswählen und den vorhandenen Timer nach der SOC-Erfassung anschließen.
 4. Nur eine Wirkungsgradberechnung betreiben. Bei bestehenden Installationen zuerst die Umstiegsanleitung beachten.
 
-Benötigt werden Node-RED, `node-red-contrib-home-assistant-websocket` und für den Ausgabesensor die Node-RED-Companion-Integration in Home Assistant. Ein Flow-Import erzeugt weder die Eingabemesswerte noch den externen Snapshot-Builder. Tageszähler für Lade- und Entladeenergie sind nicht mehr erforderlich. Neue Installationen rechnen, sobald genügend gültige Ladeenergie vorhanden ist; sieben Tage Wartezeit sind nicht erforderlich.
+Benötigt werden Node-RED, `node-red-contrib-home-assistant-websocket` und eine funktionierende HA-Serververbindung. Normale API-Knoten schreiben beide Sensorzustände; eine Node-RED-Companion-/Custom-Integration ist nicht erforderlich. Ein Flow-Import erzeugt weder die Eingabemesswerte noch den externen Snapshot-Builder. Tageszähler für Lade- und Entladeenergie sind nicht mehr erforderlich. Neue Installationen rechnen, sobald genügend gültige Ladeenergie vorhanden ist; sieben Tage Wartezeit sind nicht erforderlich.
 
 ## Enthalten
 
@@ -30,11 +30,15 @@ Benötigt werden Node-RED, `node-red-contrib-home-assistant-websocket` und für 
 - Diagnose der letzten zehn Ausschlussereignisse mit Ursachen.
 - Gleichwertige [deutsche](rolling-efficiency/flow_DE.json) und [englische](rolling-efficiency/flow.json) Flows und Anleitungen.
 
-Release v5.0.0 enthält Berechnungsrevision 5.0 und Energie-Pufferschema 4 mit einem ergänzten Mittelwert-Pufferschema 1. Vorhandene V4-Energiepuffer bleiben kompatibel; die neue Mittelwerthistorie beginnt beim Update. Die geänderte Ausgangsreihenfolge erfordert eine neue Verdrahtung und begründet den Sprung der Hauptversion.
+Release v5.1.0 enthält Berechnungsrevision 5.1 und Energie-Pufferschema 4 mit einem ergänzten Mittelwert-Pufferschema 1. Vorhandene V4-Energie- und V5-Mittelwertpuffer bleiben kompatibel. Mittelwerthistorie beginnt nur ohne vorhandenen Mittelwertpuffer neu. Beim Umstieg von V4 muss auf die seit V5 geänderte Ausgangsreihenfolge umverdrahtet werden.
+
+## Umstieg von v5.0.0
+
+Release v5.1.0 (Berechnung 5.1) hält Ausgang 1 bei kurzen SOC-/Quellausfällen aus gültiger gespeicherter Mittelwerthistorie verfügbar. Neue Aufnahme pausiert, Altdaten laufen zeitabhängig aus; Fehler tragen weder Nullwerte noch gehaltene Messintervalle bei. Berechnung, SOC-/Watchdog-Node und Sensorpfade gemeinsam ersetzen. Energie- und Mittelwerthistorie bleiben erhalten. Standardmäßig ist der originale SOC-Zeitstempel erforderlich; eine eine Sekunde alte Beobachtung wird unterstützt. Den vorhandenen gemeinsamen Timer ohne zusätzlichen periodischen Timer verwenden. Siehe [Verdrahtungsschema](rolling-efficiency/WIRING_DE.md).
 
 ## Umstieg von v4.0.0
 
-Die Berechnungsfunktion auf **drei Ausgänge** stellen. Ausgang 1 mit dem neuen Mittelwertsensor oder einer Automatik verbinden, den bisherigen Wirkungsgradsensor von Ausgang 1 auf **Ausgang 2** und die Diagnose von Ausgang 2 auf **Ausgang 3** umstecken. Flow-Tab, Kontextspeicher und eingestellte Kapazität beibehalten. Den SOC-/Watchdog-Knoten gemäß [Anleitung](rolling-efficiency/README_DE.md) aktualisieren, damit ein Timeout beide Sensoren zurücksetzt. Den Energiepuffer nicht löschen.
+Die Berechnungsfunktion auf **drei Ausgänge** stellen. Ausgang 1 mit dem neuen Mittelwertsensor oder einer Automatik verbinden, den bisherigen Wirkungsgradsensor von Ausgang 1 auf **Ausgang 2** und die Diagnose von Ausgang 2 auf **Ausgang 3** umstecken. Flow-Tab, Kontextspeicher und eingestellte Kapazität beibehalten. Den SOC-/Watchdog-Knoten gemäß [Anleitung](rolling-efficiency/README_DE.md) aktualisieren, damit der Watchdog die Diagnose warnt und nur den bisherigen Wirkungsgradschlüssel zurücksetzt. Companion-Sensoren durch die Standard-API-Pfade ersetzen und die tatsächlichen Ziel-Entitäts-IDs konfigurieren. Den Energiepuffer nicht löschen.
 
 Der Mittelwert steht nach dem ersten aufeinanderfolgenden Paar gültiger Wirkungsgradwerte bereit. Anfangs umfasst er weniger als sieben Tage. `mean_window_complete` zeigt ein vollständig abgedecktes 168-Stunden-Mittelwertfenster an; Lücken vermindern die Abdeckung. Die Glättung beseitigt keine systematischen SOC-Fehler und macht das Ergebnis nicht zu einer zertifizierten Roundtrip-Messung.
 
