@@ -1,0 +1,31 @@
+{
+  "version": "4.19-SIM",
+  "source": "regler_event_log(20261010-190744).jsonl",
+  "observedPvRangeW": [
+    0,
+    0
+  ],
+  "optimizedPvMaxW": 50,
+  "errGainDischargeOriginal": 0.86,
+  "errGainDischargeOptimized": 0.8,
+  "selectedChanges": {
+    "lowPvStepUp": 1200,
+    "trim": {
+      "band": 2,
+      "step": 2,
+      "outer": 30,
+      "outerStep": 6,
+      "wait": 6000,
+      "gain": 1,
+      "tracking": 20
+    },
+    "trackingWait": {
+      "tolerance": 180,
+      "wait": 6000
+    },
+    "exportGain": {
+      "gain": 1,
+      "threshold": 150
+    }
+  }
+}

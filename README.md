@@ -2,7 +2,11 @@
 
 **English** | [Deutsch](README_DE.md)
 
-Node-RED battery efficiency monitoring for SolarFlow installations. **Release v5.1.0** adds a time-weighted rolling 7-day mean of the existing SOC-adjusted 168-hour energy balance. The smoother value is available on output 1, the original balance on output 2 and diagnostics on output 3. This repository supplies the monitoring component; the installation-specific regulator and snapshot builder are not included.
+Node-RED battery efficiency monitoring for SolarFlow installations. **Release v5.1.0** adds a time-weighted rolling 7-day mean of the existing SOC-adjusted 168-hour energy balance. The smoother value is available on output 1, the original balance on output 2 and diagnostics on output 3. This repository supplies the monitoring component and a separate experimental regulator candidate. The snapshot builder remains installation-specific.
+
+## Regulator candidate V4.19-SIM
+
+[Instructions and field-test steps](regulator/experimental/v4.19-sim/README.md), [complete code](regulator/experimental/v4.19-sim/Regler_V4_19_SIM.js), an [identical text copy](regulator/experimental/v4.19-sim/Regler_V4_19_SIM.txt) and the [German analysis](regulator/experimental/v4.19-sim/Regler_Analyse_DE.md) are available for field testing. The candidate has been compared in a model; hardware validation is pending. This regulator revision is separate from efficiency release v5.1.0.
 
 ## Support this project
 
@@ -52,7 +56,7 @@ The mean becomes available after the first consecutive pair of valid efficiency 
 
 Replace daily-counter requests with the snapshot input path described in the [guide](rolling-efficiency/README.md). Preserve the flow tab, context stores, capacity and existing buffer. Imported daily history is distributed uniformly within each historical day and expires progressively. It cannot reconstruct past two-second measurements.
 
-The old counter-based files are preserved in [v3.3.0](https://github.com/krumpholz/solarflow-controller/tree/v3.3.0/round-trip-efficiency); the current tree contains the power-based implementation only.
+The old counter-based files are preserved in [v3.3.0](https://github.com/krumpholz/solarflow-controller/tree/v3.3.0/round-trip-efficiency); the current efficiency tree contains the power-based implementation only.
 
 See [release notes](RELEASE_NOTES.md), [change history](CHANGELOG.md) and [contributing](CONTRIBUTING.md).
 
@@ -63,3 +67,4 @@ The result is a calculated SOC-adjusted energy balance, not a certified full-cyc
 Independent community project; no affiliation with or endorsement by Zendure. See [project notice](NOTICE.md). The [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) is maintained separately.
 
 [MIT License](LICENSE) · [German license explanation](LICENSE_DE.md)
+

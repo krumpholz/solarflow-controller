@@ -2,7 +2,11 @@
 
 [English](README.md) | **Deutsch**
 
-Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v5.1.0** ergänzt einen zeitgewichteten gleitenden 7-Tage-Mittelwert der bisherigen SOC-korrigierten 168-Stunden-Energiebilanz. Der geglättete Wert liegt an Ausgang 1, die bisherige Bilanz an Ausgang 2 und die Diagnose an Ausgang 3. Dieses Repository enthält die Auswertung; der anlagenspezifische Regler und Snapshot-Builder sind nicht enthalten.
+Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v5.1.0** ergänzt einen zeitgewichteten gleitenden 7-Tage-Mittelwert der bisherigen SOC-korrigierten 168-Stunden-Energiebilanz. Der geglättete Wert liegt an Ausgang 1, die bisherige Bilanz an Ausgang 2 und die Diagnose an Ausgang 3. Dieses Repository enthält die Auswertung und eine gesonderte experimentelle Regler-Testvariante. Der Snapshot-Builder bleibt anlagenspezifisch.
+
+## Regler-Testvariante V4.19-SIM
+
+Die [Anleitung und Testschritte](regulator/experimental/v4.19-sim/README_DE.md), der [vollständige Code](regulator/experimental/v4.19-sim/Regler_V4_19_SIM.js), die [Textkopie](regulator/experimental/v4.19-sim/Regler_V4_19_SIM.txt) und die [Analyse](regulator/experimental/v4.19-sim/Regler_Analyse_DE.md) sind für den Anlagentest bereitgestellt. Die Variante wurde im Modell geprüft; die Bestätigung an der Anlage steht aus. Diese Reglerrevision ist unabhängig vom Wirkungsgrad-Release v5.1.0.
 
 ## Unterstützung
 
@@ -52,7 +56,7 @@ Der Mittelwert steht nach dem ersten aufeinanderfolgenden Paar gültiger Wirkung
 
 Die Tageszählerabfragen durch den Snapshot-Eingangspfad aus der [Anleitung](rolling-efficiency/README_DE.md) ersetzen. Flow-Tab, Kontextspeicher, Kapazität und bestehenden Puffer beibehalten. Übernommene Tageshistorie wird innerhalb des jeweiligen historischen Tages gleichmäßig verteilt und läuft schrittweise aus. Vergangene Zwei-Sekunden-Messungen lassen sich daraus nicht rekonstruieren.
 
-Die alte Fassung mit Tageszählern bleibt in [v3.3.0](https://github.com/krumpholz/solarflow-controller/tree/v3.3.0/round-trip-efficiency) erhalten; der aktuelle Dateibaum enthält ausschließlich die leistungsbasierte Umsetzung.
+Die alte Fassung mit Tageszählern bleibt in [v3.3.0](https://github.com/krumpholz/solarflow-controller/tree/v3.3.0/round-trip-efficiency) erhalten; der aktuelle Wirkungsgrad-Dateibaum enthält ausschließlich die leistungsbasierte Umsetzung.
 
 Siehe [Release-Hinweise](RELEASE_NOTES_DE.md), [Änderungsverlauf](CHANGELOG_DE.md) und [Mitwirken](CONTRIBUTING_DE.md).
 
@@ -63,3 +67,4 @@ Das Ergebnis ist eine berechnete SOC-korrigierte Energiebilanz und keine zertifi
 Unabhängiges Community-Projekt ohne Verbindung zu oder Unterstützung durch Zendure. Siehe [Projekthinweise](NOTICE_DE.md). Der [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) wird separat gepflegt.
 
 [MIT-Lizenz](LICENSE) · [Deutsche Erläuterung](LICENSE_DE.md)
+
