@@ -1,0 +1,25 @@
+{
+  "version": "4.20-SIM",
+  "basis": "4.19-SIM",
+  "only_behavior_change": {
+    "centerTrimMaxOutsideStepW": {
+      "before": 6,
+      "after": 15
+    }
+  },
+  "low_pv_scope_W": {
+    "max": 50
+  },
+  "unchanged": {
+    "normal_discharge_P": 0.8,
+    "stepUpDischargeOptimizedW": 1200,
+    "centerTrimBandW": 2,
+    "centerTrimOuterBandW": 30,
+    "centerTrimMaxStepW": 2,
+    "centerTrimWaitMs": 6000,
+    "outputs": 4
+  },
+  "V4_19_observation": "583 samples, one approximately 20-minute night log; no charging/PV validation",
+  "V4_20_validation": "Simulation and protection tests only; own plant test pending",
+  "code_sha256": "e656293385f95c33ca30a7e79bb56138f94f625fe2c98687bf365c362f3e3a33"
+}

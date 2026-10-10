@@ -1,0 +1,102 @@
+{
+  "schema": 3,
+  "sampling": "actual rxTsByTopic; separate grid/battery reads before controller call",
+  "source_files": {
+    "old": "regler_event_log(20261010-190744).jsonl",
+    "new": "regler_event_log_1(1).jsonl"
+  },
+  "nominal_new_grid": {
+    "tau_up": 0.18566042194750115,
+    "delay_up": 2.1161703875173794,
+    "tau_down": 0.2652593779067798,
+    "delay_down": 1.1274895238484974,
+    "rate_up": 1183.8087310804349,
+    "rate_down": 3088.3124732484516,
+    "gain": 1,
+    "bias": 0
+  },
+  "large_grid_event_delays_s": {
+    "39": 1.003523787179154,
+    "97": 3.2440121455193722,
+    "163": 1.2300018763284184,
+    "229": 2.6445182865347427
+  },
+  "nominal_new_battery": {
+    "tau_up": 0.13032892179553623,
+    "delay_up": 2.795893557061298,
+    "tau_down": 0.10004583717170298,
+    "delay_down": 4.355252251518024,
+    "rate_up": 571.4830414868072,
+    "rate_down": 3415.7278653536273,
+    "gain": 1,
+    "bias": 0,
+    "curve": [
+      1.5349048179931746,
+      11.034205222298297,
+      -6.697105144803947
+    ]
+  },
+  "large_battery_event_delays_s": {
+    "39": 2.593189955732861,
+    "97": 4.329018657458961,
+    "163": 2.756949984013513,
+    "229": 4.447879962104688
+  },
+  "calibration_errors": {
+    "mae_W": 0.7268068764678687,
+    "rmse_W": 1.1790686952223295,
+    "max_abs_W": 9.393173962227365
+  },
+  "first_cycle_remaining_error": {
+    "mae_W": 2.9429802557658067,
+    "rmse_W": 12.735600674119826,
+    "max_abs_W": 184.68901850328416
+  },
+  "measured": {
+    "duration_s": 1197.0429999828339,
+    "mean_W": 9.870167437840971,
+    "mae_W": 27.73429735647014,
+    "std_W": 180.8325787753174,
+    "within_pct": 91.67331499150616,
+    "center_pct": 80.16278445790567,
+    "import_Wh": 7.262129701177279,
+    "export_Wh": 3.980181134475602
+  },
+  "measured_tail": {
+    "duration_s": 696.2379999160767,
+    "mean_W": 7.716632817870364,
+    "mae_W": 0.7886082038770219,
+    "std_W": 0.9933618387195845,
+    "within_pct": 100.0,
+    "center_pct": 97.43478524624501,
+    "import_Wh": 1.4923924997780058,
+    "export_Wh": 0.0
+  },
+  "selected_candidate": {
+    "candidate": {
+      "name": "outer30_step15",
+      "constants": {
+        "centerTrimOuterBandW": 30,
+        "centerTrimMaxOutsideStepW": 15
+      }
+    },
+    "eligible": true,
+    "mean_mae_W": 32.80535915565328,
+    "worst_export_delta_Wh": -0.005555277665455716,
+    "worst_negative_delta_W": -9,
+    "worst_tail_offset_delta_W": 0.08488352411233713
+  },
+  "constraints": {
+    "MAE": "improve in all 16 pairs",
+    "export_delta_max_Wh": 0.02,
+    "secondary_negative_delta_min_W": -10,
+    "tail_offset_delta_max_W": 0.25
+  },
+  "caveats": [
+    "episode fits use the complete supplied observations",
+    "no independent house load",
+    "HTTP delivery/apply times absent",
+    "night discharge only; no PV/charge validation",
+    "not a global optimum certificate"
+  ]
+}

@@ -4,9 +4,9 @@
 
 Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v5.1.0** ergänzt einen zeitgewichteten gleitenden 7-Tage-Mittelwert der bisherigen SOC-korrigierten 168-Stunden-Energiebilanz. Der geglättete Wert liegt an Ausgang 1, die bisherige Bilanz an Ausgang 2 und die Diagnose an Ausgang 3. Dieses Repository enthält die Auswertung und eine gesonderte experimentelle Regler-Testvariante. Der Snapshot-Builder bleibt anlagenspezifisch.
 
-## Regler-Testvariante V4.19-SIM
+## Regler-Feldtest und nächste Testvariante V4.20-SIM
 
-Die [Anleitung und Testschritte](regulator/experimental/v4.19-sim/README_DE.md), der [vollständige Code](regulator/experimental/v4.19-sim/Regler_V4_19_SIM.js), die [Textkopie](regulator/experimental/v4.19-sim/Regler_V4_19_SIM.txt) und die [Analyse](regulator/experimental/v4.19-sim/Regler_Analyse_DE.md) sind für den Anlagentest bereitgestellt. Die Variante wurde im Modell geprüft; die Bestätigung an der Anlage steht aus. Diese Reglerrevision ist unabhängig vom Wirkungsgrad-Release v5.1.0.
+Die [neue Feldtest- und Modellanalyse](regulator/experimental/v4.20-sim/Regler_Feldtest_Analyse_DE.md) prüft V4.19-SIM an der Anlage. Die ruhige Mittenregelung funktioniert; Lastanstiege besitzen noch einen langsamen Nachlauf. Die [V4.20-Anleitung](regulator/experimental/v4.20-sim/README_DE.md), der [vollständige Code](regulator/experimental/v4.20-sim/Regler_V4_20_SIM.js), die [bytegleiche Textkopie](regulator/experimental/v4.20-sim/Regler_V4_20_SIM.txt) und die [aktualisierten Modellparameter](regulator/experimental/v4.20-sim/Regler_Modell_V2.json) stellen die nächste simulierte Testvariante bereit. Der eigene V4.20-Anlagentest steht aus. Die [bisherigen V4.19-Dateien](regulator/experimental/v4.19-sim/README_DE.md) bleiben verfügbar. Diese Reglerrevisionen sind unabhängig vom Wirkungsgrad-Release v5.1.0.
 
 ## Unterstützung
 

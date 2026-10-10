@@ -4,9 +4,9 @@
 
 Node-RED battery efficiency monitoring for SolarFlow installations. **Release v5.1.0** adds a time-weighted rolling 7-day mean of the existing SOC-adjusted 168-hour energy balance. The smoother value is available on output 1, the original balance on output 2 and diagnostics on output 3. This repository supplies the monitoring component and a separate experimental regulator candidate. The snapshot builder remains installation-specific.
 
-## Regulator candidate V4.19-SIM
+## Regulator field test and next candidate V4.20-SIM
 
-[Instructions and field-test steps](regulator/experimental/v4.19-sim/README.md), [complete code](regulator/experimental/v4.19-sim/Regler_V4_19_SIM.js), an [identical text copy](regulator/experimental/v4.19-sim/Regler_V4_19_SIM.txt) and the [German analysis](regulator/experimental/v4.19-sim/Regler_Analyse_DE.md) are available for field testing. The candidate has been compared in a model; hardware validation is pending. This regulator revision is separate from efficiency release v5.1.0.
+The [new field-test and model analysis](regulator/experimental/v4.20-sim/Regler_Feldtest_Analyse_DE.md) examines V4.19-SIM at the installation. Quiet midpoint tracking works; load increases still have a slow tail. [V4.20-SIM instructions](regulator/experimental/v4.20-sim/README.md), [complete code](regulator/experimental/v4.20-sim/Regler_V4_20_SIM.js), the [identical text copy](regulator/experimental/v4.20-sim/Regler_V4_20_SIM.txt) and [updated model parameters](regulator/experimental/v4.20-sim/Regler_Modell_V2.json) provide the next simulated test candidate. V4.20's own hardware test is pending. The [previous V4.19 files](regulator/experimental/v4.19-sim/README.md) remain available. These regulator revisions are separate from efficiency release v5.1.0.
 
 ## Support this project
 

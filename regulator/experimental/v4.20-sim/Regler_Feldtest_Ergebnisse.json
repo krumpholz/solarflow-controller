@@ -1,0 +1,117 @@
+{
+  "measured": {
+    "duration_s": 1197.0429999828339,
+    "mean_W": 9.870167437840971,
+    "mae_W": 27.73429735647014,
+    "std_W": 180.8325787753174,
+    "within_pct": 91.67331499150616,
+    "center_pct": 80.16278445790567,
+    "import_Wh": 7.262129701177279,
+    "export_Wh": 3.980181134475602
+  },
+  "tail": {
+    "duration_s": 696.2379999160767,
+    "mean_W": 7.716632817870364,
+    "mae_W": 0.7886082038770219,
+    "std_W": 0.9933618387195845,
+    "within_pct": 100.0,
+    "center_pct": 97.43478524624501,
+    "import_Wh": 1.4923924997780058,
+    "export_Wh": 0.0
+  },
+  "events": [
+    {
+      "index": 39,
+      "time": "23:12:55",
+      "window_s": 28.161999940872192,
+      "center_s": 54.16700005531311
+    },
+    {
+      "index": 97,
+      "time": "23:14:57",
+      "window_s": 6.003000020980835,
+      "center_s": 8.003999948501587
+    },
+    {
+      "index": 163,
+      "time": "23:17:13",
+      "window_s": 34.00999999046326,
+      "center_s": 58.026999950408936
+    },
+    {
+      "index": 229,
+      "time": "23:19:29",
+      "window_s": 6.001000165939331,
+      "center_s": 14.003999948501587
+    }
+  ],
+  "model_errors": {
+    "previous": {
+      "mae_W": 4.813645512692295,
+      "rmse_W": 41.74959304721935,
+      "max_abs_W": 863.7283651035646
+    },
+    "updated_fit": {
+      "mae_W": 0.7268068764678687,
+      "rmse_W": 1.1790686952223295,
+      "max_abs_W": 9.393173962227365
+    },
+    "closed_loop": {
+      "mae_W": 0.8216123499142367,
+      "rmse_W": 1.1499869489900054,
+      "max_abs_W": 8.0
+    }
+  },
+  "selected": {
+    "candidate": {
+      "name": "outer30_step15",
+      "constants": {
+        "centerTrimOuterBandW": 30,
+        "centerTrimMaxOutsideStepW": 15
+      }
+    },
+    "eligible": true,
+    "mean_mae_W": 32.80535915565328,
+    "worst_export_delta_Wh": -0.005555277665455716,
+    "worst_negative_delta_W": -9,
+    "worst_tail_offset_delta_W": 0.08488352411233713
+  },
+  "simulation_current": {
+    "duration_s": 1197.0429999828339,
+    "mean_W": 9.309944457571081,
+    "mae_W": 27.8410880071821,
+    "import_Wh": 7.09044164617854,
+    "export_Wh": 3.9947739119662176,
+    "within_pct": 91.67323143845591,
+    "center_pct": 79.48269196701733,
+    "changes": 59,
+    "min_W": -1896,
+    "max_W": 1937
+  },
+  "simulation_candidate": {
+    "duration_s": 1197.0429999828339,
+    "mean_W": 9.321409375687898,
+    "mae_W": 27.421414695637083,
+    "import_Wh": 7.052175257272167,
+    "export_Wh": 3.9526953008439807,
+    "within_pct": 93.67884025095032,
+    "center_pct": 83.6622411040546,
+    "changes": 52,
+    "min_W": -1895,
+    "max_W": 1937
+  },
+  "verification": {
+    "checks": 9,
+    "passed": [
+      "All 583 measured V4.19-SIM records reproduce C/D, mode and HOLD",
+      "Complete V4.20-SIM code matches selected candidate in all 16 model/data pairs",
+      "Outputs unchanged above optimized PV range in both directions",
+      "OFF, confirmed SOC minimum and disabled discharge retain zero power",
+      "Mismatched/expired snapshots reject output; held battery prevents fine increase",
+      "Full battery blocks grid charging; grid-charge path keeps its original ramp",
+      "Negative asymmetric window retains own midpoint",
+      "Analytic plant update stays between state and fixed target",
+      "Short load pulses and 2.6kW overload keep all outputs finite and within 0..2400W"
+    ]
+  }
+}
