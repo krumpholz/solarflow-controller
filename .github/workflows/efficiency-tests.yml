@@ -33,6 +33,8 @@ jobs:
         run: node --test rolling-efficiency/tests/*.test.cjs
       - name: Run solar midpoint and BLE diagnostic regressions
         run: node --test regulator/experimental/v4.22-sim/tests/*.test.cjs
+      - name: Run V4.23 timer and diagnostic coverage regressions
+        run: node --test regulator/experimental/v4.23-sim/tests/*.test.cjs
 
   release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -76,4 +78,5 @@ jobs:
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title "SolarFlow Controller $release_tag" --latest \
             --notes-file release-notes-combined.md
+
 

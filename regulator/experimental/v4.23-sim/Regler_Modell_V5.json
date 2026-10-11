@@ -1,0 +1,723 @@
+{
+  "schema": 5,
+  "field_controller_version": "4.22-SIM",
+  "candidate_controller_version": "4.23-SIM",
+  "nominal": {
+    "battery": {
+      "tau_up": 0.08000000044299771,
+      "delay_up": 3.053589395476739,
+      "tau_down": 0.23196514205644628,
+      "delay_down": 4.220467687193862,
+      "rate_up": 1162.0538344344193,
+      "rate_down": 136.10188348717952,
+      "gain": 1.0131301597195532,
+      "bias": -19.26792015472579,
+      "idle_bias": -18.0
+    },
+    "grid": {
+      "tau_up": 0.2658805165767889,
+      "delay_up": 1.1669989242975627,
+      "tau_down": 0.1284738606375642,
+      "delay_down": 2.339679604445676,
+      "rate_up": 480.63459176927466,
+      "rate_down": 80.0888033944017,
+      "gain": 1,
+      "bias": 0
+    }
+  },
+  "ensemble": [
+    {
+      "name": "V4 nominal",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 1.1669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 2.339679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.08000000044299771,
+        "delay_up": 3.053589395476739,
+        "tau_down": 0.23196514205644628,
+        "delay_down": 4.220467687193862,
+        "rate_up": 1162.0538344344193,
+        "rate_down": 136.10188348717952,
+        "gain": 1.0131301597195532,
+        "bias": -19.26792015472579,
+        "idle_bias": -18.0
+      }
+    },
+    {
+      "name": "delay -0.4s",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 0.7669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 1.939679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.08000000044299771,
+        "delay_up": 2.653589395476739,
+        "tau_down": 0.23196514205644628,
+        "delay_down": 3.820467687193862,
+        "rate_up": 1162.0538344344193,
+        "rate_down": 136.10188348717952,
+        "gain": 1.0131301597195532,
+        "bias": -19.26792015472579,
+        "idle_bias": -18.0
+      }
+    },
+    {
+      "name": "delay +0.5s",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 1.6669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 2.839679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.08000000044299771,
+        "delay_up": 3.553589395476739,
+        "tau_down": 0.23196514205644628,
+        "delay_down": 4.720467687193862,
+        "rate_up": 1162.0538344344193,
+        "rate_down": 136.10188348717952,
+        "gain": 1.0131301597195532,
+        "bias": -19.26792015472579,
+        "idle_bias": -18.0
+      }
+    },
+    {
+      "name": "delay +1.5s",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 2.6669989242975625,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 3.839679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.08000000044299771,
+        "delay_up": 4.553589395476739,
+        "tau_down": 0.23196514205644628,
+        "delay_down": 5.720467687193862,
+        "rate_up": 1162.0538344344193,
+        "rate_down": 136.10188348717952,
+        "gain": 1.0131301597195532,
+        "bias": -19.26792015472579,
+        "idle_bias": -18.0
+      }
+    },
+    {
+      "name": "battery_affine",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 1.1669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 2.339679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.1985161299821605,
+        "delay_up": 2.8742390992626166,
+        "tau_down": 0.27712662469287186,
+        "delay_down": 3.3436069788078067,
+        "rate_up": 1165.908732989673,
+        "rate_down": 60.00000000878624,
+        "gain": 1.0164419078726559,
+        "bias": -19.851050483277017
+      }
+    },
+    {
+      "name": "battery_fast_rate",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 1.1669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 2.339679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.1047238417834506,
+        "delay_up": 3.011126359231973,
+        "tau_down": 0.3937847590176501,
+        "delay_down": 4.4050103979109085,
+        "gain": 1.016440449524049,
+        "bias": -20.010550998562298,
+        "rate_up": 6000.0,
+        "rate_down": 6000.0
+      }
+    },
+    {
+      "name": "cross_log_static",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 1.1669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 2.339679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.08000000044299771,
+        "delay_up": 3.053589395476739,
+        "tau_down": 0.23196514205644628,
+        "delay_down": 4.220467687193862,
+        "rate_up": 1162.0538344344193,
+        "rate_down": 136.10188348717952,
+        "gain": 1.0192748377872747,
+        "bias": -20.635177146356742,
+        "idle_bias": -18.0
+      }
+    },
+    {
+      "name": "field5_delay_only",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 1.1669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 2.339679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.08000000044299771,
+        "delay_up": 3.0354314757230743,
+        "tau_down": 0.23196514205644628,
+        "delay_down": 3.0697554536345213,
+        "rate_up": 1162.0538344344193,
+        "rate_down": 136.10188348717952,
+        "gain": 1.020315921067513,
+        "bias": -20.792997969310697,
+        "idle_bias": -18.0
+      }
+    }
+  ],
+  "new_quiet_charging_candidate": {
+    "model": {
+      "tau_up": 0.08000000044299771,
+      "delay_up": 3.0354314757230743,
+      "tau_down": 0.23196514205644628,
+      "delay_down": 3.0697554536345213,
+      "rate_up": 1162.0538344344193,
+      "rate_down": 136.10188348717952,
+      "gain": 1.020315921067513,
+      "bias": -20.792997969310697,
+      "idle_bias": -18.0
+    },
+    "fit_sections": [
+      [
+        "field5",
+        5,
+        300
+      ]
+    ],
+    "train": {
+      "points": 295,
+      "rmse_W": 4.560486550154622,
+      "mae_W": 1.5092546474821436,
+      "max_abs_W": 41.70640892301657
+    },
+    "checks": {
+      "new": {
+        "points": 86,
+        "rmse_W": 11.597330591028253,
+        "mae_W": 5.702716864655738,
+        "max_abs_W": 61.3881671861451
+      },
+      "calm": {
+        "points": 306,
+        "rmse_W": 6.660043133252926,
+        "mae_W": 1.4333111411694863,
+        "max_abs_W": 64.99693295820052
+      },
+      "field5": {
+        "points": 283,
+        "rmse_W": 6.160185225497329,
+        "mae_W": 2.248117549355298,
+        "max_abs_W": 49.40660242501946
+      }
+    }
+  },
+  "calibration_checks": {
+    "old_battery": {
+      "tau_up": 0.08000000044299771,
+      "delay_up": 3.053589395476739,
+      "tau_down": 0.23196514205644628,
+      "delay_down": 4.220467687193862,
+      "rate_up": 1162.0538344344193,
+      "rate_down": 136.10188348717952,
+      "gain": 1.0131301597195532,
+      "bias": -19.26792015472579,
+      "idle_bias": -18.0
+    },
+    "old_checks": {
+      "new": {
+        "points": 86,
+        "rmse_W": 15.14921691025858,
+        "mae_W": 7.841686088532711,
+        "max_abs_W": 72.37804852468207
+      },
+      "calm": {
+        "points": 306,
+        "rmse_W": 5.664858949109379,
+        "mae_W": 1.428578632479723,
+        "max_abs_W": 49.23020482065904
+      },
+      "field5": {
+        "points": 283,
+        "rmse_W": 7.5471777822839075,
+        "mae_W": 3.5708243327286646,
+        "max_abs_W": 46.362810503648575
+      }
+    },
+    "candidates": {
+      "field5_prefix_only": {
+        "model": {
+          "tau_up": 0.08000000044299771,
+          "delay_up": 3.053589395476739,
+          "tau_down": 0.23196514205644628,
+          "delay_down": 4.220467687193862,
+          "rate_up": 1162.0538344344193,
+          "rate_down": 136.10188348717952,
+          "gain": 1.0198631809512522,
+          "bias": -20.806052575574757,
+          "idle_bias": -18.0
+        },
+        "fit_sections": [
+          [
+            "field5",
+            5,
+            300
+          ]
+        ],
+        "train": {
+          "points": 295,
+          "rmse_W": 5.25195586011747,
+          "mae_W": 1.7859839680106144,
+          "max_abs_W": 41.8940206810737
+        },
+        "checks": {
+          "new": {
+            "points": 86,
+            "rmse_W": 15.719038920327202,
+            "mae_W": 7.693940206693031,
+            "max_abs_W": 73.73511523346366
+          },
+          "calm": {
+            "points": 306,
+            "rmse_W": 5.7066558500946725,
+            "mae_W": 1.4358086054056238,
+            "max_abs_W": 50.35564480483469
+          },
+          "field5": {
+            "points": 283,
+            "rmse_W": 7.759758787260007,
+            "mae_W": 2.8410548347996003,
+            "max_abs_W": 48.224853804807594
+          }
+        }
+      },
+      "cross_log_static": {
+        "model": {
+          "tau_up": 0.08000000044299771,
+          "delay_up": 3.053589395476739,
+          "tau_down": 0.23196514205644628,
+          "delay_down": 4.220467687193862,
+          "rate_up": 1162.0538344344193,
+          "rate_down": 136.10188348717952,
+          "gain": 1.0192748377872747,
+          "bias": -20.635177146356742,
+          "idle_bias": -18.0
+        },
+        "fit_sections": [
+          [
+            "previous",
+            5,
+            579
+          ],
+          [
+            "new",
+            5,
+            100
+          ],
+          [
+            "calm",
+            5,
+            285
+          ],
+          [
+            "field5",
+            5,
+            300
+          ]
+        ],
+        "train": {
+          "points": 1244,
+          "rmse_W": 6.8037948203006655,
+          "mae_W": 2.55117950546052,
+          "max_abs_W": 60.70853605059489
+        },
+        "checks": {
+          "new": {
+            "points": 86,
+            "rmse_W": 15.676677392918647,
+            "mae_W": 7.675355472230494,
+            "max_abs_W": 73.6530031021714
+          },
+          "calm": {
+            "points": 306,
+            "rmse_W": 5.703906306933215,
+            "mae_W": 1.4308672427173252,
+            "max_abs_W": 50.221240417006626
+          },
+          "field5": {
+            "points": 283,
+            "rmse_W": 7.740491218033772,
+            "mae_W": 2.8740433265868175,
+            "max_abs_W": 48.09861593621696
+          }
+        }
+      },
+      "field5_delay_only": {
+        "model": {
+          "tau_up": 0.08000000044299771,
+          "delay_up": 3.0354314757230743,
+          "tau_down": 0.23196514205644628,
+          "delay_down": 3.0697554536345213,
+          "rate_up": 1162.0538344344193,
+          "rate_down": 136.10188348717952,
+          "gain": 1.020315921067513,
+          "bias": -20.792997969310697,
+          "idle_bias": -18.0
+        },
+        "fit_sections": [
+          [
+            "field5",
+            5,
+            300
+          ]
+        ],
+        "train": {
+          "points": 295,
+          "rmse_W": 4.560486550154622,
+          "mae_W": 1.5092546474821436,
+          "max_abs_W": 41.70640892301657
+        },
+        "checks": {
+          "new": {
+            "points": 86,
+            "rmse_W": 11.597330591028253,
+            "mae_W": 5.702716864655738,
+            "max_abs_W": 61.3881671861451
+          },
+          "calm": {
+            "points": 306,
+            "rmse_W": 6.660043133252926,
+            "mae_W": 1.4333111411694863,
+            "max_abs_W": 64.99693295820052
+          },
+          "field5": {
+            "points": 283,
+            "rmse_W": 6.160185225497329,
+            "mae_W": 2.248117549355298,
+            "max_abs_W": 49.40660242501946
+          }
+        }
+      },
+      "cross_log_delay": {
+        "model": {
+          "tau_up": 0.08000000044299771,
+          "delay_up": 3.0455462216746714,
+          "tau_down": 0.23196514205644628,
+          "delay_down": 4.295877111083299,
+          "rate_up": 1162.0538344344193,
+          "rate_down": 136.10188348717952,
+          "gain": 1.018743920282722,
+          "bias": -20.54624926325285,
+          "idle_bias": -18.0
+        },
+        "fit_sections": [
+          [
+            "previous",
+            5,
+            579
+          ],
+          [
+            "new",
+            5,
+            100
+          ],
+          [
+            "calm",
+            5,
+            285
+          ],
+          [
+            "field5",
+            5,
+            300
+          ]
+        ],
+        "train": {
+          "points": 1244,
+          "rmse_W": 6.770985546625057,
+          "mae_W": 2.548168206058088,
+          "max_abs_W": 60.59518436446422
+        },
+        "checks": {
+          "new": {
+            "points": 86,
+            "rmse_W": 16.22868896835456,
+            "mae_W": 7.897822814001757,
+            "max_abs_W": 73.51363645831759
+          },
+          "calm": {
+            "points": 306,
+            "rmse_W": 5.630184716193009,
+            "mae_W": 1.4251073032315906,
+            "max_abs_W": 46.025975025262795
+          },
+          "field5": {
+            "points": 283,
+            "rmse_W": 7.775205592643774,
+            "mae_W": 2.9496470153336416,
+            "max_abs_W": 47.919430479521736
+          }
+        }
+      }
+    },
+    "field5_whole": {
+      "points": 583,
+      "duration_s": 1199.380000114441,
+      "mean_W": 0.912577300482478,
+      "target_mae_W": 10.612445622929766,
+      "within_pct": 69.45838686076065,
+      "center_pct": 32.23840640867487,
+      "import_Wh": 1.9903738862276077,
+      "export_Wh": 1.686338618795077
+    },
+    "limitations": [
+      "Battery telemetry is not AC consumption. This gain/bias calibrates the reported battery channel, not charger efficiency.",
+      "No actual BLE readback or HA request times in log 5. These are effective command-to-reported-measurement dynamics.",
+      "Field5 rows 300..582 remain held out. Grid dynamics cannot be uniquely refitted from a house load derived from the same grid/battery/PV channels."
+    ]
+  },
+  "replay_checks": [
+    {
+      "model": "V4 nominal",
+      "grid": {
+        "points": 578,
+        "rmse_W": 15.025180709839127,
+        "mae_W": 7.586505190311419,
+        "max_abs_W": 76.0
+      },
+      "battery": {
+        "points": 578,
+        "rmse_W": 15.36589491840936,
+        "mae_W": 8.591695501730104,
+        "max_abs_W": 77.0
+      },
+      "command": {
+        "points": 578,
+        "rmse_W": 15.457946075912322,
+        "mae_W": 7.916955017301038,
+        "max_abs_W": 77.0
+      }
+    },
+    {
+      "model": "delay -0.4s",
+      "grid": {
+        "points": 578,
+        "rmse_W": 12.431890568782643,
+        "mae_W": 5.994809688581315,
+        "max_abs_W": 85.0
+      },
+      "battery": {
+        "points": 578,
+        "rmse_W": 12.47065760247078,
+        "mae_W": 6.807958477508651,
+        "max_abs_W": 68.0
+      },
+      "command": {
+        "points": 578,
+        "rmse_W": 13.352163750366792,
+        "mae_W": 6.401384083044983,
+        "max_abs_W": 71.0
+      }
+    },
+    {
+      "model": "delay +0.5s",
+      "grid": {
+        "points": 578,
+        "rmse_W": 14.185681654888525,
+        "mae_W": 6.842560553633218,
+        "max_abs_W": 79.0
+      },
+      "battery": {
+        "points": 578,
+        "rmse_W": 16.48822585045164,
+        "mae_W": 8.86159169550173,
+        "max_abs_W": 80.0
+      },
+      "command": {
+        "points": 578,
+        "rmse_W": 16.317937568981883,
+        "mae_W": 7.686851211072664,
+        "max_abs_W": 79.0
+      }
+    },
+    {
+      "model": "delay +1.5s",
+      "grid": {
+        "points": 578,
+        "rmse_W": 15.929125030002536,
+        "mae_W": 7.833910034602076,
+        "max_abs_W": 85.0
+      },
+      "battery": {
+        "points": 578,
+        "rmse_W": 17.144309132774595,
+        "mae_W": 9.26643598615917,
+        "max_abs_W": 85.0
+      },
+      "command": {
+        "points": 578,
+        "rmse_W": 15.900588659643496,
+        "mae_W": 7.461937716262976,
+        "max_abs_W": 85.0
+      }
+    },
+    {
+      "model": "battery_affine",
+      "grid": {
+        "points": 578,
+        "rmse_W": 17.779989529852397,
+        "mae_W": 10.207612456747405,
+        "max_abs_W": 77.0
+      },
+      "battery": {
+        "points": 578,
+        "rmse_W": 18.72968334121759,
+        "mae_W": 11.313148788927336,
+        "max_abs_W": 99.0
+      },
+      "command": {
+        "points": 578,
+        "rmse_W": 18.219680222354185,
+        "mae_W": 10.63840830449827,
+        "max_abs_W": 78.0
+      }
+    },
+    {
+      "model": "battery_fast_rate",
+      "grid": {
+        "points": 578,
+        "rmse_W": 15.650430861774048,
+        "mae_W": 8.261245674740485,
+        "max_abs_W": 76.0
+      },
+      "battery": {
+        "points": 578,
+        "rmse_W": 16.243071453460228,
+        "mae_W": 9.162629757785467,
+        "max_abs_W": 78.0
+      },
+      "command": {
+        "points": 578,
+        "rmse_W": 16.09358444249175,
+        "mae_W": 8.608996539792388,
+        "max_abs_W": 77.0
+      }
+    },
+    {
+      "model": "cross_log_static",
+      "grid": {
+        "points": 578,
+        "rmse_W": 18.41016719248805,
+        "mae_W": 10.899653979238755,
+        "max_abs_W": 77.0
+      },
+      "battery": {
+        "points": 578,
+        "rmse_W": 19.29331060005085,
+        "mae_W": 11.892733564013842,
+        "max_abs_W": 99.0
+      },
+      "command": {
+        "points": 578,
+        "rmse_W": 18.893070075713293,
+        "mae_W": 11.384083044982699,
+        "max_abs_W": 78.0
+      }
+    },
+    {
+      "model": "field5_delay_only",
+      "grid": {
+        "points": 578,
+        "rmse_W": 9.02495578879029,
+        "mae_W": 4.14878892733564,
+        "max_abs_W": 49.0
+      },
+      "battery": {
+        "points": 578,
+        "rmse_W": 9.31308563333554,
+        "mae_W": 4.595155709342561,
+        "max_abs_W": 69.0
+      },
+      "command": {
+        "points": 578,
+        "rmse_W": 9.278374604105919,
+        "mae_W": 4.282006920415225,
+        "max_abs_W": 50.0
+      }
+    }
+  ],
+  "field_log_sha256": "fe35ce9e5805ca3463b550361475d597b5a006d81b62a5bad73520cf688f1553",
+  "candidate_source_sha256": "2637493cba5c6fa77a666128f129229a5ae23aaea482957e9784c7af3627748d",
+  "fit_protocol": "New quiet candidate fitted to log5 rows 5..299 only. Log5 rows 300..582, log3 rows 100..185 and log4 rows 285..590 held out.",
+  "scope": "Effective charging command-to-reported-battery dynamics. New log: PV 248..624 W, charging commands 164..525 W, no discharge or large house-load jump.",
+  "selection": "Keep V4 nominal for transfer; add the quiet charging candidate as an uncertainty case. It improves log5/log3 battery RMSE, but worsens the log4 checking RMSE. No universal parameter replacement.",
+  "BLE": {
+    "topology": "Node-RED -> HA number -> ESPHome -> BLE C304; device state returned via C305",
+    "firmware_repository": "https://github.com/krumpholz/esphome-solarflow-ble",
+    "firmware_source_inspected_commit": "e8608d3ed147adec388f0d8c221b8ee07e16ad9c",
+    "device_write_ack_in_field_log": false,
+    "reported_limit_state_in_field_log": false,
+    "HA_request_times_in_field_log": false,
+    "meaning": "HA call completion is not a correlated device write acknowledgement."
+  },
+  "limitations": [
+    "No independent house meter; p_haus=PV+grid-battery.",
+    "Snapshot receive times are not proven device sample times. Timing fits are effective aggregate delays.",
+    "Battery telemetry is not AC input power; gain/bias are not charger efficiency.",
+    "Grid/PV dynamics retained; simultaneous PV/house/actuator phase is not uniquely identifiable.",
+    "Net disturbance is reconstructed offline from recorded grid and the nominal actuator response and kept fixed for all candidates.",
+    "No calibrated discharging plant or 2400-W/high-SOC branch; simulations with discharge requests are outside this plant model.",
+    "New checking RMSE of conditional closed replay is still about 9..15 W. Sub-watt simulated differences do not establish a physical performance gain."
+  ]
+}

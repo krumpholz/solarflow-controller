@@ -1,5 +1,8 @@
 # V4.22-SIM: Solar-Mittennachführung und BLE-Diagnose
 
+Aktualisierung: [Feldlog 5 und V4.23](../v4.23-sim/README_DE.md) prüfen jetzt V4.22 beim Normal-PV-Laden. V4.23 ergänzt Zeittoleranz und Diagnoseabdeckung; der ursprüngliche V4.22-Code bleibt erhalten.
+
+
 [English](README.md) | **Deutsch**
 
 Experimentelle Testversion des separaten PI-Reglers. Kein Feldtest dieser Revision und kein Deploy an eine Anlage. Die Wirkungsgrad-Releaseversion bleibt v5.1.0.

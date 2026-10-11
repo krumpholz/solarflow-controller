@@ -1,5 +1,8 @@
 # V4.22-SIM: solar midpoint trim and BLE diagnostics
 
+Update: [field log 5 and V4.23](../v4.23-sim/README.md) now validate V4.22 normal-PV charging. V4.23 adds timing tolerance and diagnostic coverage; the original V4.22 source below is preserved.
+
+
 **English** | [Deutsch](README_DE.md)
 
 Experimental version of the separate PI controller. No field test of this revision and no plant deployment. Battery-efficiency release v5.1.0 remains unchanged.

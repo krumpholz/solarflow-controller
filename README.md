@@ -4,9 +4,9 @@
 
 Node-RED battery efficiency monitoring for SolarFlow installations. **Release v5.1.0** adds a time-weighted rolling 7-day mean of the existing SOC-adjusted 168-hour energy balance. The smoother value is available on output 1, the original balance on output 2 and diagnostics on output 3. This repository supplies the monitoring component and a separate experimental regulator candidate. The snapshot builder remains installation-specific.
 
-## V4.22: solar midpoint trim and BLE diagnostics
+## V4.23: field log checked, small timing tolerance and diagnostic coverage
 
-The [new experimental test version](regulator/experimental/v4.22-sim/README.md) moves settled solar charging toward the current effective window midpoint using small 3 W corrections. BLE diagnostics replace obsolete HTTP fields with HA requests, errors, readiness and device readbacks; snapshots are matched to the controller cycle. Model and code checks are complete; a V4.22 field test is still pending. Night control, discharge permissions and efficiency release v5.1.0 remain unchanged.
+The [new field check and maintenance candidate](regulator/experimental/v4.23-sim/README.md) confirms V4.22 solar midpoint tracking in 583 charging records at PV 248–624 W. Quiet section: target MAE 2.04 W, entirely inside the effective window. V4.23 adds 2 ms timing tolerance and visible BLE diagnostic coverage; P/I, ramps and protection are retained. [V5 model](regulator/experimental/v4.23-sim/Regler_Modell_V5.json) adds a quiet battery case. V4.23 still needs a field test; BLE readbacks are absent from the field log. Efficiency release v5.1.0 remains unchanged.
 
 ## V4.21 field validation and simulation model V4
 
@@ -71,5 +71,6 @@ The result is a calculated SOC-adjusted energy balance, not a certified full-cyc
 Independent community project; no affiliation with or endorsement by Zendure. See [project notice](NOTICE.md). The [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) is maintained separately.
 
 [MIT License](LICENSE) · [German license explanation](LICENSE_DE.md)
+
 
 
