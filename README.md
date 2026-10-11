@@ -4,9 +4,9 @@
 
 Node-RED battery efficiency monitoring for SolarFlow installations. **Release v5.1.0** adds a time-weighted rolling 7-day mean of the existing SOC-adjusted 168-hour energy balance. The smoother value is available on output 1, the original balance on output 2 and diagnostics on output 3. This repository supplies the monitoring component and a separate experimental regulator candidate. The snapshot builder remains installation-specific.
 
-## Regulator field test and next candidate V4.20-SIM
+## Daytime review and next regulator candidate V4.21-SIM
 
-The [new field-test and model analysis](regulator/experimental/v4.20-sim/Regler_Feldtest_Analyse_DE.md) examines V4.19-SIM at the installation. Quiet midpoint tracking works; load increases still have a slow tail. [V4.20-SIM instructions](regulator/experimental/v4.20-sim/README.md), [complete code](regulator/experimental/v4.20-sim/Regler_V4_20_SIM.js), the [identical text copy](regulator/experimental/v4.20-sim/Regler_V4_20_SIM.txt) and [updated model parameters](regulator/experimental/v4.20-sim/Regler_Modell_V2.json) provide the next simulated test candidate. V4.20's own hardware test is pending. The [previous V4.19 files](regulator/experimental/v4.19-sim/README.md) remain available. These regulator revisions are separate from efficiency release v5.1.0.
+The [daytime analysis](regulator/experimental/v4.21-sim/Regler_Tagesanalyse_DE.md) reviews V4.19-SIM with changing PV and discharge disabled. [V4.21 instructions](regulator/experimental/v4.21-sim/README.md), [complete code](regulator/experimental/v4.21-sim/Regler_V4_21_SIM.js), the [identical text copy](regulator/experimental/v4.21-sim/Regler_V4_21_SIM.txt) and [daytime model](regulator/experimental/v4.21-sim/Regler_Tagesmodell_V3.json) provide a shared parameter selection and avoid an unnecessary switch into disabled discharge. Numerical P/I values and PV windows are preserved; V4.21's own field test is pending. The [previous night analysis and V4.20 candidate](regulator/experimental/v4.20-sim/README.md) remain available. Regulator revisions are separate from efficiency release v5.1.0.
 
 ## Support this project
 

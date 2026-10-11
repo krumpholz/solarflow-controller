@@ -1,0 +1,550 @@
+{
+  "measured": {
+    "all": {
+      "samples": 579,
+      "duration_s": 1198.3129999637604,
+      "mean_W": 16.852570954140855,
+      "mae_W": 51.6291635783484,
+      "within_pct": 31.217803687726136,
+      "center_pct": 5.005286586638721,
+      "import_Wh": 11.104532186256515,
+      "export_Wh": 5.494905837045776
+    },
+    "without_large_load": {
+      "samples": 550,
+      "duration_s": 1138.2980000972748,
+      "mean_W": -11.868196245636796,
+      "mae_W": 25.005555646905638,
+      "within_pct": 32.863714059167314,
+      "center_pct": 5.2691825732812125,
+      "import_Wh": 1.7422547117206786,
+      "export_Wh": 5.494905837045776
+    },
+    "lowpv": {
+      "samples": 205,
+      "duration_s": 416.1049997806549,
+      "mean_W": -6.851342825229596,
+      "mae_W": 12.91850134678092,
+      "within_pct": 35.09234447685575,
+      "center_pct": 6.651926776993439,
+      "import_Wh": 0.14465861015849643,
+      "export_Wh": 0.9365691670444276
+    },
+    "normalpv_without_large_load": {
+      "samples": 341,
+      "duration_s": 714.1920003890991,
+      "mean_W": -13.254706101637495,
+      "mae_W": 30.59131576690433,
+      "within_pct": 31.933429646438004,
+      "center_pct": 4.522593355108838,
+      "import_Wh": 1.5837072126732932,
+      "export_Wh": 4.213264175256094
+    },
+    "highpv": {
+      "samples": 4,
+      "duration_s": 8.000999927520752,
+      "mean_W": -149.01399723576287,
+      "mae_W": 155.01162270469595,
+      "within_pct": 0.0,
+      "center_pct": 0.0,
+      "import_Wh": 0.013888888888888888,
+      "export_Wh": 0.34507249474525453
+    },
+    "hold": {
+      "samples": 124,
+      "duration_s": 251.48099946975708,
+      "mean_W": 4.814164877464704,
+      "mae_W": 5.656928354654156,
+      "within_pct": 100.0,
+      "center_pct": 14.317184976971701,
+      "import_Wh": 0.39464333176612854,
+      "export_Wh": 0.05834583315584395
+    }
+  },
+  "source_sha256": "9eb9d72d86ef2123f2c9985dae9f66767f7335c3c4f644c95d0fc9682ebc8f64",
+  "simulation_summary": [
+    {
+      "candidate": {
+        "name": "4.20 day baseline"
+      },
+      "improves_all_mae": false,
+      "nominal_all": {
+        "duration_s": 1198.3129999637604,
+        "mean_W": 20.65426219036544,
+        "raw_target_mae_W": 56.70045964221801,
+        "feasible_target_mae_W": 30.73673300656746,
+        "import_Wh": 12.664125524957965,
+        "export_Wh": 5.789050278464959,
+        "within_pct": 18.00831675243418,
+        "center_pct": 4.674070984006324,
+        "reachable_s": 1138.2980000972748,
+        "within_reachable_pct": 18.957777374697073,
+        "command_changes": 276,
+        "direction_changes": 2
+      },
+      "nominal_recovery": {
+        "duration_s": 70.01400017738342,
+        "mean_W": -93.08799700644283,
+        "raw_target_mae_W": 111.17366555140752,
+        "feasible_target_mae_W": 111.17366555140752,
+        "import_Wh": 0.1667013888226615,
+        "export_Wh": 1.9771077885230388,
+        "within_pct": 25.714856889890154,
+        "center_pct": 2.857999717843766,
+        "reachable_s": 70.01400017738342,
+        "within_reachable_pct": 25.714856889890154,
+        "command_changes": 18,
+        "direction_changes": 1
+      },
+      "worst_mae_delta_W": 0.0,
+      "worst_export_delta_Wh": 0.0,
+      "window_times_s": [
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166
+      ],
+      "all_D_zero": true
+    },
+    {
+      "candidate": {
+        "name": "table refactor only",
+        "file": "analysis_day/Regler_Refactor_Only.js"
+      },
+      "improves_all_mae": false,
+      "nominal_all": {
+        "duration_s": 1198.3129999637604,
+        "mean_W": 20.65426219036544,
+        "raw_target_mae_W": 56.70045964221801,
+        "feasible_target_mae_W": 30.73673300656746,
+        "import_Wh": 12.664125524957965,
+        "export_Wh": 5.789050278464959,
+        "within_pct": 18.00831675243418,
+        "center_pct": 4.674070984006324,
+        "reachable_s": 1138.2980000972748,
+        "within_reachable_pct": 18.957777374697073,
+        "command_changes": 276,
+        "direction_changes": 2
+      },
+      "nominal_recovery": {
+        "duration_s": 70.01400017738342,
+        "mean_W": -93.08799700644283,
+        "raw_target_mae_W": 111.17366555140752,
+        "feasible_target_mae_W": 111.17366555140752,
+        "import_Wh": 0.1667013888226615,
+        "export_Wh": 1.9771077885230388,
+        "within_pct": 25.714856889890154,
+        "center_pct": 2.857999717843766,
+        "reachable_s": 70.01400017738342,
+        "within_reachable_pct": 25.714856889890154,
+        "command_changes": 18,
+        "direction_changes": 1
+      },
+      "worst_mae_delta_W": 0.0,
+      "worst_export_delta_Wh": 0.0,
+      "window_times_s": [
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166
+      ],
+      "all_D_zero": true
+    },
+    {
+      "candidate": {
+        "name": "energy guard only",
+        "file": "analysis_day/Regler_Policy_Only.js"
+      },
+      "improves_all_mae": true,
+      "nominal_all": {
+        "duration_s": 1198.3129999637604,
+        "mean_W": 23.09840324775673,
+        "raw_target_mae_W": 54.03592541590025,
+        "feasible_target_mae_W": 28.0721987802497,
+        "import_Wh": 12.631888303094435,
+        "export_Wh": 4.943244722485547,
+        "within_pct": 19.17679277613446,
+        "center_pct": 5.1749418192605665,
+        "reachable_s": 1138.2980000972748,
+        "within_reachable_pct": 20.187859487839987,
+        "command_changes": 275,
+        "direction_changes": 0
+      },
+      "nominal_recovery": {
+        "duration_s": 70.01400017738342,
+        "mean_W": -51.284257817597705,
+        "raw_target_mae_W": 65.59788078526908,
+        "feasible_target_mae_W": 65.59788078526908,
+        "import_Wh": 0.1344647224744161,
+        "export_Wh": 1.1318580657905999,
+        "within_pct": 45.71371434409278,
+        "center_pct": 11.43057137018807,
+        "reachable_s": 70.01400017738342,
+        "within_reachable_pct": 45.71371434409278,
+        "command_changes": 17,
+        "direction_changes": 0
+      },
+      "worst_mae_delta_W": -1.5187375928542757,
+      "worst_export_delta_Wh": -0.7776822231875506,
+      "window_times_s": [
+        26.004000186920166,
+        20.004000186920166,
+        36.00600004196167,
+        18.003000020980835,
+        18.003000020980835,
+        16.003000020980835,
+        18.003000020980835,
+        18.003000020980835,
+        18.003000020980835,
+        18.003000020980835
+      ],
+      "all_D_zero": true
+    },
+    {
+      "candidate": {
+        "name": "4.21-SIM",
+        "file": "results_regler_day/Regler_V4_21_SIM.js"
+      },
+      "improves_all_mae": true,
+      "nominal_all": {
+        "duration_s": 1198.3129999637604,
+        "mean_W": 23.09840324775673,
+        "raw_target_mae_W": 54.03592541590025,
+        "feasible_target_mae_W": 28.0721987802497,
+        "import_Wh": 12.631888303094435,
+        "export_Wh": 4.943244722485547,
+        "within_pct": 19.17679277613446,
+        "center_pct": 5.1749418192605665,
+        "reachable_s": 1138.2980000972748,
+        "within_reachable_pct": 20.187859487839987,
+        "command_changes": 275,
+        "direction_changes": 0
+      },
+      "nominal_recovery": {
+        "duration_s": 70.01400017738342,
+        "mean_W": -51.284257817597705,
+        "raw_target_mae_W": 65.59788078526908,
+        "feasible_target_mae_W": 65.59788078526908,
+        "import_Wh": 0.1344647224744161,
+        "export_Wh": 1.1318580657905999,
+        "within_pct": 45.71371434409278,
+        "center_pct": 11.43057137018807,
+        "reachable_s": 70.01400017738342,
+        "within_reachable_pct": 45.71371434409278,
+        "command_changes": 17,
+        "direction_changes": 0
+      },
+      "worst_mae_delta_W": -1.5187375928542757,
+      "worst_export_delta_Wh": -0.7776822231875506,
+      "window_times_s": [
+        26.004000186920166,
+        20.004000186920166,
+        36.00600004196167,
+        18.003000020980835,
+        18.003000020980835,
+        16.003000020980835,
+        18.003000020980835,
+        18.003000020980835,
+        18.003000020980835,
+        18.003000020980835
+      ],
+      "all_D_zero": true
+    },
+    {
+      "candidate": {
+        "name": "merge low/normal export P0.96",
+        "constants": {
+          "errGainChargeExport": 0.96,
+          "errGainChargeExportLowPV": 0.96,
+          "iGainChargeExport": 0.007,
+          "iGainChargeExportLowPV": 0.007,
+          "iMaxWChargeExport": 12,
+          "iMaxWChargeExportLowPV": 12,
+          "iErrMinWChargeExport": 7,
+          "iErrMinWChargeExportLowPV": 7,
+          "iDecayHoldChargeExport": 0.84,
+          "iDecayHoldChargeExportLowPV": 0.84
+        }
+      },
+      "improves_all_mae": false,
+      "nominal_all": {
+        "duration_s": 1198.3129999637604,
+        "mean_W": 22.704890037692525,
+        "raw_target_mae_W": 58.26277433122156,
+        "feasible_target_mae_W": 32.299047695571005,
+        "import_Wh": 13.475784137248985,
+        "export_Wh": 5.918127221994933,
+        "within_pct": 17.764807714331507,
+        "center_pct": 6.1765999854778935,
+        "reachable_s": 1138.2980000972748,
+        "within_reachable_pct": 18.701429699534536,
+        "command_changes": 278,
+        "direction_changes": 2
+      },
+      "nominal_recovery": {
+        "duration_s": 70.01400017738342,
+        "mean_W": -96.11562011811067,
+        "raw_target_mae_W": 108.60226549205794,
+        "feasible_target_mae_W": 108.60226549205794,
+        "import_Wh": 0.10558860944377052,
+        "export_Wh": 1.9748772327767483,
+        "within_pct": 37.14400007783151,
+        "center_pct": 5.713143071194091,
+        "reachable_s": 70.01400017738342,
+        "within_reachable_pct": 37.14400007783151,
+        "command_changes": 15,
+        "direction_changes": 1
+      },
+      "worst_mae_delta_W": 1.8373680405308512,
+      "worst_export_delta_Wh": 0.12907694352997368,
+      "window_times_s": [
+        28.004000186920166,
+        28.004000186920166,
+        30.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166
+      ],
+      "all_D_zero": true
+    },
+    {
+      "candidate": {
+        "name": "merge low/normal export P0.98",
+        "constants": {
+          "errGainChargeExport": 0.98,
+          "errGainChargeExportLowPV": 0.98,
+          "iGainChargeExport": 0.007,
+          "iGainChargeExportLowPV": 0.007,
+          "iMaxWChargeExport": 12,
+          "iMaxWChargeExportLowPV": 12,
+          "iErrMinWChargeExport": 7,
+          "iErrMinWChargeExportLowPV": 7,
+          "iDecayHoldChargeExport": 0.84,
+          "iDecayHoldChargeExportLowPV": 0.84
+        }
+      },
+      "improves_all_mae": false,
+      "nominal_all": {
+        "duration_s": 1198.3129999637604,
+        "mean_W": 22.80289782448618,
+        "raw_target_mae_W": 58.36711601738369,
+        "feasible_target_mae_W": 32.40338938173313,
+        "import_Wh": 13.512230804959922,
+        "export_Wh": 5.9219505549801745,
+        "within_pct": 17.096952172181478,
+        "center_pct": 6.176683430080495,
+        "reachable_s": 1138.2980000972748,
+        "within_reachable_pct": 17.998362507825657,
+        "command_changes": 282,
+        "direction_changes": 2
+      },
+      "nominal_recovery": {
+        "duration_s": 70.01400017738342,
+        "mean_W": -95.74416584232048,
+        "raw_target_mae_W": 108.85942834277931,
+        "feasible_target_mae_W": 108.85942834277931,
+        "import_Wh": 0.11225722048017714,
+        "export_Wh": 1.974321677221193,
+        "within_pct": 37.14400007783151,
+        "center_pct": 5.713143071194091,
+        "reachable_s": 70.01400017738342,
+        "within_reachable_pct": 37.14400007783151,
+        "command_changes": 16,
+        "direction_changes": 1
+      },
+      "worst_mae_delta_W": 3.810081341717037,
+      "worst_export_delta_Wh": 0.2471066634522483,
+      "window_times_s": [
+        28.004000186920166,
+        28.004000186920166,
+        30.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166
+      ],
+      "all_D_zero": true
+    },
+    {
+      "candidate": {
+        "name": "merge low/normal export P1.0",
+        "constants": {
+          "errGainChargeExport": 1.0,
+          "errGainChargeExportLowPV": 1.0,
+          "iGainChargeExport": 0.007,
+          "iGainChargeExportLowPV": 0.007,
+          "iMaxWChargeExport": 12,
+          "iMaxWChargeExportLowPV": 12,
+          "iErrMinWChargeExport": 7,
+          "iErrMinWChargeExportLowPV": 7,
+          "iDecayHoldChargeExport": 0.84,
+          "iDecayHoldChargeExportLowPV": 0.84
+        }
+      },
+      "improves_all_mae": false,
+      "nominal_all": {
+        "duration_s": 1198.3129999637604,
+        "mean_W": 23.154245096060137,
+        "raw_target_mae_W": 59.856608329317396,
+        "feasible_target_mae_W": 33.89288169366684,
+        "import_Wh": 13.804823027915422,
+        "export_Wh": 6.097591665983207,
+        "within_pct": 13.284926426976455,
+        "center_pct": 5.007957052676224,
+        "reachable_s": 1138.2980000972748,
+        "within_reachable_pct": 13.985353606566623,
+        "command_changes": 293,
+        "direction_changes": 2
+      },
+      "nominal_recovery": {
+        "duration_s": 70.01400017738342,
+        "mean_W": -93.40229128787614,
+        "raw_target_mae_W": 110.9164455665857,
+        "feasible_target_mae_W": 110.9164455665857,
+        "import_Wh": 0.16058833327558308,
+        "export_Wh": 1.977107232941522,
+        "within_pct": 25.714856889890154,
+        "center_pct": 2.857999717843766,
+        "reachable_s": 70.01400017738342,
+        "within_reachable_pct": 25.714856889890154,
+        "command_changes": 18,
+        "direction_changes": 1
+      },
+      "worst_mae_delta_W": 3.7337565415964917,
+      "worst_export_delta_Wh": 0.30854138751824767,
+      "window_times_s": [
+        28.004000186920166,
+        28.004000186920166,
+        30.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166,
+        28.004000186920166
+      ],
+      "all_D_zero": true
+    }
+  ],
+  "verification": {
+    "checks": 10,
+    "passed": [
+      "All 579 daytime outputs, directions, HOLD, parameter sets and integrators replay exactly",
+      "Table refactor preserves all four messages across 1,687 samples from three correct logs",
+      "Parameter refactor preserves behavior around all PV and window boundaries, with held/fresh measurements and both directions",
+      "Final candidate matches baseline outputs with discharge allowed, including high/very-high PV cases",
+      "Energy-saving sequence never requests discharge and resumes PV charging without entering blocked direction",
+      "OFF, full/empty battery and discharge permission retain their hard output limits",
+      "Invalid snapshots reject output, held battery uses last command, and grid-charge priority remains intact",
+      "Negative asymmetric charge window keeps its own midpoint",
+      "Final source exactly matches the isolated policy change in all ten daytime models",
+      "Plant steps do not overshoot fixed targets; outputs remain bounded during PV/load stress"
+    ],
+    "record_comparisons": 1687,
+    "boundary_cases": 2304
+  },
+  "model_fit_errors": {
+    "battery_first260": {
+      "train": {
+        "rmse_W": 2.0568018247825472,
+        "mae_W": 1.0075923090029766,
+        "max_abs_W": 16.393037675466786
+      },
+      "following": {
+        "rmse_W": 10.907531923352678,
+        "mae_W": 5.0906515631181035,
+        "max_abs_W": 81.25257873095617
+      },
+      "all": {
+        "rmse_W": 8.212705453594083,
+        "mae_W": 3.2571534524619152,
+        "max_abs_W": 81.25257873095617
+      }
+    },
+    "battery_all": {
+      "train": {
+        "rmse_W": 7.457288858654343,
+        "mae_W": 3.005797096784168,
+        "max_abs_W": 59.734670698424
+      },
+      "following": null,
+      "all": {
+        "rmse_W": 7.457288858654343,
+        "mae_W": 3.005797096784168,
+        "max_abs_W": 59.734670698424
+      }
+    },
+    "grid_no_pv_phase": {
+      "train": {
+        "rmse_W": 15.433909226155057,
+        "mae_W": 7.0918094964124485,
+        "max_abs_W": 182.84058078939336
+      },
+      "following_quiet": null,
+      "all": {
+        "rmse_W": 15.369632042173093,
+        "mae_W": 7.053185939028245,
+        "max_abs_W": 182.84058078939336
+      }
+    },
+    "grid_first260": {
+      "train": {
+        "rmse_W": 5.716509422314072,
+        "mae_W": 3.9321234034005697,
+        "max_abs_W": 32.33010301323753
+      },
+      "following_quiet": {
+        "rmse_W": 11.561199414078864,
+        "mae_W": 6.5093679633640305,
+        "max_abs_W": 122.37802712526906
+      },
+      "all": {
+        "rmse_W": 213.4447500696943,
+        "mae_W": 52.73349708183864,
+        "max_abs_W": 1015.1112872743809
+      }
+    },
+    "grid_all": {
+      "train": {
+        "rmse_W": 6.748484257954644,
+        "mae_W": 4.201428259558507,
+        "max_abs_W": 57.40312590597739
+      },
+      "following_quiet": null,
+      "all": {
+        "rmse_W": 6.7369107736349285,
+        "mae_W": 4.209590341990572,
+        "max_abs_W": 57.40312590597739
+      }
+    }
+  },
+  "observed_load_event": {
+    "rise_index": 287,
+    "fall_index": 316,
+    "duration_s": 60.014999866485596,
+    "charge_request_zero_s": 4.0,
+    "first_nonpositive_telemetry_s": 10.003000020980835,
+    "restart_after_fall_s": 8.284000158309937,
+    "first_three_window_after_fall_s": 26.004000186920166
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "version": "4.21-SIM",
+  "basis": "4.20-SIM",
+  "field_log_version": "4.19-SIM",
+  "structure_changes": [
+    "Shared selection table with seven unchanged charge parameter sets",
+    "One shared import-I configuration; previous numerical values identical"
+  ],
+  "behavior_guard": {
+    "discharge_allowed": false,
+    "reported_PV_W": ">50",
+    "currently_active_direction": 1,
+    "action": "Keep charging/standby instead of requesting the prohibited discharge direction"
+  },
+  "unchanged": "P/I values, PV window offsets, ramps, SOC/snapshot/direction protections and four outputs; previous V4.20 night candidate retained",
+  "day_scope": {
+    "PV_min_W": 134,
+    "PV_max_W": 846,
+    "high_PV_samples": 4,
+    "very_high_PV_samples": 0
+  },
+  "tests": {
+    "groups": 10,
+    "full_message_comparisons": 1687,
+    "boundary_cases": 2304,
+    "day_model_cases": 10
+  },
+  "field_validation": "Own V4.21 installation test pending; V4.20 night change not exercised in this daytime log",
+  "code_sha256": "2d1863b93df594604811a0b9c2a9eed2d250a671db452418dad061fce35069bc"
+}

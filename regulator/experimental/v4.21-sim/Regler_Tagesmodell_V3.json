@@ -1,0 +1,160 @@
+{
+  "schema": 1,
+  "source": "regler_event_log_2.jsonl",
+  "scope": "PV 134..846W, charge/standby only, b_entladen=false; raw reported PV stays external input",
+  "identification_warning": "Derived house is not an independent measurement. Fits assume mainly stable house load plus one known large event; PV phase and grid response are not unique hardware parameters.",
+  "battery_first260": {
+    "model": {
+      "tau_up": 1.1082636015872567,
+      "delay_up": 1.1505815698437194,
+      "tau_down": 0.10151758128104174,
+      "delay_down": 2.975816046155384,
+      "rate_up": 2505.843799407757,
+      "rate_down": 80.00190864230659,
+      "gain": 1.0118670881188945,
+      "bias": -19.40511412907764
+    },
+    "cost": 333.7006555394752,
+    "train": {
+      "rmse_W": 2.0568018247825472,
+      "mae_W": 1.0075923090029766,
+      "max_abs_W": 16.393037675466786
+    },
+    "following": {
+      "rmse_W": 10.907531923352678,
+      "mae_W": 5.0906515631181035,
+      "max_abs_W": 81.25257873095617
+    },
+    "all": {
+      "rmse_W": 8.212705453594083,
+      "mae_W": 3.2571534524619152,
+      "max_abs_W": 81.25257873095617
+    }
+  },
+  "battery_all": {
+    "model": {
+      "tau_up": 0.08000000044299771,
+      "delay_up": 3.053589395476739,
+      "tau_down": 0.23196514205644628,
+      "delay_down": 4.220467687193862,
+      "rate_up": 1162.0538344344193,
+      "rate_down": 136.10188348717952,
+      "gain": 1.0131301597195532,
+      "bias": -19.26792015472579
+    },
+    "cost": 4394.817235709176,
+    "train": {
+      "rmse_W": 7.457288858654343,
+      "mae_W": 3.005797096784168,
+      "max_abs_W": 59.734670698424
+    },
+    "following": null,
+    "all": {
+      "rmse_W": 7.457288858654343,
+      "mae_W": 3.005797096784168,
+      "max_abs_W": 59.734670698424
+    }
+  },
+  "grid_no_pv_phase": {
+    "model": {
+      "tau_up": 0.11708497293418521,
+      "delay_up": 1.2380058541953873,
+      "tau_down": 1.367786754363271,
+      "delay_down": 1.478764053717427,
+      "rate_up": 201.703495630414,
+      "rate_down": 1405.5818616934148,
+      "gain": 1,
+      "bias": 0
+    },
+    "pv_relative_lag_s": 0,
+    "pv_effective_tau_s": 0.02,
+    "assumed_quiet_house_W": 86.15191062469822,
+    "assumed_load_step_W": 945.1095285220897,
+    "cost": 18443.045944964528,
+    "train": {
+      "rmse_W": 15.433909226155057,
+      "mae_W": 7.0918094964124485,
+      "max_abs_W": 182.84058078939336
+    },
+    "following_quiet": null,
+    "all": {
+      "rmse_W": 15.369632042173093,
+      "mae_W": 7.053185939028245,
+      "max_abs_W": 182.84058078939336
+    }
+  },
+  "grid_first260": {
+    "model": {
+      "tau_up": 0.08000000000000002,
+      "delay_up": 1.1554484199056652,
+      "tau_down": 0.22404882429837225,
+      "delay_down": 2.3565797421491244,
+      "rate_up": 5730.705023856065,
+      "rate_down": 569.0397639789082,
+      "gain": 1,
+      "bias": 0
+    },
+    "pv_relative_lag_s": -1.6134224891385276,
+    "pv_effective_tau_s": 0.0633763112156136,
+    "assumed_quiet_house_W": 84.78738118696927,
+    "assumed_load_step_W": null,
+    "cost": 2986.0707153552194,
+    "train": {
+      "rmse_W": 5.716509422314072,
+      "mae_W": 3.9321234034005697,
+      "max_abs_W": 32.33010301323753
+    },
+    "following_quiet": {
+      "rmse_W": 11.561199414078864,
+      "mae_W": 6.5093679633640305,
+      "max_abs_W": 122.37802712526906
+    },
+    "all": {
+      "rmse_W": 213.4447500696943,
+      "mae_W": 52.73349708183864,
+      "max_abs_W": 1015.1112872743809
+    }
+  },
+  "grid_all": {
+    "model": {
+      "tau_up": 0.2658805165767889,
+      "delay_up": 1.1669989242975627,
+      "tau_down": 0.1284738606375642,
+      "delay_down": 2.339679604445676,
+      "rate_up": 480.63459176927466,
+      "rate_down": 80.0888033944017,
+      "gain": 1,
+      "bias": 0
+    },
+    "pv_relative_lag_s": -1.5207136969206538,
+    "pv_effective_tau_s": 0.04663515142944555,
+    "assumed_quiet_house_W": 87.40916449348185,
+    "assumed_load_step_W": 944.3061335420527,
+    "cost": 7725.356086294232,
+    "train": {
+      "rmse_W": 6.748484257954644,
+      "mae_W": 4.201428259558507,
+      "max_abs_W": 57.40312590597739
+    },
+    "following_quiet": null,
+    "all": {
+      "rmse_W": 6.7369107736349285,
+      "mae_W": 4.209590341990572,
+      "max_abs_W": 57.40312590597739
+    }
+  },
+  "counterfactual_method": "Z - nominal modeled grid charging response remains fixed for all candidates. Reported PV remains an input at its original time; relative PV phase is offline plant calibration only.",
+  "sensitivity_cases": [
+    "calibrated",
+    "delay+0.5s",
+    "delay-0.4s",
+    "response30%slower",
+    "response20%faster",
+    "early calibrated battery",
+    "early calibrated grid",
+    "zero PV phase grid",
+    "battery offset-3W",
+    "battery offset+3W"
+  ],
+  "field_validation": "V4.19 observed; V4.21 not tested on installation."
+}

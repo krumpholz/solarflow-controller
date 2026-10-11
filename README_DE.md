@@ -4,9 +4,9 @@
 
 Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v5.1.0** ergänzt einen zeitgewichteten gleitenden 7-Tage-Mittelwert der bisherigen SOC-korrigierten 168-Stunden-Energiebilanz. Der geglättete Wert liegt an Ausgang 1, die bisherige Bilanz an Ausgang 2 und die Diagnose an Ausgang 3. Dieses Repository enthält die Auswertung und eine gesonderte experimentelle Regler-Testvariante. Der Snapshot-Builder bleibt anlagenspezifisch.
 
-## Regler-Feldtest und nächste Testvariante V4.20-SIM
+## Tagesprüfung und nächste Regler-Testvariante V4.21-SIM
 
-Die [neue Feldtest- und Modellanalyse](regulator/experimental/v4.20-sim/Regler_Feldtest_Analyse_DE.md) prüft V4.19-SIM an der Anlage. Die ruhige Mittenregelung funktioniert; Lastanstiege besitzen noch einen langsamen Nachlauf. Die [V4.20-Anleitung](regulator/experimental/v4.20-sim/README_DE.md), der [vollständige Code](regulator/experimental/v4.20-sim/Regler_V4_20_SIM.js), die [bytegleiche Textkopie](regulator/experimental/v4.20-sim/Regler_V4_20_SIM.txt) und die [aktualisierten Modellparameter](regulator/experimental/v4.20-sim/Regler_Modell_V2.json) stellen die nächste simulierte Testvariante bereit. Der eigene V4.20-Anlagentest steht aus. Die [bisherigen V4.19-Dateien](regulator/experimental/v4.19-sim/README_DE.md) bleiben verfügbar. Diese Reglerrevisionen sind unabhängig vom Wirkungsgrad-Release v5.1.0.
+Die [Tagesanalyse](regulator/experimental/v4.21-sim/Regler_Tagesanalyse_DE.md) prüft V4.19-SIM bei wechselnder PV und gesperrter Entladung. Die [V4.21-Anleitung](regulator/experimental/v4.21-sim/README_DE.md), der [vollständige Code](regulator/experimental/v4.21-sim/Regler_V4_21_SIM.js), die [bytegleiche Textkopie](regulator/experimental/v4.21-sim/Regler_V4_21_SIM.txt) und das [Tagesmodell](regulator/experimental/v4.21-sim/Regler_Tagesmodell_V3.json) stellen eine gemeinsame Parameterauswahl bereit und vermeiden einen unnötigen Wechsel in die gesperrte Entladerichtung. P-/I-Zahlen und PV-Fenster bleiben erhalten; der eigene V4.21-Anlagentest steht aus. Die [vorherige Nachtanalyse und V4.20-Testvariante](regulator/experimental/v4.20-sim/README_DE.md) bleiben verfügbar. Reglerrevisionen sind unabhängig vom Wirkungsgrad-Release v5.1.0.
 
 ## Unterstützung
 
