@@ -1,0 +1,3646 @@
+{
+  "controller_version": "4.22-SIM",
+  "controller_sha256": "7bdcd6123f7faba80144088a2f4140193d529f3d29f9d5f03eb384c0bda0d1f7",
+  "field_test_of_this_version": false,
+  "method": "Conditional counterfactual replay: same reconstructed external disturbance across candidates. No independent solar or house-load forecasting.",
+  "selected": {
+    "max_step_W": 3,
+    "minimum_wait_ms": 6000,
+    "center_band_W": 2,
+    "outer_band_W": 30,
+    "stable_ticks": 3,
+    "solar_delta_W": 15,
+    "grid_delta_W": 6,
+    "derived_load_delta_W": 15,
+    "battery_tracking_tolerance_W": 35
+  },
+  "verification": {
+    "checks": [
+      {
+        "name": "Flow identities, unchanged nodes, function syntax and existing external wires",
+        "passed": true,
+        "original_nodes": 92,
+        "updated_nodes": 103,
+        "changed_existing": 21,
+        "added": 11
+      },
+      {
+        "name": "Attached baseline equals published V4.21; disabled trim preserves core behavior",
+        "passed": true,
+        "input_rows": 1767,
+        "exact_V4_21_field_rows": 1188
+      },
+      {
+        "name": "Night core unchanged with solar trim enabled",
+        "passed": true,
+        "input_rows": 1108,
+        "note": "Code comparison on real input sequences; not a new field test of V4.22."
+      },
+      {
+        "name": "Three day logs, six plant models and six parameter candidates",
+        "passed": true,
+        "simulation_runs": 108,
+        "selected_runs_improved": 18,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "name": "Complete JS/TXT controller byte identity",
+        "passed": true
+      }
+    ]
+  },
+  "synthetic_tests": {
+    "count": 8,
+    "passed": true
+  },
+  "simulations": {
+    "previous": [
+      {
+        "candidate": {
+          "name": "attached V4.21",
+          "file": "analysis_ble/9d53f569af059e58.js"
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 27.466654583321795,
+              "mean_target_error_W": -10.16477233528961,
+              "center_pct": 5.4477826154013425,
+              "window_pct": 20.71522576468922,
+              "Z_min_W": -403.0,
+              "Z_max_W": 154.0,
+              "command_changes": 274,
+              "command_total_variation_W": 9222.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 21.342940574501075,
+              "mean_target_error_W": -10.640023811589193,
+              "center_pct": 1.6719634627014122,
+              "window_pct": 18.78079239829102,
+              "Z_min_W": -157.0,
+              "Z_max_W": 95.0,
+              "command_changes": 140,
+              "command_total_variation_W": 3388.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 21.882156503418397,
+              "mean_target_error_W": -11.313323045569977,
+              "center_pct": 8.134864547423943,
+              "window_pct": 37.202560337697314,
+              "Z_min_W": -403.0,
+              "Z_max_W": 132.0,
+              "command_changes": 240,
+              "command_total_variation_W": 7632.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 16.368239825812314,
+              "mean_target_error_W": -10.659924830118687,
+              "center_pct": 5.779734235908865,
+              "window_pct": 32.77322593431559,
+              "Z_min_W": -139.0,
+              "Z_max_W": 81.0,
+              "command_changes": 114,
+              "command_total_variation_W": 2426.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 36.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 24.71267454065916,
+              "mean_target_error_W": -14.98976717662238,
+              "center_pct": 8.940277455851797,
+              "window_pct": 33.59436630590334,
+              "Z_min_W": -403.0,
+              "Z_max_W": 142.0,
+              "command_changes": 232,
+              "command_total_variation_W": 7479.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 18.5504890804447,
+              "mean_target_error_W": -12.690618993580898,
+              "center_pct": 5.973996835948666,
+              "window_pct": 29.772184289391028,
+              "Z_min_W": -155.0,
+              "Z_max_W": 93.0,
+              "command_changes": 109,
+              "command_total_variation_W": 2378.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 20.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 26.15178185154734,
+              "mean_target_error_W": -10.247115460482254,
+              "center_pct": 5.24792281637042,
+              "window_pct": 23.552092740872393,
+              "Z_min_W": -403.0,
+              "Z_max_W": 155.0,
+              "command_changes": 267,
+              "command_total_variation_W": 8251.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 20.70325614763928,
+              "mean_target_error_W": -11.085218136739538,
+              "center_pct": 2.2943732316908725,
+              "window_pct": 17.39654511051635,
+              "Z_min_W": -156.0,
+              "Z_max_W": 98.0,
+              "command_changes": 137,
+              "command_total_variation_W": 2975.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 26.388295493414592,
+              "mean_target_error_W": -10.026367477291924,
+              "center_pct": 3.7179192594911608,
+              "window_pct": 23.549017925431723,
+              "Z_min_W": -403.0,
+              "Z_max_W": 158.0,
+              "command_changes": 259,
+              "command_total_variation_W": 8461.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 20.62993283916443,
+              "mean_target_error_W": -11.164603388822842,
+              "center_pct": 2.340849148289456,
+              "window_pct": 19.398019575806767,
+              "Z_min_W": -156.0,
+              "Z_max_W": 97.0,
+              "command_changes": 128,
+              "command_total_variation_W": 2977.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.48039884915822,
+              "mean_target_error_W": -13.034487464728459,
+              "center_pct": 5.446904048829309,
+              "window_pct": 31.636618833594255,
+              "Z_min_W": -403.0,
+              "Z_max_W": 180.0,
+              "command_changes": 217,
+              "command_total_variation_W": 6110.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 19.071848841590082,
+              "mean_target_error_W": -12.755521523605237,
+              "center_pct": 5.064874016683444,
+              "window_pct": 27.859482110757583,
+              "Z_min_W": -162.0,
+              "Z_max_W": 90.0,
+              "command_changes": 102,
+              "command_total_variation_W": 2087.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.003000020980835,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": 0.0,
+        "worst_positive_peak_delta_W": 0.0
+      },
+      {
+        "candidate": {
+          "name": "3W / 6s selected trim",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js"
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 26.28710405662699,
+              "mean_target_error_W": -9.624124808246473,
+              "center_pct": 7.028915119067632,
+              "window_pct": 29.703030350182345,
+              "Z_min_W": -403.0,
+              "Z_max_W": 154.0,
+              "command_changes": 278,
+              "command_total_variation_W": 8907.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 20.12428299615836,
+              "mean_target_error_W": -9.381263184654966,
+              "center_pct": 5.350583982166956,
+              "window_pct": 32.83106995921894,
+              "Z_min_W": -161.0,
+              "Z_max_W": 92.0,
+              "command_changes": 141,
+              "command_total_variation_W": 3493.0
+            },
+            "mae_delta_W": -1.179550526694804,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 20.869578953086346,
+              "mean_target_error_W": -10.06698421250995,
+              "center_pct": 11.272707180205325,
+              "window_pct": 47.27373676572309,
+              "Z_min_W": -403.0,
+              "Z_max_W": 132.0,
+              "command_changes": 253,
+              "command_total_variation_W": 7805.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 14.215942524837347,
+              "mean_target_error_W": -8.340304121214963,
+              "center_pct": 10.080262981967744,
+              "window_pct": 52.607082783232705,
+              "Z_min_W": -144.0,
+              "Z_max_W": 81.0,
+              "command_changes": 110,
+              "command_total_variation_W": 2262.0
+            },
+            "mae_delta_W": -1.0125775503320504,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 36.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 24.240965068662476,
+              "mean_target_error_W": -14.624360293243472,
+              "center_pct": 10.895916460546797,
+              "window_pct": 42.26257088437104,
+              "Z_min_W": -403.0,
+              "Z_max_W": 146.0,
+              "command_changes": 249,
+              "command_total_variation_W": 8058.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 16.738452546742963,
+              "mean_target_error_W": -11.653256107102951,
+              "center_pct": 10.033285323679388,
+              "window_pct": 47.265192029877426,
+              "Z_min_W": -161.0,
+              "Z_max_W": 87.0,
+              "command_changes": 117,
+              "command_total_variation_W": 2750.0
+            },
+            "mae_delta_W": -0.4717094719966859,
+            "positive_peak_delta_W": 4.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 20.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.05362126542719,
+              "mean_target_error_W": -9.50396032879624,
+              "center_pct": 7.884929930687128,
+              "window_pct": 33.42191589466455,
+              "Z_min_W": -403.0,
+              "Z_max_W": 155.0,
+              "command_changes": 275,
+              "command_total_variation_W": 8281.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 19.087913070753903,
+              "mean_target_error_W": -9.463221312161771,
+              "center_pct": 5.973328086181347,
+              "window_pct": 33.8381600755013,
+              "Z_min_W": -160.0,
+              "Z_max_W": 93.0,
+              "command_changes": 136,
+              "command_total_variation_W": 3071.0
+            },
+            "mae_delta_W": -1.0981605861201515,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.203181397927704,
+              "mean_target_error_W": -9.463447213159908,
+              "center_pct": 6.3276048929413715,
+              "window_pct": 33.593839220417586,
+              "Z_min_W": -403.0,
+              "Z_max_W": 158.0,
+              "command_changes": 271,
+              "command_total_variation_W": 8280.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 19.21945501919352,
+              "mean_target_error_W": -9.747468477012118,
+              "center_pct": 3.678453351953079,
+              "window_pct": 34.16566494836453,
+              "Z_min_W": -160.0,
+              "Z_max_W": 93.0,
+              "command_changes": 133,
+              "command_total_variation_W": 3040.0
+            },
+            "mae_delta_W": -1.1851140954868882,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 23.355645900058114,
+              "mean_target_error_W": -12.367178911060257,
+              "center_pct": 12.975161190213736,
+              "window_pct": 45.69251641796671,
+              "Z_min_W": -403.0,
+              "Z_max_W": 179.0,
+              "command_changes": 231,
+              "command_total_variation_W": 5676.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 17.286159722620805,
+              "mean_target_error_W": -10.389826082993594,
+              "center_pct": 9.691403127993373,
+              "window_pct": 46.20326710320973,
+              "Z_min_W": -165.0,
+              "Z_max_W": 87.0,
+              "command_changes": 111,
+              "command_total_variation_W": 2159.0
+            },
+            "mae_delta_W": -2.124752949100106,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.003000020980835,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": -0.4717094719966859,
+        "worst_positive_peak_delta_W": 4.0
+      },
+      {
+        "candidate": {
+          "name": "2W / 8s stable trim",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js",
+          "constants": {
+            "chargeCenterTrimWaitMs": 8000,
+            "chargeCenterTrimMaxStepW": 2
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 27.29949097292588,
+              "mean_target_error_W": -10.11706953506204,
+              "center_pct": 4.92041631760693,
+              "window_pct": 21.945395721922228,
+              "Z_min_W": -403.0,
+              "Z_max_W": 154.0,
+              "command_changes": 282,
+              "command_total_variation_W": 9169.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 21.095031569241943,
+              "mean_target_error_W": -10.505773550153991,
+              "center_pct": 1.6719634627014122,
+              "window_pct": 21.121808753951672,
+              "Z_min_W": -156.0,
+              "Z_max_W": 96.0,
+              "command_changes": 143,
+              "command_total_variation_W": 3351.0
+            },
+            "mae_delta_W": -0.16716361039591376,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 21.61660125893253,
+              "mean_target_error_W": -11.107500840653175,
+              "center_pct": 10.418800752419191,
+              "window_pct": 39.135885351674474,
+              "Z_min_W": -403.0,
+              "Z_max_W": 132.0,
+              "command_changes": 259,
+              "command_total_variation_W": 7640.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 16.134260226516222,
+              "mean_target_error_W": -10.492803706040455,
+              "center_pct": 6.114260702317849,
+              "window_pct": 35.11424232983497,
+              "Z_min_W": -139.0,
+              "Z_max_W": 81.0,
+              "command_changes": 125,
+              "command_total_variation_W": 2422.0
+            },
+            "mae_delta_W": -0.2655552444858671,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 36.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 24.91414992550883,
+              "mean_target_error_W": -15.099391409797434,
+              "center_pct": 9.168425083575803,
+              "window_pct": 33.47550458070014,
+              "Z_min_W": -403.0,
+              "Z_max_W": 142.0,
+              "command_changes": 254,
+              "command_total_variation_W": 7753.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 18.39080580100413,
+              "mean_target_error_W": -12.779063730763088,
+              "center_pct": 5.072898615303982,
+              "window_pct": 30.208857479781166,
+              "Z_min_W": -156.0,
+              "Z_max_W": 92.0,
+              "command_changes": 126,
+              "command_total_variation_W": 2696.0
+            },
+            "mae_delta_W": 0.20147538484966887,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 20.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.715961001501004,
+              "mean_target_error_W": -10.060767068397581,
+              "center_pct": 5.775025560949367,
+              "window_pct": 26.53971104620718,
+              "Z_min_W": -403.0,
+              "Z_max_W": 155.0,
+              "command_changes": 279,
+              "command_total_variation_W": 8139.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 20.30148838762584,
+              "mean_target_error_W": -10.85062332034167,
+              "center_pct": 2.2943732316908725,
+              "window_pct": 20.741140705969034,
+              "Z_min_W": -156.0,
+              "Z_max_W": 97.0,
+              "command_changes": 144,
+              "command_total_variation_W": 2937.0
+            },
+            "mae_delta_W": -0.43582085004633697,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.82182870950986,
+              "mean_target_error_W": -9.944935364013755,
+              "center_pct": 5.096644317952329,
+              "window_pct": 26.563957753523372,
+              "Z_min_W": -403.0,
+              "Z_max_W": 158.0,
+              "command_changes": 269,
+              "command_total_variation_W": 8155.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 20.31596948783309,
+              "mean_target_error_W": -11.00442857989764,
+              "center_pct": 1.3376042036636226,
+              "window_pct": 20.78761662256762,
+              "Z_min_W": -156.0,
+              "Z_max_W": 97.0,
+              "command_changes": 136,
+              "command_total_variation_W": 2903.0
+            },
+            "mae_delta_W": -0.5664667839047333,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 24.62983508651325,
+              "mean_target_error_W": -12.516620414662205,
+              "center_pct": 9.689729762140416,
+              "window_pct": 35.62696236777507,
+              "Z_min_W": -403.0,
+              "Z_max_W": 180.0,
+              "command_changes": 235,
+              "command_total_variation_W": 5863.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 18.55211578495754,
+              "mean_target_error_W": -11.97436968925424,
+              "center_pct": 10.128577860779632,
+              "window_pct": 31.489620663616236,
+              "Z_min_W": -160.0,
+              "Z_max_W": 92.0,
+              "command_changes": 112,
+              "command_total_variation_W": 2087.0
+            },
+            "mae_delta_W": -0.8505637626449705,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.003000020980835,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": 0.20147538484966887,
+        "worst_positive_peak_delta_W": 0.0
+      },
+      {
+        "candidate": {
+          "name": "2W / 6s stable trim",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js",
+          "constants": {
+            "chargeCenterTrimMaxStepW": 2
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 27.490058823504707,
+              "mean_target_error_W": -10.153029364973387,
+              "center_pct": 4.92006492030137,
+              "window_pct": 21.565618177529387,
+              "Z_min_W": -403.0,
+              "Z_max_W": 154.0,
+              "command_changes": 287,
+              "command_total_variation_W": 9331.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 21.450992112999295,
+              "mean_target_error_W": -10.540759235285813,
+              "center_pct": 2.0061555542267366,
+              "window_pct": 20.39909118333564,
+              "Z_min_W": -156.0,
+              "Z_max_W": 96.0,
+              "command_changes": 145,
+              "command_total_variation_W": 3509.0
+            },
+            "mae_delta_W": 0.023404240182912872,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 21.63918497666745,
+              "mean_target_error_W": -11.190262121727526,
+              "center_pct": 9.891522298714873,
+              "window_pct": 39.83912823156355,
+              "Z_min_W": -403.0,
+              "Z_max_W": 132.0,
+              "command_changes": 269,
+              "command_total_variation_W": 7648.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 16.182834266788777,
+              "mean_target_error_W": -10.554755460024774,
+              "center_pct": 6.114260702317849,
+              "window_pct": 35.78362951796041,
+              "Z_min_W": -140.0,
+              "Z_max_W": 81.0,
+              "command_changes": 127,
+              "command_total_variation_W": 2420.0
+            },
+            "mae_delta_W": -0.2429715267509458,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 36.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 24.925653960109447,
+              "mean_target_error_W": -15.323836168882718,
+              "center_pct": 9.64132408687223,
+              "window_pct": 35.380102503643386,
+              "Z_min_W": -403.0,
+              "Z_max_W": 146.0,
+              "command_changes": 259,
+              "command_total_variation_W": 7947.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 18.35943624970175,
+              "mean_target_error_W": -13.06996635045522,
+              "center_pct": 6.642380939281855,
+              "window_pct": 34.16817266034516,
+              "Z_min_W": -157.0,
+              "Z_max_W": 91.0,
+              "command_changes": 127,
+              "command_total_variation_W": 2882.0
+            },
+            "mae_delta_W": 0.21297941945028498,
+            "positive_peak_delta_W": 4.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 20.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.817862263568713,
+              "mean_target_error_W": -10.078403927675573,
+              "center_pct": 5.950726475809016,
+              "window_pct": 27.242602570681058,
+              "Z_min_W": -403.0,
+              "Z_max_W": 155.0,
+              "command_changes": 283,
+              "command_total_variation_W": 8295.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 20.54609392288911,
+              "mean_target_error_W": -10.78762836734092,
+              "center_pct": 2.6285653232161974,
+              "window_pct": 22.078744949491387,
+              "Z_min_W": -157.0,
+              "Z_max_W": 97.0,
+              "command_changes": 144,
+              "command_total_variation_W": 3089.0
+            },
+            "mae_delta_W": -0.3339195879786274,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.87923634991883,
+              "mean_target_error_W": -9.9743028943881,
+              "center_pct": 5.272345232811978,
+              "window_pct": 27.61833893086146,
+              "Z_min_W": -403.0,
+              "Z_max_W": 158.0,
+              "command_changes": 281,
+              "command_total_variation_W": 8287.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 20.549465936746717,
+              "mean_target_error_W": -10.916953513535985,
+              "center_pct": 1.671796295188947,
+              "window_pct": 22.794106511819283,
+              "Z_min_W": -157.0,
+              "Z_max_W": 97.0,
+              "command_changes": 143,
+              "command_total_variation_W": 3057.0
+            },
+            "mae_delta_W": -0.5090591434957616,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.56821678479569,
+              "mean_target_error_W": -13.243259685318067,
+              "center_pct": 8.25618599093052,
+              "window_pct": 34.21836816132803,
+              "Z_min_W": -403.0,
+              "Z_max_W": 179.0,
+              "command_changes": 243,
+              "command_total_variation_W": 6421.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 19.677345018192053,
+              "mean_target_error_W": -11.964780242484935,
+              "center_pct": 4.675345532517943,
+              "window_pct": 31.099757804567073,
+              "Z_min_W": -161.0,
+              "Z_max_W": 91.0,
+              "command_changes": 116,
+              "command_total_variation_W": 2361.0
+            },
+            "mae_delta_W": 0.08781793563747087,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.003000020980835,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": 0.21297941945028498,
+        "worst_positive_peak_delta_W": 4.0
+      },
+      {
+        "candidate": {
+          "name": "2W / 6s inside only",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js",
+          "constants": {
+            "chargeCenterTrimOuterBandW": 10,
+            "chargeCenterTrimMaxStepW": 2
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 27.295046619527813,
+              "mean_target_error_W": -10.126684768616347,
+              "center_pct": 4.744451849531816,
+              "window_pct": 23.175565679155234,
+              "Z_min_W": -403.0,
+              "Z_max_W": 154.0,
+              "command_changes": 285,
+              "command_total_variation_W": 9172.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 21.07319623964166,
+              "mean_target_error_W": -10.48393822055371,
+              "center_pct": 1.6719634627014122,
+              "window_pct": 23.46282510961232,
+              "Z_min_W": -156.0,
+              "Z_max_W": 96.0,
+              "command_changes": 144,
+              "command_total_variation_W": 3350.0
+            },
+            "mae_delta_W": -0.17160796379398136,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 21.762180889180772,
+              "mean_target_error_W": -11.31983100451735,
+              "center_pct": 9.891522298714873,
+              "window_pct": 37.73019016776201,
+              "Z_min_W": -403.0,
+              "Z_max_W": 132.0,
+              "command_changes": 260,
+              "command_total_variation_W": 7642.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 16.411265172577224,
+              "mean_target_error_W": -10.78318636421887,
+              "center_pct": 6.114260702317849,
+              "window_pct": 31.770315364573413,
+              "Z_min_W": -141.0,
+              "Z_max_W": 81.0,
+              "command_changes": 121,
+              "command_total_variation_W": 2416.0
+            },
+            "mae_delta_W": -0.11997561423762448,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 36.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 24.9251777948727,
+              "mean_target_error_W": -15.113436064301753,
+              "center_pct": 9.168073686270242,
+              "window_pct": 34.529710048912854,
+              "Z_min_W": -403.0,
+              "Z_max_W": 142.0,
+              "command_changes": 255,
+              "command_total_variation_W": 7767.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 18.404186860059077,
+              "mean_target_error_W": -12.792444789818035,
+              "center_pct": 5.741784300892026,
+              "window_pct": 32.21551453654529,
+              "Z_min_W": -156.0,
+              "Z_max_W": 92.0,
+              "command_changes": 125,
+              "command_total_variation_W": 2696.0
+            },
+            "mae_delta_W": 0.21250325421353722,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 20.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.67959354862069,
+              "mean_target_error_W": -10.10177478375302,
+              "center_pct": 5.775113405039462,
+              "window_pct": 27.769881024385374,
+              "Z_min_W": -403.0,
+              "Z_max_W": 155.0,
+              "command_changes": 281,
+              "command_total_variation_W": 8143.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 20.27914817467071,
+              "mean_target_error_W": -10.828283107386538,
+              "center_pct": 2.2943732316908725,
+              "window_pct": 23.082157101488416,
+              "Z_min_W": -157.0,
+              "Z_max_W": 97.0,
+              "command_changes": 143,
+              "command_total_variation_W": 2937.0
+            },
+            "mae_delta_W": -0.47218830292665004,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.712863394770824,
+              "mean_target_error_W": -9.976595789978148,
+              "center_pct": 5.096732162042424,
+              "window_pct": 27.96965293743584,
+              "Z_min_W": -403.0,
+              "Z_max_W": 158.0,
+              "command_changes": 271,
+              "command_total_variation_W": 8133.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 20.22569248789289,
+              "mean_target_error_W": -10.914151579957437,
+              "center_pct": 1.3376042036636226,
+              "window_pct": 23.46265790224113,
+              "Z_min_W": -156.0,
+              "Z_max_W": 97.0,
+              "command_changes": 134,
+              "command_total_variation_W": 2903.0
+            },
+            "mae_delta_W": -0.6754320986437676,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 24.308175040902874,
+              "mean_target_error_W": -12.535751619205723,
+              "center_pct": 10.920251116678985,
+              "window_pct": 36.88366314622819,
+              "Z_min_W": -403.0,
+              "Z_max_W": 183.0,
+              "command_changes": 234,
+              "command_total_variation_W": 5679.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 18.198079484354437,
+              "mean_target_error_W": -11.867866237113175,
+              "center_pct": 10.128745068150828,
+              "window_pct": 32.158840684229204,
+              "Z_min_W": -165.0,
+              "Z_max_W": 88.0,
+              "command_changes": 111,
+              "command_total_variation_W": 2063.0
+            },
+            "mae_delta_W": -1.172223808255346,
+            "positive_peak_delta_W": 3.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.003000020980835,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": 0.21250325421353722,
+        "worst_positive_peak_delta_W": 3.0
+      },
+      {
+        "candidate": {
+          "name": "2W / 6s less PV restriction",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js",
+          "constants": {
+            "chargeCenterTrimSolarDeltaW": 25,
+            "chargeCenterTrimGridDeltaW": 10,
+            "chargeCenterTrimMaxStepW": 2
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 27.5234437548382,
+              "mean_target_error_W": -10.161812654462922,
+              "center_pct": 4.744364005441722,
+              "window_pct": 21.91737142549943,
+              "Z_min_W": -403.0,
+              "Z_max_W": 154.0,
+              "command_changes": 293,
+              "command_total_variation_W": 9335.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 21.514523716762486,
+              "mean_target_error_W": -10.557473856083215,
+              "center_pct": 1.671796295188947,
+              "window_pct": 21.068478451178535,
+              "Z_min_W": -156.0,
+              "Z_max_W": 96.0,
+              "command_changes": 151,
+              "command_total_variation_W": 3513.0
+            },
+            "mae_delta_W": 0.05678917151640661,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 21.541622675825426,
+              "mean_target_error_W": -11.347253550072338,
+              "center_pct": 9.515083018252266,
+              "window_pct": 39.06701055819671,
+              "Z_min_W": -403.0,
+              "Z_max_W": 132.0,
+              "command_changes": 281,
+              "command_total_variation_W": 7734.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 15.976242086962975,
+              "mean_target_error_W": -10.853517208806867,
+              "center_pct": 5.398063023416518,
+              "window_pct": 34.314287748379186,
+              "Z_min_W": -140.0,
+              "Z_max_W": 81.0,
+              "command_changes": 137,
+              "command_total_variation_W": 2504.0
+            },
+            "mae_delta_W": -0.3405338275929708,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 36.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 24.968571544640646,
+              "mean_target_error_W": -15.317552226188905,
+              "center_pct": 9.46562317201258,
+              "window_pct": 34.4732222146716,
+              "Z_min_W": -403.0,
+              "Z_max_W": 146.0,
+              "command_changes": 266,
+              "command_total_variation_W": 7951.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 18.44110851518202,
+              "mean_target_error_W": -13.058007992556984,
+              "center_pct": 6.3080216802440665,
+              "window_pct": 32.442377312615754,
+              "Z_min_W": -156.0,
+              "Z_max_W": 92.0,
+              "command_changes": 134,
+              "command_total_variation_W": 2886.0
+            },
+            "mae_delta_W": 0.2558970039814845,
+            "positive_peak_delta_W": 4.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 20.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.76513002745994,
+              "mean_target_error_W": -10.022159430570312,
+              "center_pct": 5.775025560949367,
+              "window_pct": 27.76996886847547,
+              "Z_min_W": -403.0,
+              "Z_max_W": 155.0,
+              "command_changes": 288,
+              "command_total_variation_W": 8293.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 20.445744352103894,
+              "mean_target_error_W": -10.680594955522373,
+              "center_pct": 2.294206064178408,
+              "window_pct": 23.082324269000882,
+              "Z_min_W": -157.0,
+              "Z_max_W": 96.0,
+              "command_changes": 149,
+              "command_total_variation_W": 3087.0
+            },
+            "mae_delta_W": -0.3866518240874015,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.8449122984471,
+              "mean_target_error_W": -9.901317613701133,
+              "center_pct": 5.096644317952329,
+              "window_pct": 27.06303618073434,
+              "Z_min_W": -403.0,
+              "Z_max_W": 158.0,
+              "command_changes": 283,
+              "command_total_variation_W": 8293.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 20.490834370306683,
+              "mean_target_error_W": -10.784749535909464,
+              "center_pct": 1.3374370361511576,
+              "window_pct": 21.73736405704912,
+              "Z_min_W": -156.0,
+              "Z_max_W": 98.0,
+              "command_changes": 144,
+              "command_total_variation_W": 3063.0
+            },
+            "mae_delta_W": -0.5433831949674932,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 26.004000186920166,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 1138.2980000972748,
+              "target_mae_W": 25.2369678542501,
+              "mean_target_error_W": -13.153218246732687,
+              "center_pct": 8.256537409181263,
+              "window_pct": 34.89349892164938,
+              "Z_min_W": -403.0,
+              "Z_max_W": 179.0,
+              "command_changes": 246,
+              "command_total_variation_W": 6160.0
+            },
+            "initial_solar": {
+              "duration_s": 598.1589999198914,
+              "target_mae_W": 19.783497396236054,
+              "mean_target_error_W": -11.943842666200558,
+              "center_pct": 4.340986273480152,
+              "window_pct": 29.374129664208866,
+              "Z_min_W": -161.0,
+              "Z_max_W": 92.0,
+              "command_changes": 123,
+              "command_total_variation_W": 2371.0
+            },
+            "mae_delta_W": -0.24343099490812037,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.003000020980835,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": 0.2558970039814845,
+        "worst_positive_peak_delta_W": 4.0
+      }
+    ],
+    "new": [
+      {
+        "candidate": {
+          "name": "attached V4.21",
+          "file": "analysis_ble/9d53f569af059e58.js"
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 81.15978817053755,
+              "mean_target_error_W": -49.02422726481394,
+              "center_pct": 3.768932560773741,
+              "window_pct": 26.970216849735486,
+              "Z_min_W": -671.0,
+              "Z_max_W": 271.0,
+              "command_changes": 90,
+              "command_total_variation_W": 3486.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 9.483201385265085,
+              "mean_target_error_W": -9.483201385265085,
+              "center_pct": 3.8311901234748422,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -13.0,
+              "Z_max_W": 4.0,
+              "command_changes": 6,
+              "command_total_variation_W": 14.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 106.14000010490417,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 75.19002692865233,
+              "mean_target_error_W": -47.07614545400141,
+              "center_pct": 4.87677727559271,
+              "window_pct": 28.08402910596844,
+              "Z_min_W": -681.0,
+              "Z_max_W": 261.0,
+              "command_changes": 98,
+              "command_total_variation_W": 3756.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 9.233187023580944,
+              "mean_target_error_W": -9.233187023580944,
+              "center_pct": 3.8311901234748422,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -13.0,
+              "Z_max_W": 4.0,
+              "command_changes": 6,
+              "command_total_variation_W": 14.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 104.6159999370575,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 83.23593949802078,
+              "mean_target_error_W": -56.21690482549608,
+              "center_pct": 5.024091808528533,
+              "window_pct": 28.22694650312554,
+              "Z_min_W": -686.0,
+              "Z_max_W": 256.0,
+              "command_changes": 86,
+              "command_total_variation_W": 3400.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 10.593019892508986,
+              "mean_target_error_W": -10.593019892508986,
+              "center_pct": 0.0,
+              "window_pct": 61.94300198038623,
+              "Z_min_W": -14.0,
+              "Z_max_W": 2.0,
+              "command_changes": 6,
+              "command_total_variation_W": 12.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 86.03200006484985,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.69160375482774,
+              "mean_target_error_W": -47.83996765048266,
+              "center_pct": 4.397768584047548,
+              "window_pct": 28.19710669918591,
+              "Z_min_W": -669.0,
+              "Z_max_W": 273.0,
+              "command_changes": 91,
+              "command_total_variation_W": 3392.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.596393023959292,
+              "mean_target_error_W": -8.596393023959292,
+              "center_pct": 7.664296661308262,
+              "window_pct": 69.42522602631436,
+              "Z_min_W": -12.0,
+              "Z_max_W": 5.0,
+              "command_changes": 7,
+              "command_total_variation_W": 15.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 86.03200006484985,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.9915981074334,
+              "mean_target_error_W": -47.73914657748848,
+              "center_pct": 3.1410389306574977,
+              "window_pct": 27.567956519896846,
+              "Z_min_W": -669.0,
+              "Z_max_W": 273.0,
+              "command_changes": 91,
+              "command_total_variation_W": 3393.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.636602307922185,
+              "mean_target_error_W": -8.636602307922185,
+              "center_pct": 7.664296661308262,
+              "window_pct": 69.42522602631436,
+              "Z_min_W": -12.0,
+              "Z_max_W": 5.0,
+              "command_changes": 7,
+              "command_total_variation_W": 15.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 84.0329999923706,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 88.25566521717327,
+              "mean_target_error_W": -51.954276276215246,
+              "center_pct": 1.256415647151203,
+              "window_pct": 20.20598948560481,
+              "Z_min_W": -692.0,
+              "Z_max_W": 252.0,
+              "command_changes": 92,
+              "command_total_variation_W": 3187.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 9.749659779333614,
+              "mean_target_error_W": -9.749659779333614,
+              "center_pct": 3.8311901234748422,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -14.0,
+              "Z_max_W": 4.0,
+              "command_changes": 7,
+              "command_total_variation_W": 14.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 168.15300011634827,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": 0.0,
+        "worst_positive_peak_delta_W": 0.0
+      },
+      {
+        "candidate": {
+          "name": "3W / 6s selected trim",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js"
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.85445091677978,
+              "mean_target_error_W": -48.6560817956881,
+              "center_pct": 7.540063914101457,
+              "window_pct": 26.970216849735486,
+              "Z_min_W": -671.0,
+              "Z_max_W": 271.0,
+              "command_changes": 91,
+              "command_total_variation_W": 3495.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.620139115963631,
+              "mean_target_error_W": -7.236905118754632,
+              "center_pct": 26.841328750510634,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 8.0,
+              "command_changes": 7,
+              "command_total_variation_W": 23.0
+            },
+            "mae_delta_W": -0.3053372537577701,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 106.14000010490417,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 74.88027651603574,
+              "mean_target_error_W": -46.678471077816575,
+              "center_pct": 8.648222710047477,
+              "window_pct": 28.678941896209924,
+              "Z_min_W": -681.0,
+              "Z_max_W": 261.0,
+              "command_changes": 100,
+              "command_total_variation_W": 3765.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.343197185968959,
+              "mean_target_error_W": -6.806715583820966,
+              "center_pct": 26.843245164869213,
+              "window_pct": 69.40606051190288,
+              "Z_min_W": -13.0,
+              "Z_max_W": 9.0,
+              "command_changes": 8,
+              "command_total_variation_W": 23.0
+            },
+            "mae_delta_W": -0.3097504126165944,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 104.6159999370575,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 82.7788869225019,
+              "mean_target_error_W": -55.697044034609114,
+              "center_pct": 9.423116866860697,
+              "window_pct": 28.855154289257033,
+              "Z_min_W": -686.0,
+              "Z_max_W": 256.0,
+              "command_changes": 88,
+              "command_total_variation_W": 3411.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.804243226521639,
+              "mean_target_error_W": -7.421009229312641,
+              "center_pct": 26.841328750510634,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 8.0,
+              "command_changes": 8,
+              "command_total_variation_W": 23.0
+            },
+            "mae_delta_W": -0.4570525755188868,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 86.03200006484985,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.49043591552525,
+              "mean_target_error_W": -47.53833054125022,
+              "center_pct": 6.912798446239317,
+              "window_pct": 27.56889891305441,
+              "Z_min_W": -669.0,
+              "Z_max_W": 273.0,
+              "command_changes": 96,
+              "command_total_variation_W": 3403.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.29237018051947,
+              "mean_target_error_W": -6.602487660283797,
+              "center_pct": 23.01013862703579,
+              "window_pct": 69.42522602631436,
+              "Z_min_W": -12.0,
+              "Z_max_W": 9.0,
+              "command_changes": 10,
+              "command_total_variation_W": 24.0
+            },
+            "mae_delta_W": -0.20116783930248516,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 86.03200006484985,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.93221990959711,
+              "mean_target_error_W": -47.27059779996265,
+              "center_pct": 6.766111925781189,
+              "window_pct": 26.939748733765352,
+              "Z_min_W": -669.0,
+              "Z_max_W": 273.0,
+              "command_changes": 95,
+              "command_total_variation_W": 3424.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.332579464482363,
+              "mean_target_error_W": -6.6426969442466905,
+              "center_pct": 23.01013862703579,
+              "window_pct": 69.42522602631436,
+              "Z_min_W": -12.0,
+              "Z_max_W": 9.0,
+              "command_changes": 10,
+              "command_total_variation_W": 24.0
+            },
+            "mae_delta_W": -0.0593781978362955,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 84.0329999923706,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 87.94281145910568,
+              "mean_target_error_W": -51.578614302779584,
+              "center_pct": 5.0275470004789184,
+              "window_pct": 20.20598948560481,
+              "Z_min_W": -692.0,
+              "Z_max_W": 252.0,
+              "command_changes": 93,
+              "command_total_variation_W": 3196.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.840734401602587,
+              "mean_target_error_W": -7.4575004043935875,
+              "center_pct": 26.841328750510634,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 8.0,
+              "command_changes": 8,
+              "command_total_variation_W": 23.0
+            },
+            "mae_delta_W": -0.31285375806758964,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 168.15300011634827,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": -0.0593781978362955,
+        "worst_positive_peak_delta_W": 0.0
+      },
+      {
+        "candidate": {
+          "name": "2W / 8s stable trim",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js",
+          "constants": {
+            "chargeCenterTrimWaitMs": 8000,
+            "chargeCenterTrimMaxStepW": 2
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 81.01785718432649,
+              "mean_target_error_W": -48.857174248780154,
+              "center_pct": 5.025976370179048,
+              "window_pct": 26.970216849735486,
+              "Z_min_W": -671.0,
+              "Z_max_W": 271.0,
+              "command_changes": 91,
+              "command_total_variation_W": 3490.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.617187618519306,
+              "mean_target_error_W": -8.463901685293141,
+              "center_pct": 11.501236484800742,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 6.0,
+              "command_changes": 7,
+              "command_total_variation_W": 18.0
+            },
+            "mae_delta_W": -0.14193098621106515,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 106.14000010490417,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 75.03327338015885,
+              "mean_target_error_W": -46.89426987568522,
+              "center_pct": 6.133821084998016,
+              "window_pct": 28.678941896209924,
+              "Z_min_W": -681.0,
+              "Z_max_W": 261.0,
+              "command_changes": 99,
+              "command_total_variation_W": 3760.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.27673111070697,
+              "mean_target_error_W": -8.123445177480805,
+              "center_pct": 11.501236484800742,
+              "window_pct": 69.40606051190288,
+              "Z_min_W": -13.0,
+              "Z_max_W": 6.0,
+              "command_changes": 7,
+              "command_total_variation_W": 18.0
+            },
+            "mae_delta_W": -0.15675354849348366,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 104.6159999370575,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 82.944774610684,
+              "mean_target_error_W": -55.900617908336564,
+              "center_pct": 6.909029322938287,
+              "window_pct": 28.855154289257033,
+              "Z_min_W": -686.0,
+              "Z_max_W": 256.0,
+              "command_changes": 87,
+              "command_total_variation_W": 3406.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.81643249917065,
+              "mean_target_error_W": -8.663146565944485,
+              "center_pct": 11.501236484800742,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 6.0,
+              "command_changes": 7,
+              "command_total_variation_W": 18.0
+            },
+            "mae_delta_W": -0.2911648873367909,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 86.03200006484985,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.60986763954052,
+              "mean_target_error_W": -47.72056419601548,
+              "center_pct": 5.026604607321356,
+              "window_pct": 27.56889891305441,
+              "Z_min_W": -669.0,
+              "Z_max_W": 273.0,
+              "command_changes": 95,
+              "command_total_variation_W": 3398.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.059374798374384,
+              "mean_target_error_W": -7.752802931922053,
+              "center_pct": 11.501236484800742,
+              "window_pct": 69.42522602631436,
+              "Z_min_W": -12.0,
+              "Z_max_W": 7.0,
+              "command_changes": 9,
+              "command_total_variation_W": 19.0
+            },
+            "mae_delta_W": -0.0817361152872138,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 86.03200006484985,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.93500286683653,
+              "mean_target_error_W": -47.64488399771164,
+              "center_pct": 3.7698749539313043,
+              "window_pct": 27.567956519896846,
+              "Z_min_W": -669.0,
+              "Z_max_W": 273.0,
+              "command_changes": 94,
+              "command_total_variation_W": 3399.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.099584082337277,
+              "mean_target_error_W": -7.7930122158849455,
+              "center_pct": 11.501236484800742,
+              "window_pct": 69.42522602631436,
+              "Z_min_W": -12.0,
+              "Z_max_W": 7.0,
+              "command_changes": 9,
+              "command_total_variation_W": 19.0
+            },
+            "mae_delta_W": -0.05659524059687726,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 84.0329999923706,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 88.11301807581744,
+              "mean_target_error_W": -51.78650710503669,
+              "center_pct": 2.5134594565565096,
+              "window_pct": 20.20598948560481,
+              "Z_min_W": -692.0,
+              "Z_max_W": 252.0,
+              "command_changes": 92,
+              "command_total_variation_W": 3191.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.879276281699202,
+              "mean_target_error_W": -8.725990348473037,
+              "center_pct": 11.501236484800742,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 6.0,
+              "command_changes": 7,
+              "command_total_variation_W": 18.0
+            },
+            "mae_delta_W": -0.14264714135583745,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 168.15300011634827,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": -0.05659524059687726,
+        "worst_positive_peak_delta_W": 0.0
+      },
+      {
+        "candidate": {
+          "name": "2W / 6s stable trim",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js",
+          "constants": {
+            "chargeCenterTrimMaxStepW": 2
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.92358832367599,
+              "mean_target_error_W": -48.737777076684395,
+              "center_pct": 5.653870000295292,
+              "window_pct": 26.970216849735486,
+              "Z_min_W": -671.0,
+              "Z_max_W": 271.0,
+              "command_changes": 93,
+              "command_total_variation_W": 3494.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.041991649843588,
+              "mean_target_error_W": -7.735381455104087,
+              "center_pct": 15.332426151333674,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 8.0,
+              "command_changes": 9,
+              "command_total_variation_W": 22.0
+            },
+            "mae_delta_W": -0.2361998468615667,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 106.14000010490417,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 74.98297278291501,
+              "mean_target_error_W": -46.79372521879594,
+              "center_pct": 5.5056132239783135,
+              "window_pct": 28.678941896209924,
+              "Z_min_W": -681.0,
+              "Z_max_W": 261.0,
+              "command_changes": 100,
+              "command_total_variation_W": 3762.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.969814271392421,
+              "mean_target_error_W": -7.5099564717139256,
+              "center_pct": 7.668129490025414,
+              "window_pct": 69.40606051190288,
+              "Z_min_W": -13.0,
+              "Z_max_W": 8.0,
+              "command_changes": 8,
+              "command_total_variation_W": 20.0
+            },
+            "mae_delta_W": -0.20705414573731673,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 104.6159999370575,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 82.8567878278948,
+              "mean_target_error_W": -55.78750281410212,
+              "center_pct": 7.536922953054531,
+              "window_pct": 28.855154289257033,
+              "Z_min_W": -686.0,
+              "Z_max_W": 256.0,
+              "command_changes": 89,
+              "command_total_variation_W": 3410.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.279567595873266,
+              "mean_target_error_W": -7.9729574011337645,
+              "center_pct": 15.332426151333674,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 8.0,
+              "command_changes": 9,
+              "command_total_variation_W": 22.0
+            },
+            "mae_delta_W": -0.37915167012597806,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 86.03200006484985,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.5281754993555,
+              "mean_target_error_W": -47.60116702391972,
+              "center_pct": 6.283334185823203,
+              "window_pct": 27.56889891305441,
+              "Z_min_W": -669.0,
+              "Z_max_W": 273.0,
+              "command_changes": 97,
+              "command_total_variation_W": 3402.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.560917626168514,
+              "mean_target_error_W": -7.024282701732998,
+              "center_pct": 19.16936551788425,
+              "window_pct": 69.42522602631436,
+              "Z_min_W": -12.0,
+              "Z_max_W": 9.0,
+              "command_changes": 11,
+              "command_total_variation_W": 23.0
+            },
+            "mae_delta_W": -0.16342825547224038,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 86.03200006484985,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.8533107266515,
+              "mean_target_error_W": -47.52548682561588,
+              "center_pct": 5.026604532433152,
+              "window_pct": 27.567956519896846,
+              "Z_min_W": -669.0,
+              "Z_max_W": 273.0,
+              "command_changes": 96,
+              "command_total_variation_W": 3403.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.601126910131407,
+              "mean_target_error_W": -7.0644919856958905,
+              "center_pct": 19.16936551788425,
+              "window_pct": 69.42522602631436,
+              "Z_min_W": -12.0,
+              "Z_max_W": 9.0,
+              "command_changes": 11,
+              "command_total_variation_W": 23.0
+            },
+            "mae_delta_W": -0.13828738078190383,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 84.0329999923706,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 88.02503129302826,
+              "mean_target_error_W": -51.673392010802246,
+              "center_pct": 3.141353086672753,
+              "window_pct": 20.20598948560481,
+              "Z_min_W": -692.0,
+              "Z_max_W": 252.0,
+              "command_changes": 94,
+              "command_total_variation_W": 3195.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.342411378401819,
+              "mean_target_error_W": -8.035801183662317,
+              "center_pct": 15.332426151333674,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 8.0,
+              "command_changes": 9,
+              "command_total_variation_W": 22.0
+            },
+            "mae_delta_W": -0.23063392414501038,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 168.15300011634827,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": -0.13828738078190383,
+        "worst_positive_peak_delta_W": 0.0
+      },
+      {
+        "candidate": {
+          "name": "2W / 6s inside only",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js",
+          "constants": {
+            "chargeCenterTrimOuterBandW": 10,
+            "chargeCenterTrimMaxStepW": 2
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.92358832367599,
+              "mean_target_error_W": -48.737777076684395,
+              "center_pct": 5.653870000295292,
+              "window_pct": 26.970216849735486,
+              "Z_min_W": -671.0,
+              "Z_max_W": 271.0,
+              "command_changes": 93,
+              "command_total_variation_W": 3494.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.041991649843588,
+              "mean_target_error_W": -7.735381455104087,
+              "center_pct": 15.332426151333674,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 8.0,
+              "command_changes": 9,
+              "command_total_variation_W": 22.0
+            },
+            "mae_delta_W": -0.2361998468615667,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 106.14000010490417,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 74.98297278291501,
+              "mean_target_error_W": -46.79372521879594,
+              "center_pct": 5.5056132239783135,
+              "window_pct": 28.678941896209924,
+              "Z_min_W": -681.0,
+              "Z_max_W": 261.0,
+              "command_changes": 100,
+              "command_total_variation_W": 3762.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.969814271392421,
+              "mean_target_error_W": -7.5099564717139256,
+              "center_pct": 7.668129490025414,
+              "window_pct": 69.40606051190288,
+              "Z_min_W": -13.0,
+              "Z_max_W": 8.0,
+              "command_changes": 8,
+              "command_total_variation_W": 20.0
+            },
+            "mae_delta_W": -0.20705414573731673,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 104.6159999370575,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 82.8567878278948,
+              "mean_target_error_W": -55.78750281410212,
+              "center_pct": 7.536922953054531,
+              "window_pct": 28.855154289257033,
+              "Z_min_W": -686.0,
+              "Z_max_W": 256.0,
+              "command_changes": 89,
+              "command_total_variation_W": 3410.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.279567595873266,
+              "mean_target_error_W": -7.9729574011337645,
+              "center_pct": 15.332426151333674,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 8.0,
+              "command_changes": 9,
+              "command_total_variation_W": 22.0
+            },
+            "mae_delta_W": -0.37915167012597806,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 86.03200006484985,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.5281754993555,
+              "mean_target_error_W": -47.60116702391972,
+              "center_pct": 6.283334185823203,
+              "window_pct": 27.56889891305441,
+              "Z_min_W": -669.0,
+              "Z_max_W": 273.0,
+              "command_changes": 97,
+              "command_total_variation_W": 3402.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.560917626168514,
+              "mean_target_error_W": -7.024282701732998,
+              "center_pct": 19.16936551788425,
+              "window_pct": 69.42522602631436,
+              "Z_min_W": -12.0,
+              "Z_max_W": 9.0,
+              "command_changes": 11,
+              "command_total_variation_W": 23.0
+            },
+            "mae_delta_W": -0.16342825547224038,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 86.03200006484985,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.8533107266515,
+              "mean_target_error_W": -47.52548682561588,
+              "center_pct": 5.026604532433152,
+              "window_pct": 27.567956519896846,
+              "Z_min_W": -669.0,
+              "Z_max_W": 273.0,
+              "command_changes": 96,
+              "command_total_variation_W": 3403.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.601126910131407,
+              "mean_target_error_W": -7.0644919856958905,
+              "center_pct": 19.16936551788425,
+              "window_pct": 69.42522602631436,
+              "Z_min_W": -12.0,
+              "Z_max_W": 9.0,
+              "command_changes": 11,
+              "command_total_variation_W": 23.0
+            },
+            "mae_delta_W": -0.13828738078190383,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 84.0329999923706,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 88.02503129302826,
+              "mean_target_error_W": -51.673392010802246,
+              "center_pct": 3.141353086672753,
+              "window_pct": 20.20598948560481,
+              "Z_min_W": -692.0,
+              "Z_max_W": 252.0,
+              "command_changes": 94,
+              "command_total_variation_W": 3195.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.342411378401819,
+              "mean_target_error_W": -8.035801183662317,
+              "center_pct": 15.332426151333674,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 8.0,
+              "command_changes": 9,
+              "command_total_variation_W": 22.0
+            },
+            "mae_delta_W": -0.23063392414501038,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 168.15300011634827,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": -0.13828738078190383,
+        "worst_positive_peak_delta_W": 0.0
+      },
+      {
+        "candidate": {
+          "name": "2W / 6s less PV restriction",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js",
+          "constants": {
+            "chargeCenterTrimSolarDeltaW": 25,
+            "chargeCenterTrimGridDeltaW": 10,
+            "chargeCenterTrimMaxStepW": 2
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.88588957638332,
+              "mean_target_error_W": -48.70007832939173,
+              "center_pct": 5.653870000295292,
+              "window_pct": 26.970216849735486,
+              "Z_min_W": -671.0,
+              "Z_max_W": 271.0,
+              "command_changes": 94,
+              "command_total_variation_W": 3494.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.9653678565129304,
+              "mean_target_error_W": -7.6587576617734285,
+              "center_pct": 15.332426151333674,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 8.0,
+              "command_changes": 9,
+              "command_total_variation_W": 22.0
+            },
+            "mae_delta_W": -0.27389859415423246,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 106.14000010490417,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 74.94528031574713,
+              "mean_target_error_W": -46.75603275162805,
+              "center_pct": 6.762342952256567,
+              "window_pct": 28.678941896209924,
+              "Z_min_W": -681.0,
+              "Z_max_W": 261.0,
+              "command_changes": 101,
+              "command_total_variation_W": 3764.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.739827879122416,
+              "mean_target_error_W": -7.27997007944392,
+              "center_pct": 15.336259436992739,
+              "window_pct": 69.40606051190288,
+              "Z_min_W": -13.0,
+              "Z_max_W": 8.0,
+              "command_changes": 9,
+              "command_total_variation_W": 22.0
+            },
+            "mae_delta_W": -0.24474661290520316,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 104.6159999370575,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 82.84422995529248,
+              "mean_target_error_W": -55.7749449414998,
+              "center_pct": 7.536922953054531,
+              "window_pct": 28.855154289257033,
+              "Z_min_W": -686.0,
+              "Z_max_W": 256.0,
+              "command_changes": 89,
+              "command_total_variation_W": 3410.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.202943802542608,
+              "mean_target_error_W": -7.896333607803106,
+              "center_pct": 15.332426151333674,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 8.0,
+              "command_changes": 9,
+              "command_total_variation_W": 22.0
+            },
+            "mae_delta_W": -0.39170954272830727,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 86.03200006484985,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.5281754993555,
+              "mean_target_error_W": -47.60116702391972,
+              "center_pct": 6.283334185823203,
+              "window_pct": 27.56889891305441,
+              "Z_min_W": -669.0,
+              "Z_max_W": 273.0,
+              "command_changes": 97,
+              "command_total_variation_W": 3402.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.560917626168514,
+              "mean_target_error_W": -7.024282701732998,
+              "center_pct": 19.16936551788425,
+              "window_pct": 69.42522602631436,
+              "Z_min_W": -12.0,
+              "Z_max_W": 9.0,
+              "command_changes": 11,
+              "command_total_variation_W": 23.0
+            },
+            "mae_delta_W": -0.16342825547224038,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 86.03200006484985,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 80.8533107266515,
+              "mean_target_error_W": -47.52548682561588,
+              "center_pct": 5.026604532433152,
+              "window_pct": 27.567956519896846,
+              "Z_min_W": -669.0,
+              "Z_max_W": 273.0,
+              "command_changes": 96,
+              "command_total_variation_W": 3403.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 7.601126910131407,
+              "mean_target_error_W": -7.0644919856958905,
+              "center_pct": 19.16936551788425,
+              "window_pct": 69.42522602631436,
+              "Z_min_W": -12.0,
+              "Z_max_W": 9.0,
+              "command_changes": 11,
+              "command_total_variation_W": 23.0
+            },
+            "mae_delta_W": -0.13828738078190383,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 84.0329999923706,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 318.3659999370575,
+              "target_mae_W": 88.01247342042593,
+              "mean_target_error_W": -51.660834138199924,
+              "center_pct": 3.141353086672753,
+              "window_pct": 20.20598948560481,
+              "Z_min_W": -692.0,
+              "Z_max_W": 252.0,
+              "command_changes": 94,
+              "command_total_variation_W": 3195.0
+            },
+            "initial_solar": {
+              "duration_s": 52.17700004577637,
+              "target_mae_W": 8.265787585071159,
+              "mean_target_error_W": -7.959177390331657,
+              "center_pct": 15.332426151333674,
+              "window_pct": 65.77610851821964,
+              "Z_min_W": -12.0,
+              "Z_max_W": 8.0,
+              "command_changes": 9,
+              "command_total_variation_W": 22.0
+            },
+            "mae_delta_W": -0.2431917967473396,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 168.15300011634827,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": -0.13828738078190383,
+        "worst_positive_peak_delta_W": 0.0
+      }
+    ],
+    "calm": [
+      {
+        "candidate": {
+          "name": "attached V4.21",
+          "file": "analysis_ble/9d53f569af059e58.js"
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 17.335304483438293,
+              "mean_target_error_W": -13.086090130919793,
+              "center_pct": 6.965456257855562,
+              "window_pct": 44.786727247007555,
+              "Z_min_W": -347.0,
+              "Z_max_W": 114.0,
+              "command_changes": 144,
+              "command_total_variation_W": 1696.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 13.478504602183031,
+              "mean_target_error_W": -9.550993889751886,
+              "center_pct": 4.51417461095945,
+              "window_pct": 38.90023094247634,
+              "Z_min_W": -79.0,
+              "Z_max_W": 114.0,
+              "command_changes": 120,
+              "command_total_variation_W": 962.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 16.11919500237731,
+              "mean_target_error_W": -12.421063767073472,
+              "center_pct": 6.219290616822723,
+              "window_pct": 41.33496492707132,
+              "Z_min_W": -300.0,
+              "Z_max_W": 116.0,
+              "command_changes": 129,
+              "command_total_variation_W": 1783.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 12.685945189047548,
+              "mean_target_error_W": -9.527599263184896,
+              "center_pct": 4.166970472412579,
+              "window_pct": 35.47089559220921,
+              "Z_min_W": -64.0,
+              "Z_max_W": 116.0,
+              "command_changes": 101,
+              "command_total_variation_W": 869.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 16.00499987602234,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 17.69784398324293,
+              "mean_target_error_W": -13.53523705972882,
+              "center_pct": 6.468136849093586,
+              "window_pct": 47.39134271938453,
+              "Z_min_W": -347.0,
+              "Z_max_W": 95.0,
+              "command_changes": 122,
+              "command_total_variation_W": 1912.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 13.032923640980595,
+              "mean_target_error_W": -9.490267875125538,
+              "center_pct": 5.2089301084166015,
+              "window_pct": 42.53632623042929,
+              "Z_min_W": -76.0,
+              "Z_max_W": 95.0,
+              "command_changes": 96,
+              "command_total_variation_W": 785.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": null,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 17.30813783572561,
+              "mean_target_error_W": -12.919626793835656,
+              "center_pct": 6.965456257855562,
+              "window_pct": 44.410784094980016,
+              "Z_min_W": -347.0,
+              "Z_max_W": 114.0,
+              "command_changes": 143,
+              "command_total_variation_W": 1694.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 13.385007734711278,
+              "mean_target_error_W": -9.339447615174198,
+              "center_pct": 4.51417461095945,
+              "window_pct": 38.37543184534166,
+              "Z_min_W": -78.0,
+              "Z_max_W": 114.0,
+              "command_changes": 120,
+              "command_total_variation_W": 957.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 17.419715717471398,
+              "mean_target_error_W": -13.220820287839516,
+              "center_pct": 6.468012497167002,
+              "window_pct": 41.83253303968647,
+              "Z_min_W": -347.0,
+              "Z_max_W": 114.0,
+              "command_changes": 137,
+              "command_total_variation_W": 1688.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 13.558137610366149,
+              "mean_target_error_W": -9.777272037275777,
+              "center_pct": 3.8197663338657097,
+              "window_pct": 34.776313684238794,
+              "Z_min_W": -80.0,
+              "Z_max_W": 114.0,
+              "command_changes": 113,
+              "command_total_variation_W": 951.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 17.85439576462675,
+              "mean_target_error_W": -13.454453464039286,
+              "center_pct": 5.473000594213339,
+              "window_pct": 45.64979214926823,
+              "Z_min_W": -347.0,
+              "Z_max_W": 106.0,
+              "command_changes": 122,
+              "command_total_variation_W": 1689.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 13.612600048604891,
+              "mean_target_error_W": -9.856795665870674,
+              "center_pct": 4.51417461095945,
+              "window_pct": 39.063590528403644,
+              "Z_min_W": -84.0,
+              "Z_max_W": 106.0,
+              "command_changes": 97,
+              "command_total_variation_W": 928.0
+            },
+            "mae_delta_W": 0.0,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": 0.0,
+        "worst_positive_peak_delta_W": 0.0
+      },
+      {
+        "candidate": {
+          "name": "3W / 6s selected trim",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js"
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.382901143997252,
+              "mean_target_error_W": -11.77045584870837,
+              "center_pct": 30.848850400758554,
+              "window_pct": 55.702259989674076,
+              "Z_min_W": -347.0,
+              "Z_max_W": 114.0,
+              "command_changes": 156,
+              "command_total_variation_W": 1334.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.815464482996243,
+              "mean_target_error_W": -8.402360998886952,
+              "center_pct": 27.087998893980835,
+              "window_pct": 46.84512957820676,
+              "Z_min_W": -79.0,
+              "Z_max_W": 114.0,
+              "command_changes": 121,
+              "command_total_variation_W": 598.0
+            },
+            "mae_delta_W": -2.952403339441041,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 12.690848668794763,
+              "mean_target_error_W": -9.820344464413576,
+              "center_pct": 33.55419831650885,
+              "window_pct": 59.83651513883822,
+              "Z_min_W": -300.0,
+              "Z_max_W": 115.0,
+              "command_changes": 138,
+              "command_total_variation_W": 1385.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 9.726590641298065,
+              "mean_target_error_W": -7.119806269298467,
+              "center_pct": 29.647761344160493,
+              "window_pct": 53.310417859968496,
+              "Z_min_W": -65.0,
+              "Z_max_W": 115.0,
+              "command_changes": 99,
+              "command_total_variation_W": 595.0
+            },
+            "mae_delta_W": -3.4283463335825477,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 16.00499987602234,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.657126962858952,
+              "mean_target_error_W": -11.652725811057088,
+              "center_pct": 32.76649604840102,
+              "window_pct": 60.2134531359284,
+              "Z_min_W": -347.0,
+              "Z_max_W": 97.0,
+              "command_changes": 137,
+              "command_total_variation_W": 1742.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.10286791172734,
+              "mean_target_error_W": -7.384967801679139,
+              "center_pct": 28.393312779339226,
+              "window_pct": 54.87873898126764,
+              "Z_min_W": -78.0,
+              "Z_max_W": 97.0,
+              "command_changes": 100,
+              "command_total_variation_W": 576.0
+            },
+            "mae_delta_W": -3.040717020383978,
+            "positive_peak_delta_W": 2.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": null,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.154753538669565,
+              "mean_target_error_W": -11.592652031908628,
+              "center_pct": 31.190096785722552,
+              "window_pct": 56.19982813193918,
+              "Z_min_W": -347.0,
+              "Z_max_W": 113.0,
+              "command_changes": 155,
+              "command_total_variation_W": 1295.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.524767817915095,
+              "mean_target_error_W": -8.036039797428701,
+              "center_pct": 27.56436292339255,
+              "window_pct": 46.84512957820676,
+              "Z_min_W": -78.0,
+              "Z_max_W": 113.0,
+              "command_changes": 120,
+              "command_total_variation_W": 586.0
+            },
+            "mae_delta_W": -3.1533842970560446,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.020739703402894,
+              "mean_target_error_W": -11.503410622142459,
+              "center_pct": 31.190096785722552,
+              "window_pct": 56.320458247464146,
+              "Z_min_W": -347.0,
+              "Z_max_W": 115.0,
+              "command_changes": 153,
+              "command_total_variation_W": 1299.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.38284812793966,
+              "mean_target_error_W": -7.942728686849828,
+              "center_pct": 27.56436292339255,
+              "window_pct": 47.01352359036879,
+              "Z_min_W": -78.0,
+              "Z_max_W": 115.0,
+              "command_changes": 118,
+              "command_total_variation_W": 593.0
+            },
+            "mae_delta_W": -3.398976014068504,
+            "positive_peak_delta_W": 1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.6632194194622,
+              "mean_target_error_W": -11.285638456792176,
+              "center_pct": 31.024945418984807,
+              "window_pct": 60.71089680766708,
+              "Z_min_W": -347.0,
+              "Z_max_W": 107.0,
+              "command_changes": 138,
+              "command_total_variation_W": 1471.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.448200624401135,
+              "mean_target_error_W": -7.383082486991527,
+              "center_pct": 27.351179553848482,
+              "window_pct": 54.53153475994085,
+              "Z_min_W": -86.0,
+              "Z_max_W": 107.0,
+              "command_changes": 102,
+              "command_total_variation_W": 671.0
+            },
+            "mae_delta_W": -3.1911763451645516,
+            "positive_peak_delta_W": 1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": -2.952403339441041,
+        "worst_positive_peak_delta_W": 2.0
+      },
+      {
+        "candidate": {
+          "name": "2W / 8s stable trim",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js",
+          "constants": {
+            "chargeCenterTrimWaitMs": 8000,
+            "chargeCenterTrimMaxStepW": 2
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.816590028021835,
+              "mean_target_error_W": -12.072083351394483,
+              "center_pct": 19.99562248010468,
+              "window_pct": 54.983578140613645,
+              "Z_min_W": -347.0,
+              "Z_max_W": 114.0,
+              "command_changes": 170,
+              "command_total_variation_W": 1315.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.927996817628724,
+              "mean_target_error_W": -8.36465810035303,
+              "center_pct": 22.008749527669174,
+              "window_pct": 45.493984715766054,
+              "Z_min_W": -78.0,
+              "Z_max_W": 114.0,
+              "command_changes": 132,
+              "command_total_variation_W": 592.0
+            },
+            "mae_delta_W": -2.5187144554164576,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.151591025750356,
+              "mean_target_error_W": -10.954029989246093,
+              "center_pct": 18.746292474660965,
+              "window_pct": 54.607013228953186,
+              "Z_min_W": -300.0,
+              "Z_max_W": 116.0,
+              "command_changes": 150,
+              "command_total_variation_W": 1523.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.862840489704237,
+              "mean_target_error_W": -8.105067454842295,
+              "center_pct": 19.577799789380904,
+              "window_pct": 46.35765499384541,
+              "Z_min_W": -64.0,
+              "Z_max_W": 116.0,
+              "command_changes": 111,
+              "command_total_variation_W": 595.0
+            },
+            "mae_delta_W": -1.967603976626954,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 16.00499987602234,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 15.822473541366467,
+              "mean_target_error_W": -12.595292200320273,
+              "center_pct": 19.000237521371265,
+              "window_pct": 53.9880688596036,
+              "Z_min_W": -347.0,
+              "Z_max_W": 96.0,
+              "command_changes": 154,
+              "command_total_variation_W": 1714.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 11.109461321798413,
+              "mean_target_error_W": -8.43501728018772,
+              "center_pct": 22.008749527669174,
+              "window_pct": 46.188393034249756,
+              "Z_min_W": -76.0,
+              "Z_max_W": 96.0,
+              "command_changes": 115,
+              "command_total_variation_W": 559.0
+            },
+            "mae_delta_W": -1.8753704418764627,
+            "positive_peak_delta_W": 1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": null,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.756449076892048,
+              "mean_target_error_W": -11.831541934076617,
+              "center_pct": 19.37692675530835,
+              "window_pct": 55.602273806110055,
+              "Z_min_W": -347.0,
+              "Z_max_W": 114.0,
+              "command_changes": 173,
+              "command_total_variation_W": 1321.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.767630168586923,
+              "mean_target_error_W": -8.028859618055431,
+              "center_pct": 21.1450791668099,
+              "window_pct": 46.35765499384541,
+              "Z_min_W": -78.0,
+              "Z_max_W": 114.0,
+              "command_changes": 135,
+              "command_total_variation_W": 595.0
+            },
+            "mae_delta_W": -2.5516887588335617,
+            "positive_peak_delta_W": 0.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.682727912483083,
+              "mean_target_error_W": -11.79264183291585,
+              "center_pct": 19.37692675530835,
+              "window_pct": 55.353800629618945,
+              "Z_min_W": -347.0,
+              "Z_max_W": 115.0,
+              "command_changes": 166,
+              "command_total_variation_W": 1326.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.699456637671954,
+              "mean_target_error_W": -8.009294666537025,
+              "center_pct": 21.1450791668099,
+              "window_pct": 46.010798034271986,
+              "Z_min_W": -78.0,
+              "Z_max_W": 115.0,
+              "command_changes": 128,
+              "command_total_variation_W": 599.0
+            },
+            "mae_delta_W": -2.736987804988315,
+            "positive_peak_delta_W": 1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 15.767949985121428,
+              "mean_target_error_W": -12.126810883937065,
+              "center_pct": 16.761616246346158,
+              "window_pct": 54.734358822913066,
+              "Z_min_W": -347.0,
+              "Z_max_W": 108.0,
+              "command_changes": 144,
+              "command_total_variation_W": 1452.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 11.356488386817395,
+              "mean_target_error_W": -8.298335165400529,
+              "center_pct": 19.578146968354357,
+              "window_pct": 46.18856662373648,
+              "Z_min_W": -85.0,
+              "Z_max_W": 108.0,
+              "command_changes": 106,
+              "command_total_variation_W": 663.0
+            },
+            "mae_delta_W": -2.0864457795053237,
+            "positive_peak_delta_W": 2.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": -1.8753704418764627,
+        "worst_positive_peak_delta_W": 2.0
+      },
+      {
+        "candidate": {
+          "name": "2W / 6s stable trim",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js",
+          "constants": {
+            "chargeCenterTrimMaxStepW": 2
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.751664909296322,
+              "mean_target_error_W": -12.080207857536431,
+              "center_pct": 22.11373796188144,
+              "window_pct": 54.23703938450113,
+              "Z_min_W": -347.0,
+              "Z_max_W": 113.0,
+              "command_changes": 175,
+              "command_total_variation_W": 1310.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 11.173947548775184,
+              "mean_target_error_W": -8.560184376935101,
+              "center_pct": 21.145252797686585,
+              "window_pct": 44.45254584822221,
+              "Z_min_W": -81.0,
+              "Z_max_W": 113.0,
+              "command_changes": 135,
+              "command_total_variation_W": 597.0
+            },
+            "mae_delta_W": -2.583639574141971,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 13.914495648488307,
+              "mean_target_error_W": -10.812115501467296,
+              "center_pct": 21.980547441922614,
+              "window_pct": 55.353054518059444,
+              "Z_min_W": -300.0,
+              "Z_max_W": 115.0,
+              "command_changes": 154,
+              "command_total_variation_W": 1529.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.740674977860325,
+              "mean_target_error_W": -8.010678274082133,
+              "center_pct": 22.355953666216045,
+              "window_pct": 47.399093819999294,
+              "Z_min_W": -65.0,
+              "Z_max_W": 115.0,
+              "command_changes": 111,
+              "command_total_variation_W": 593.0
+            },
+            "mae_delta_W": -2.204699353889003,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 16.00499987602234,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 15.806904793717402,
+              "mean_target_error_W": -12.744342516073283,
+              "center_pct": 20.736689277048125,
+              "window_pct": 52.24689131561709,
+              "Z_min_W": -347.0,
+              "Z_max_W": 104.0,
+              "command_changes": 157,
+              "command_total_variation_W": 1748.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 11.365994833356025,
+              "mean_target_error_W": -8.663774460661584,
+              "center_pct": 22.008749527669174,
+              "window_pct": 43.757790433544976,
+              "Z_min_W": -80.0,
+              "Z_max_W": 104.0,
+              "command_changes": 114,
+              "command_total_variation_W": 585.0
+            },
+            "mae_delta_W": -1.8909391895255272,
+            "positive_peak_delta_W": 9.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": null,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.541450150153839,
+              "mean_target_error_W": -11.821534612567852,
+              "center_pct": 23.97604308839917,
+              "window_pct": 55.97896315864698,
+              "Z_min_W": -347.0,
+              "Z_max_W": 113.0,
+              "command_changes": 172,
+              "command_total_variation_W": 1298.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.811028950010414,
+              "mean_target_error_W": -8.206025736109096,
+              "center_pct": 23.74494385128021,
+              "window_pct": 46.53681238198362,
+              "Z_min_W": -78.0,
+              "Z_max_W": 113.0,
+              "command_changes": 132,
+              "command_total_variation_W": 585.0
+            },
+            "mae_delta_W": -2.766687685571771,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.531713932152506,
+              "mean_target_error_W": -11.841645020207833,
+              "center_pct": 23.97604308839917,
+              "window_pct": 55.23230008025784,
+              "Z_min_W": -347.0,
+              "Z_max_W": 115.0,
+              "command_changes": 168,
+              "command_total_variation_W": 1304.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.832175418472577,
+              "mean_target_error_W": -8.268836701196882,
+              "center_pct": 23.74494385128021,
+              "window_pct": 45.49450556700615,
+              "Z_min_W": -78.0,
+              "Z_max_W": 115.0,
+              "command_changes": 128,
+              "command_total_variation_W": 591.0
+            },
+            "mae_delta_W": -2.8880017853188917,
+            "positive_peak_delta_W": 1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 15.632144106650356,
+              "mean_target_error_W": -12.179546139395482,
+              "center_pct": 18.00025118555471,
+              "window_pct": 53.73947130153594,
+              "Z_min_W": -347.0,
+              "Z_max_W": 108.0,
+              "command_changes": 152,
+              "command_total_variation_W": 1459.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 11.444513314668344,
+              "mean_target_error_W": -8.393304176022415,
+              "center_pct": 19.925351106901225,
+              "window_pct": 44.79975006954899,
+              "Z_min_W": -85.0,
+              "Z_max_W": 108.0,
+              "command_changes": 110,
+              "command_total_variation_W": 662.0
+            },
+            "mae_delta_W": -2.222251657976395,
+            "positive_peak_delta_W": 2.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": -1.8909391895255272,
+        "worst_positive_peak_delta_W": 9.0
+      },
+      {
+        "candidate": {
+          "name": "2W / 6s inside only",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js",
+          "constants": {
+            "chargeCenterTrimOuterBandW": 10,
+            "chargeCenterTrimMaxStepW": 2
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.7666926854443,
+              "mean_target_error_W": -12.095235633684409,
+              "center_pct": 22.11373796188144,
+              "window_pct": 54.23703938450113,
+              "Z_min_W": -347.0,
+              "Z_max_W": 113.0,
+              "command_changes": 174,
+              "command_total_variation_W": 1310.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 11.194925623018236,
+              "mean_target_error_W": -8.581162451178153,
+              "center_pct": 21.145252797686585,
+              "window_pct": 44.45254584822221,
+              "Z_min_W": -81.0,
+              "Z_max_W": 113.0,
+              "command_changes": 134,
+              "command_total_variation_W": 597.0
+            },
+            "mae_delta_W": -2.5686117979939933,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 13.936618216771224,
+              "mean_target_error_W": -10.834238069750214,
+              "center_pct": 21.980547441922614,
+              "window_pct": 55.353054518059444,
+              "Z_min_W": -300.0,
+              "Z_max_W": 115.0,
+              "command_changes": 155,
+              "command_total_variation_W": 1529.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.771557050850777,
+              "mean_target_error_W": -8.041560347072584,
+              "center_pct": 22.355953666216045,
+              "window_pct": 47.399093819999294,
+              "Z_min_W": -65.0,
+              "Z_max_W": 115.0,
+              "command_changes": 112,
+              "command_total_variation_W": 593.0
+            },
+            "mae_delta_W": -2.182576785606086,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 16.00499987602234,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 15.729679137324135,
+              "mean_target_error_W": -12.691989047714443,
+              "center_pct": 21.980423060346073,
+              "window_pct": 53.24227630400048,
+              "Z_min_W": -347.0,
+              "Z_max_W": 97.0,
+              "command_changes": 158,
+              "command_total_variation_W": 1725.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 11.258191420706416,
+              "mean_target_error_W": -8.59069146186666,
+              "center_pct": 23.74494385128021,
+              "window_pct": 45.14730142845927,
+              "Z_min_W": -78.0,
+              "Z_max_W": 97.0,
+              "command_changes": 115,
+              "command_total_variation_W": 562.0
+            },
+            "mae_delta_W": -1.9681648459187944,
+            "positive_peak_delta_W": 2.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": null,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.556477926301817,
+              "mean_target_error_W": -11.83656238871583,
+              "center_pct": 23.97604308839917,
+              "window_pct": 55.97896315864698,
+              "Z_min_W": -347.0,
+              "Z_max_W": 113.0,
+              "command_changes": 171,
+              "command_total_variation_W": 1298.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.832007024253466,
+              "mean_target_error_W": -8.227003810352146,
+              "center_pct": 23.74494385128021,
+              "window_pct": 46.53681238198362,
+              "Z_min_W": -78.0,
+              "Z_max_W": 113.0,
+              "command_changes": 131,
+              "command_total_variation_W": 585.0
+            },
+            "mae_delta_W": -2.7516599094237932,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.546746682970547,
+              "mean_target_error_W": -11.856677771025872,
+              "center_pct": 23.97604308839917,
+              "window_pct": 55.23230008025784,
+              "Z_min_W": -347.0,
+              "Z_max_W": 115.0,
+              "command_changes": 167,
+              "command_total_variation_W": 1304.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.853160437122897,
+              "mean_target_error_W": -8.289821719847202,
+              "center_pct": 23.74494385128021,
+              "window_pct": 45.49450556700615,
+              "Z_min_W": -78.0,
+              "Z_max_W": 115.0,
+              "command_changes": 127,
+              "command_total_variation_W": 591.0
+            },
+            "mae_delta_W": -2.8729690345008514,
+            "positive_peak_delta_W": 1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 15.595703864497187,
+              "mean_target_error_W": -12.1480803348492,
+              "center_pct": 19.24398496885265,
+              "window_pct": 54.73485628991932,
+              "Z_min_W": -347.0,
+              "Z_max_W": 108.0,
+              "command_changes": 153,
+              "command_total_variation_W": 1460.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 11.393644437078173,
+              "mean_target_error_W": -8.34937938120318,
+              "center_pct": 21.661545430512263,
+              "window_pct": 46.1892610644633,
+              "Z_min_W": -85.0,
+              "Z_max_W": 108.0,
+              "command_changes": 111,
+              "command_total_variation_W": 663.0
+            },
+            "mae_delta_W": -2.2586919001295644,
+            "positive_peak_delta_W": 2.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": -1.9681648459187944,
+        "worst_positive_peak_delta_W": 2.0
+      },
+      {
+        "candidate": {
+          "name": "2W / 6s less PV restriction",
+          "file": "results_regler_ble/Regler_V4_22_SIM.js",
+          "constants": {
+            "chargeCenterTrimSolarDeltaW": 25,
+            "chargeCenterTrimGridDeltaW": 10,
+            "chargeCenterTrimMaxStepW": 2
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.846217774406886,
+              "mean_target_error_W": -12.105061391892374,
+              "center_pct": 22.113862343457985,
+              "window_pct": 53.24190315927084,
+              "Z_min_W": -347.0,
+              "Z_max_W": 113.0,
+              "command_changes": 177,
+              "command_total_variation_W": 1394.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 11.153111827844837,
+              "mean_target_error_W": -8.539348656004757,
+              "center_pct": 21.14542642856327,
+              "window_pct": 44.45254584822221,
+              "Z_min_W": -81.0,
+              "Z_max_W": 113.0,
+              "command_changes": 136,
+              "command_total_variation_W": 597.0
+            },
+            "mae_delta_W": -2.4890867090314064,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay -0.4s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 13.909518722656891,
+              "mean_target_error_W": -10.722563188164699,
+              "center_pct": 21.731825561578333,
+              "window_pct": 55.353054518059444,
+              "Z_min_W": -300.0,
+              "Z_max_W": 115.0,
+              "command_changes": 157,
+              "command_total_variation_W": 1537.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.76844783632654,
+              "mean_target_error_W": -7.948171112946693,
+              "center_pct": 22.70333139424964,
+              "window_pct": 47.399093819999294,
+              "Z_min_W": -65.0,
+              "Z_max_W": 115.0,
+              "command_changes": 112,
+              "command_total_variation_W": 597.0
+            },
+            "mae_delta_W": -2.2096762797204192,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 16.00499987602234,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "delay +0.5s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 15.769555472564992,
+              "mean_target_error_W": -12.647299943638245,
+              "center_pct": 20.985535509318993,
+              "window_pct": 52.495613195961376,
+              "Z_min_W": -347.0,
+              "Z_max_W": 101.0,
+              "command_changes": 154,
+              "command_total_variation_W": 1741.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 11.31385692390438,
+              "mean_target_error_W": -8.528307557958689,
+              "center_pct": 22.35612725570277,
+              "window_pct": 44.10499457209184,
+              "Z_min_W": -78.0,
+              "Z_max_W": 101.0,
+              "command_changes": 111,
+              "command_total_variation_W": 578.0
+            },
+            "mae_delta_W": -1.9282885106779375,
+            "positive_peak_delta_W": 6.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": null,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.6509213537115,
+              "mean_target_error_W": -11.821513471554335,
+              "center_pct": 24.224889320670034,
+              "window_pct": 54.983578199913566,
+              "Z_min_W": -347.0,
+              "Z_max_W": 113.0,
+              "command_changes": 174,
+              "command_total_variation_W": 1381.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.835326295301426,
+              "mean_target_error_W": -8.146994088148858,
+              "center_pct": 24.092321579313804,
+              "window_pct": 46.53681238198362,
+              "Z_min_W": -78.0,
+              "Z_max_W": 113.0,
+              "command_changes": 133,
+              "command_total_variation_W": 589.0
+            },
+            "mae_delta_W": -2.6572164820141104,
+            "positive_peak_delta_W": -1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 14.5126456692647,
+              "mean_target_error_W": -11.693179200612713,
+              "center_pct": 24.224889320670034,
+              "window_pct": 54.855610757370876,
+              "Z_min_W": -347.0,
+              "Z_max_W": 115.0,
+              "command_changes": 165,
+              "command_total_variation_W": 1392.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 10.663144293159906,
+              "mean_target_error_W": -8.016476582632961,
+              "center_pct": 24.092321579313804,
+              "window_pct": 46.358175803695545,
+              "Z_min_W": -78.0,
+              "Z_max_W": 115.0,
+              "command_changes": 124,
+              "command_total_variation_W": 595.0
+            },
+            "mae_delta_W": -2.9070700482066982,
+            "positive_peak_delta_W": 1.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          },
+          {
+            "model": "slow delay +1.5s",
+            "outside_large_load": {
+              "duration_s": 804.1110002994537,
+              "target_mae_W": 15.657013807053254,
+              "mean_target_error_W": -12.13477122626345,
+              "center_pct": 18.00025118555471,
+              "window_pct": 53.73947130153594,
+              "Z_min_W": -347.0,
+              "Z_max_W": 108.0,
+              "command_changes": 153,
+              "command_total_variation_W": 1463.0
+            },
+            "initial_solar": {
+              "duration_s": 576.0300002098083,
+              "target_mae_W": 11.479230255905497,
+              "mean_target_error_W": -8.33080048667671,
+              "center_pct": 19.925351106901225,
+              "window_pct": 44.79975006954899,
+              "Z_min_W": -85.0,
+              "Z_max_W": 108.0,
+              "command_changes": 111,
+              "command_total_variation_W": 666.0
+            },
+            "mae_delta_W": -2.197381957573498,
+            "positive_peak_delta_W": 2.0,
+            "negative_peak_delta_W": 0.0,
+            "recovery_window_s": 18.00600004196167,
+            "all_D_zero": true,
+            "all_C_bounded": true
+          }
+        ],
+        "worst_mae_delta_W": -1.9282885106779375,
+        "worst_positive_peak_delta_W": 6.0
+      }
+    ]
+  },
+  "limits": [
+    "Selected variant improves target MAE on all 18 log/model combinations; improvement on the transient high-PV log is small.",
+    "Some model cases increase the positive peak by up to 4 W on log 2 and 2 W on log 4. No general overshoot guarantee.",
+    "Negative peaks outside the big-load mask do not change for the selected version; individual short-segment peaks may change.",
+    "No actual BLE write ACK timestamps, long stable high-PV charging, allowed discharge, or 2400-W calibration are supplied."
+  ]
+}

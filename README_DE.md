@@ -4,6 +4,10 @@
 
 Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v5.1.0** ergänzt einen zeitgewichteten gleitenden 7-Tage-Mittelwert der bisherigen SOC-korrigierten 168-Stunden-Energiebilanz. Der geglättete Wert liegt an Ausgang 1, die bisherige Bilanz an Ausgang 2 und die Diagnose an Ausgang 3. Dieses Repository enthält die Auswertung und eine gesonderte experimentelle Regler-Testvariante. Der Snapshot-Builder bleibt anlagenspezifisch.
 
+## V4.22: Solar-Mittennachführung und BLE-Diagnose
+
+Die [neue experimentelle Testversion](regulator/experimental/v4.22-sim/README_DE.md) führt ruhige Solar-Ladephasen mit kleinen 3-W-Korrekturen zur jeweils effektiven Fenstermitte. Die neue BLE-Diagnose ersetzt HTTP-Altlasten durch HA-Anfragen, Fehler, Bereitschaft und Geräte-Rücklesewerte; Snapshots werden zum Reglerzyklus zugeordnet. Modell- und Codeprüfungen sind abgeschlossen, ein V4.22-Feldtest steht aus. Nachtführung, Entladesperren und Wirkungsgrad-Release v5.1.0 bleiben unverändert.
+
 ## V4.21-Feldvalidierung und Simulationsmodell V4
 
 Die [neue Feldvalidierung](regulator/experimental/v4.21-sim/validation-logs-3-4/README_DE.md) prüft 1.188 V4.21-Punkte mit PV 288–2.036 W und gesperrter Entladung: kein Richtungswechsel und sofortige Ladeanforderung nach allen drei Lastabfällen. Der [vollständige Code](regulator/experimental/v4.21-sim/Regler_V4_21_SIM.js) und die [bytegleiche Textkopie](regulator/experimental/v4.21-sim/Regler_V4_21_SIM.txt) bleiben unverändert. Das [Simulationsmodell V4](regulator/experimental/v4.21-sim/validation-logs-3-4/Regler_Modell_V4.json) ergänzt passende Empfangszeiten, einen eigenen Standby-Telemetriewert und PV-Zeitlage-Unsicherheit; schnellere Rampenversuche werden nicht übernommen. Nachtbetrieb, freigegebene Entladung und anhaltendes High-PV-Laden bleiben außerhalb dieser Feldvalidierung. Die [ursprüngliche Tagesanalyse](regulator/experimental/v4.21-sim/Regler_Tagesanalyse_DE.md) und [vorherige Nachtanalyse](regulator/experimental/v4.20-sim/README_DE.md) bleiben verfügbar. Reglerrevisionen sind unabhängig vom Wirkungsgrad-Release v5.1.0.
@@ -67,4 +71,5 @@ Das Ergebnis ist eine berechnete SOC-korrigierte Energiebilanz und keine zertifi
 Unabhängiges Community-Projekt ohne Verbindung zu oder Unterstützung durch Zendure. Siehe [Projekthinweise](NOTICE_DE.md). Der [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) wird separat gepflegt.
 
 [MIT-Lizenz](LICENSE) · [Deutsche Erläuterung](LICENSE_DE.md)
+
 

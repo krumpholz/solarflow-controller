@@ -1,0 +1,986 @@
+{
+  "previous": [
+    {
+      "candidate": {
+        "name": "V4.21",
+        "file": "analysis_ble/9d53f569af059e58.js"
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 27.466654583321795,
+          "mae_delta_W": 0.0,
+          "center_pct": 5.4477826154013425,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 21.882156503418397,
+          "mae_delta_W": 0.0,
+          "center_pct": 8.134864547423943,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 24.71267454065916,
+          "mae_delta_W": 0.0,
+          "center_pct": 8.940277455851797,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 26.15178185154734,
+          "mae_delta_W": 0.0,
+          "center_pct": 5.24792281637042,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 26.388295493414592,
+          "mae_delta_W": 0.0,
+          "center_pct": 3.7179192594911608,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 25.48039884915822,
+          "mae_delta_W": 0.0,
+          "center_pct": 5.446904048829309,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": 0.0,
+      "worst_positive_peak_delta_W": 0.0
+    },
+    {
+      "candidate": {
+        "name": "stalled-only 3W",
+        "file": "results_regler_ble/Regler_V4_22_SIM.js"
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 26.28710405662699,
+          "mae_delta_W": -1.1795505266948059,
+          "center_pct": 7.028915119067632,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 20.869578953086346,
+          "mae_delta_W": -1.0125775503320533,
+          "center_pct": 11.272707180205325,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 24.240965068662476,
+          "mae_delta_W": -0.47170947199668595,
+          "center_pct": 10.895916460546797,
+          "positive_peak_delta_W": 4.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 25.05362126542719,
+          "mae_delta_W": -1.0981605861201493,
+          "center_pct": 7.884929930687128,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 25.203181397927704,
+          "mae_delta_W": -1.1851140954868882,
+          "center_pct": 6.3276048929413715,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 23.355645900058114,
+          "mae_delta_W": -2.1247529491001065,
+          "center_pct": 12.975161190213736,
+          "positive_peak_delta_W": -1.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": -0.47170947199668595,
+      "worst_positive_peak_delta_W": 4.0
+    },
+    {
+      "candidate": {
+        "name": "slow-native +3W",
+        "file": "analysis_ble/Regler_continuous_trim.js"
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 30.26159930820831,
+          "mae_delta_W": 2.794944724886516,
+          "center_pct": 4.920152785336646,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 21.35165924704392,
+          "mae_delta_W": -0.5304972563744776,
+          "center_pct": 9.313729785909008,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 24.749571752049256,
+          "mae_delta_W": 0.036897211390093027,
+          "center_pct": 9.490309204505149,
+          "positive_peak_delta_W": 4.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 24.652392421697886,
+          "mae_delta_W": -1.4993894298494517,
+          "center_pct": 5.800502169307606,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 24.76396865046336,
+          "mae_delta_W": -1.624326842951233,
+          "center_pct": 5.625064786718241,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 23.455425572984048,
+          "mae_delta_W": -2.024973276174171,
+          "center_pct": 12.448058466579969,
+          "positive_peak_delta_W": -1.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": 2.794944724886516,
+      "worst_positive_peak_delta_W": 4.0
+    },
+    {
+      "candidate": {
+        "name": "slow-native +2W",
+        "file": "analysis_ble/Regler_continuous_trim.js",
+        "constants": {
+          "chargeCenterTrimMaxStepW": 2
+        }
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 27.272086025093262,
+          "mae_delta_W": -0.19456855822853222,
+          "center_pct": 5.095853679251114,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 21.574193217878893,
+          "mae_delta_W": -0.3079632855395052,
+          "center_pct": 8.63701774818522,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 24.982118963265346,
+          "mae_delta_W": 0.26944442260618395,
+          "center_pct": 9.64132408687223,
+          "positive_peak_delta_W": 4.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 25.676242933945442,
+          "mae_delta_W": -0.4755389176018989,
+          "center_pct": 6.1265152347587595,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 25.831850692828528,
+          "mae_delta_W": -0.5564448005860663,
+          "center_pct": 5.448133991761722,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 25.545359852252105,
+          "mae_delta_W": 0.06496100309388499,
+          "center_pct": 8.25618599093052,
+          "positive_peak_delta_W": -1.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": 0.26944442260618395,
+      "worst_positive_peak_delta_W": 4.0
+    },
+    {
+      "candidate": {
+        "name": "slow-native +3W /8s",
+        "file": "analysis_ble/Regler_continuous_trim.js",
+        "constants": {
+          "chargeCenterTrimWaitMs": 8000
+        }
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 26.787854298461884,
+          "mae_delta_W": -0.6788002848599105,
+          "center_pct": 4.920328473516836,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 20.97382144845226,
+          "mae_delta_W": -0.9083350549661406,
+          "center_pct": 10.01829049471095,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 24.78514770475305,
+          "mae_delta_W": 0.0724731640938882,
+          "center_pct": 9.138731644715298,
+          "positive_peak_delta_W": 4.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 25.586797990453544,
+          "mae_delta_W": -0.564983861093795,
+          "center_pct": 5.775904043740677,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 25.15850241707025,
+          "mae_delta_W": -1.2297930763443445,
+          "center_pct": 5.598358256372769,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 23.901382612463152,
+          "mae_delta_W": -1.579016236695067,
+          "center_pct": 12.272006154414761,
+          "positive_peak_delta_W": -10.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": 0.0724731640938882,
+      "worst_positive_peak_delta_W": 4.0
+    }
+  ],
+  "new": [
+    {
+      "candidate": {
+        "name": "V4.21",
+        "file": "analysis_ble/9d53f569af059e58.js"
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 81.15978817053755,
+          "mae_delta_W": 0.0,
+          "center_pct": 3.768932560773741,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 75.19002692865233,
+          "mae_delta_W": 0.0,
+          "center_pct": 4.87677727559271,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 83.23593949802078,
+          "mae_delta_W": 0.0,
+          "center_pct": 5.024091808528533,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 80.69160375482774,
+          "mae_delta_W": 0.0,
+          "center_pct": 4.397768584047548,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 80.9915981074334,
+          "mae_delta_W": 0.0,
+          "center_pct": 3.1410389306574977,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 88.25566521717327,
+          "mae_delta_W": 0.0,
+          "center_pct": 1.256415647151203,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": 0.0,
+      "worst_positive_peak_delta_W": 0.0
+    },
+    {
+      "candidate": {
+        "name": "stalled-only 3W",
+        "file": "results_regler_ble/Regler_V4_22_SIM.js"
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 80.85445091677978,
+          "mae_delta_W": -0.30533725375776594,
+          "center_pct": 7.540063914101457,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 74.88027651603574,
+          "mae_delta_W": -0.30975041261659186,
+          "center_pct": 8.648222710047477,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 82.7788869225019,
+          "mae_delta_W": -0.4570525755188992,
+          "center_pct": 9.423116866860697,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 80.49043591552525,
+          "mae_delta_W": -0.20116783930248372,
+          "center_pct": 6.912798446239317,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 80.93221990959711,
+          "mae_delta_W": -0.05937819783629751,
+          "center_pct": 6.766111925781189,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 87.94281145910568,
+          "mae_delta_W": -0.3128537580675929,
+          "center_pct": 5.0275470004789184,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": -0.05937819783629751,
+      "worst_positive_peak_delta_W": 0.0
+    },
+    {
+      "candidate": {
+        "name": "slow-native +3W",
+        "file": "analysis_ble/Regler_continuous_trim.js"
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 80.84149413119081,
+          "mae_delta_W": -0.3182940393467281,
+          "center_pct": 7.540063914101457,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 74.85184069142925,
+          "mae_delta_W": -0.33818623722307734,
+          "center_pct": 8.648222710047477,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 82.74798852212763,
+          "mae_delta_W": -0.4879509758931599,
+          "center_pct": 9.423116866860697,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 80.57269972455003,
+          "mae_delta_W": -0.1189040302777142,
+          "center_pct": 4.398396746301652,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 81.00789381953847,
+          "mae_delta_W": 0.016295712105067143,
+          "center_pct": 4.2517102258435235,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 87.91623198726109,
+          "mae_delta_W": -0.33943322991219954,
+          "center_pct": 5.0275470004789184,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": 0.016295712105067143,
+      "worst_positive_peak_delta_W": 0.0
+    },
+    {
+      "candidate": {
+        "name": "slow-native +2W",
+        "file": "analysis_ble/Regler_continuous_trim.js",
+        "constants": {
+          "chargeCenterTrimMaxStepW": 2
+        }
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 80.91495046661667,
+          "mae_delta_W": -0.24483770392086934,
+          "center_pct": 5.653870000295292,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 74.96481443792328,
+          "mae_delta_W": -0.22521249072903693,
+          "center_pct": 5.5056132239783135,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 82.8567878278948,
+          "mae_delta_W": -0.3791516701259812,
+          "center_pct": 7.536922953054531,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 80.51041292279473,
+          "mae_delta_W": -0.18119083203301015,
+          "center_pct": 6.283334185823203,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 80.82895825100732,
+          "mae_delta_W": -0.16263985642607293,
+          "center_pct": 5.026604532433152,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 88.02503129302826,
+          "mae_delta_W": -0.23063392414502087,
+          "center_pct": 3.141353086672753,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": -0.16263985642607293,
+      "worst_positive_peak_delta_W": 0.0
+    },
+    {
+      "candidate": {
+        "name": "slow-native +3W /8s",
+        "file": "analysis_ble/Regler_continuous_trim.js",
+        "constants": {
+          "chargeCenterTrimWaitMs": 8000
+        }
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 80.78449998060283,
+          "mae_delta_W": -0.3752881899347158,
+          "center_pct": 8.826319365192287,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 74.93712931963219,
+          "mae_delta_W": -0.252897609020126,
+          "center_pct": 6.133821084998016,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 82.70265390846363,
+          "mae_delta_W": -0.5332855895571641,
+          "center_pct": 10.709372317951527,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 80.40855845324651,
+          "mae_delta_W": -0.28304530158122615,
+          "center_pct": 8.199053897330145,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 80.9832052546219,
+          "mae_delta_W": -0.008392852811510651,
+          "center_pct": 4.2517102258435235,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 87.86717838345525,
+          "mae_delta_W": -0.38848683371803067,
+          "center_pct": 5.6557547866104185,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": -0.008392852811510651,
+      "worst_positive_peak_delta_W": 0.0
+    }
+  ],
+  "calm": [
+    {
+      "candidate": {
+        "name": "V4.21",
+        "file": "analysis_ble/9d53f569af059e58.js"
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 17.335304483438293,
+          "mae_delta_W": 0.0,
+          "center_pct": 6.965456257855562,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 16.11919500237731,
+          "mae_delta_W": 0.0,
+          "center_pct": 6.219290616822723,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 17.69784398324293,
+          "mae_delta_W": 0.0,
+          "center_pct": 6.468136849093586,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 17.30813783572561,
+          "mae_delta_W": 0.0,
+          "center_pct": 6.965456257855562,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 17.419715717471398,
+          "mae_delta_W": 0.0,
+          "center_pct": 6.468012497167002,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 17.85439576462675,
+          "mae_delta_W": 0.0,
+          "center_pct": 5.473000594213339,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": 0.0,
+      "worst_positive_peak_delta_W": 0.0
+    },
+    {
+      "candidate": {
+        "name": "stalled-only 3W",
+        "file": "results_regler_ble/Regler_V4_22_SIM.js"
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 14.382901143997252,
+          "mae_delta_W": -2.952403339441042,
+          "center_pct": 30.848850400758554,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 12.690848668794763,
+          "mae_delta_W": -3.4283463335825495,
+          "center_pct": 33.55419831650885,
+          "positive_peak_delta_W": -1.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 14.657126962858952,
+          "mae_delta_W": -3.0407170203839775,
+          "center_pct": 32.76649604840102,
+          "positive_peak_delta_W": 2.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 14.154753538669565,
+          "mae_delta_W": -3.153384297056045,
+          "center_pct": 31.190096785722552,
+          "positive_peak_delta_W": -1.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 14.020739703402894,
+          "mae_delta_W": -3.398976014068502,
+          "center_pct": 31.190096785722552,
+          "positive_peak_delta_W": 1.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 14.6632194194622,
+          "mae_delta_W": -3.19117634516455,
+          "center_pct": 31.024945418984807,
+          "positive_peak_delta_W": 1.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": -2.952403339441042,
+      "worst_positive_peak_delta_W": 2.0
+    },
+    {
+      "candidate": {
+        "name": "slow-native +3W",
+        "file": "analysis_ble/Regler_continuous_trim.js"
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 13.31348411020245,
+          "mae_delta_W": -4.021820373235844,
+          "center_pct": 32.811514707320136,
+          "positive_peak_delta_W": -1.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 12.485040015072734,
+          "mae_delta_W": -3.634154987304577,
+          "center_pct": 32.936870611154745,
+          "positive_peak_delta_W": -3.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 14.126924048934251,
+          "mae_delta_W": -3.5709199343086784,
+          "center_pct": 33.296646737778055,
+          "positive_peak_delta_W": 20.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 13.207616884914355,
+          "mae_delta_W": -4.100520950811257,
+          "center_pct": 32.314070946631574,
+          "positive_peak_delta_W": -3.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 13.178184382914024,
+          "mae_delta_W": -4.241531334557374,
+          "center_pct": 32.811514707320136,
+          "positive_peak_delta_W": -1.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 14.035862003026054,
+          "mae_delta_W": -3.8185337616006962,
+          "center_pct": 31.555096108361834,
+          "positive_peak_delta_W": -1.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": -3.5709199343086784,
+      "worst_positive_peak_delta_W": 20.0
+    },
+    {
+      "candidate": {
+        "name": "slow-native +2W",
+        "file": "analysis_ble/Regler_continuous_trim.js",
+        "constants": {
+          "chargeCenterTrimMaxStepW": 2
+        }
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 14.261930283141968,
+          "mae_delta_W": -3.0733742002963256,
+          "center_pct": 23.854915476217986,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 13.561929895172259,
+          "mae_delta_W": -2.5572651072050516,
+          "center_pct": 23.224281225220555,
+          "positive_peak_delta_W": -6.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 15.394724137651966,
+          "mae_delta_W": -2.3031198455909614,
+          "center_pct": 21.361851687476324,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 14.234681557227749,
+          "mae_delta_W": -3.073456278497863,
+          "center_pct": 24.722208729432012,
+          "positive_peak_delta_W": -2.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 14.174994525616947,
+          "mae_delta_W": -3.2447211918544503,
+          "center_pct": 25.21965249012057,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 15.355623826924402,
+          "mae_delta_W": -2.4987719377023474,
+          "center_pct": 18.625164862479778,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": -2.3031198455909614,
+      "worst_positive_peak_delta_W": 0.0
+    },
+    {
+      "candidate": {
+        "name": "slow-native +3W /8s",
+        "file": "analysis_ble/Regler_continuous_trim.js",
+        "constants": {
+          "chargeCenterTrimWaitMs": 8000
+        }
+      },
+      "cases": [
+        {
+          "model": "V4 nominal",
+          "MAE_W": 13.92629130102665,
+          "mae_delta_W": -3.409013182411644,
+          "center_pct": 30.19520929399539,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay -0.4s",
+          "MAE_W": 13.14087360730086,
+          "mae_delta_W": -2.9783213950764527,
+          "center_pct": 27.20980067760444,
+          "positive_peak_delta_W": -5.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "delay +0.5s",
+          "MAE_W": 14.93608224039867,
+          "mae_delta_W": -2.761761742844257,
+          "center_pct": 29.190248466016026,
+          "positive_peak_delta_W": 21.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_affine",
+          "MAE_W": 13.804294459094152,
+          "mae_delta_W": -3.5038433766314596,
+          "center_pct": 29.080064742523014,
+          "positive_peak_delta_W": -1.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "battery_fast_rate",
+          "MAE_W": 13.743271792911964,
+          "mae_delta_W": -3.676443924559434,
+          "center_pct": 29.577508503211575,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        },
+        {
+          "model": "slow delay +1.5s",
+          "MAE_W": 14.748859338590337,
+          "mae_delta_W": -3.105536426036413,
+          "center_pct": 27.200224689758656,
+          "positive_peak_delta_W": 0.0,
+          "negative_peak_delta_W": 0.0,
+          "bounded": true
+        }
+      ],
+      "worst_mae_delta_W": -2.761761742844257,
+      "worst_positive_peak_delta_W": 21.0
+    }
+  ]
+}

@@ -31,6 +31,8 @@ jobs:
         run: git diff --exit-code -- rolling-efficiency/battery-efficiency_DE.js rolling-efficiency/prepare-cycle_DE.js rolling-efficiency/flow.json rolling-efficiency/flow_DE.json rolling-efficiency/sensor-mean.json rolling-efficiency/sensor-mean_DE.json
       - name: Run calculation, mean and flow regressions
         run: node --test rolling-efficiency/tests/*.test.cjs
+      - name: Run solar midpoint and BLE diagnostic regressions
+        run: node --test regulator/experimental/v4.22-sim/tests/*.test.cjs
 
   release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -74,3 +76,4 @@ jobs:
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title "SolarFlow Controller $release_tag" --latest \
             --notes-file release-notes-combined.md
+

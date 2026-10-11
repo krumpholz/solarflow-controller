@@ -4,6 +4,10 @@
 
 Node-RED battery efficiency monitoring for SolarFlow installations. **Release v5.1.0** adds a time-weighted rolling 7-day mean of the existing SOC-adjusted 168-hour energy balance. The smoother value is available on output 1, the original balance on output 2 and diagnostics on output 3. This repository supplies the monitoring component and a separate experimental regulator candidate. The snapshot builder remains installation-specific.
 
+## V4.22: solar midpoint trim and BLE diagnostics
+
+The [new experimental test version](regulator/experimental/v4.22-sim/README.md) moves settled solar charging toward the current effective window midpoint using small 3 W corrections. BLE diagnostics replace obsolete HTTP fields with HA requests, errors, readiness and device readbacks; snapshots are matched to the controller cycle. Model and code checks are complete; a V4.22 field test is still pending. Night control, discharge permissions and efficiency release v5.1.0 remain unchanged.
+
 ## V4.21 field validation and simulation model V4
 
 The [new field validation](regulator/experimental/v4.21-sim/validation-logs-3-4/README.md) checks 1,188 V4.21 records with PV 288–2,036 W and discharge disabled: no direction flip and immediate charging requests after all three load drops. The [complete code](regulator/experimental/v4.21-sim/Regler_V4_21_SIM.js) and [identical text copy](regulator/experimental/v4.21-sim/Regler_V4_21_SIM.txt) remain unchanged. [Simulation model V4](regulator/experimental/v4.21-sim/validation-logs-3-4/Regler_Modell_V4.json) adds matching receive times, a separate standby telemetry level and PV timing uncertainty; faster ramp trials were not adopted. Night behavior, allowed discharge and sustained high-PV charging remain outside this field validation. The [original daytime analysis](regulator/experimental/v4.21-sim/Regler_Tagesanalyse_DE.md) and [previous night analysis](regulator/experimental/v4.20-sim/README.md) remain available. Regulator revisions are separate from efficiency release v5.1.0.
@@ -67,4 +71,5 @@ The result is a calculated SOC-adjusted energy balance, not a certified full-cyc
 Independent community project; no affiliation with or endorsement by Zendure. See [project notice](NOTICE.md). The [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) is maintained separately.
 
 [MIT License](LICENSE) · [German license explanation](LICENSE_DE.md)
+
 
