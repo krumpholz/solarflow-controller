@@ -2,7 +2,7 @@
 
 [English](README.md) | **Deutsch**
 
-Das Tageslog vom 11.10.2026 enthält knapp 20 Minuten V4.19-SIM, PV 134 bis
+Das ursprüngliche Tageslog vom 11.10.2026 enthält knapp 20 Minuten V4.19-SIM, PV 134 bis
 846 W und durchgehend gesperrte Entladung. Alle 579 Ausgänge, Richtungen,
 HOLD-Zustände, Parametersatznamen und Integratoren werden exakt reproduziert.
 Alle Entladeanforderungen sind 0 W. Der große Lastimpuls wird nach Ladestopp
@@ -15,7 +15,11 @@ Dieser Ausschnitt enthält laufende PV-Änderungen und ist kein stationärer
 Nachtvergleich. Oberhalb 720 W gibt es nur vier Punkte beziehungsweise acht
 Sekunden; oberhalb 1.050 W keinen Punkt.
 
-**V4.21-SIM ist eine nächste Testvariante; ihr eigener Anlagentest steht aus.**
+**V4.21-SIM ist für Laden/Standby bei gesperrter Entladung im Feld geprüft.**
+Die [neue Feldvalidierung und das Simulationsmodell V4](validation-logs-3-4/README_DE.md)
+zeigen 1.188 tatsächliche V4.21-Punkte und sofortige Ladeanforderungen nach
+allen drei Lastabfällen. Code und P-/I-Werte bleiben unverändert. Nachtbetrieb,
+freigegebene Entladung und anhaltendes High-PV-Laden liegen außerhalb dieser Prüfung.
 Die Basis ist V4.20-SIM. Die vorhandene Nachtänderung bleibt enthalten und
 wird durch dieses Tageslog mit PV über 50 W nicht im Feld bestätigt.
 

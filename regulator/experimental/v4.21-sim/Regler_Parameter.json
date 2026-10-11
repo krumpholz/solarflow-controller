@@ -25,6 +25,27 @@
     "boundary_cases": 2304,
     "day_model_cases": 10
   },
-  "field_validation": "Own V4.21 installation test pending; V4.20 night change not exercised in this daytime log",
-  "code_sha256": "2d1863b93df594604811a0b9c2a9eed2d250a671db452418dad061fce35069bc"
+  "field_validation": "Observed V4.21 charging/standby with discharge disabled in logs 3 and 4; three immediate charging restarts. Night modification, allowed discharge and sustained high-PV charging not field-validated.",
+  "code_sha256": "2d1863b93df594604811a0b9c2a9eed2d250a671db452418dad061fce35069bc",
+  "field_test": {
+    "date": "2026-10-11",
+    "V4_21_points": 1188,
+    "PV_range_W": [
+      288,
+      2036
+    ],
+    "discharge_allowed": false,
+    "discharge_request_W": 0,
+    "direction_changes": 0,
+    "observed_load_drops": 3,
+    "code_unchanged": true
+  },
+  "model_validation": {
+    "version": 4,
+    "check_groups": 8,
+    "code_comparison_points": 1767,
+    "closed_replays": 30,
+    "diagnostic_parameter_trials": 45,
+    "path": "validation-logs-3-4/Regler_Modell_V4.json"
+  }
 }

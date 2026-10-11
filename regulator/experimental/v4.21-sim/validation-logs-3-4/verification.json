@@ -1,0 +1,18 @@
+{
+  "checks": 8,
+  "passed": [
+    "All 1767 comparison rows reproduce power, direction, HOLD, integrators, parameter configuration, effective windows and PV guard",
+    "Only the matching accepted snapshot supplies receive times; one logger mismatch in each new log is isolated",
+    "Standby calibration excludes log 4; it improves the log-4 check without changing log-3 dynamic-check error",
+    "Python identification and JavaScript simulation produce the same 591 unrounded battery responses",
+    "Analytic plant response remains between the initial value and fixed target",
+    "Discharge remains zero and charging commands remain within bounds in 30 closed replays and 45 diagnostic parameter trials",
+    "Actual V4.21 logs retain charging direction and resume charging in the first recorded tick at all three load drops",
+    "V4.21 source remains byte-identical; diagnostic parameter edits exist only in simulation memory"
+  ],
+  "record_comparisons": 1767,
+  "new_V4_21_rows": 1188,
+  "closed_runs": 30,
+  "diagnostic_trials": 45,
+  "controller_sha256": "2d1863b93df594604811a0b9c2a9eed2d250a671db452418dad061fce35069bc"
+}

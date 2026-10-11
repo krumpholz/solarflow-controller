@@ -4,9 +4,9 @@
 
 Node-RED battery efficiency monitoring for SolarFlow installations. **Release v5.1.0** adds a time-weighted rolling 7-day mean of the existing SOC-adjusted 168-hour energy balance. The smoother value is available on output 1, the original balance on output 2 and diagnostics on output 3. This repository supplies the monitoring component and a separate experimental regulator candidate. The snapshot builder remains installation-specific.
 
-## Daytime review and next regulator candidate V4.21-SIM
+## V4.21 field validation and simulation model V4
 
-The [daytime analysis](regulator/experimental/v4.21-sim/Regler_Tagesanalyse_DE.md) reviews V4.19-SIM with changing PV and discharge disabled. [V4.21 instructions](regulator/experimental/v4.21-sim/README.md), [complete code](regulator/experimental/v4.21-sim/Regler_V4_21_SIM.js), the [identical text copy](regulator/experimental/v4.21-sim/Regler_V4_21_SIM.txt) and [daytime model](regulator/experimental/v4.21-sim/Regler_Tagesmodell_V3.json) provide a shared parameter selection and avoid an unnecessary switch into disabled discharge. Numerical P/I values and PV windows are preserved; V4.21's own field test is pending. The [previous night analysis and V4.20 candidate](regulator/experimental/v4.20-sim/README.md) remain available. Regulator revisions are separate from efficiency release v5.1.0.
+The [new field validation](regulator/experimental/v4.21-sim/validation-logs-3-4/README.md) checks 1,188 V4.21 records with PV 288–2,036 W and discharge disabled: no direction flip and immediate charging requests after all three load drops. The [complete code](regulator/experimental/v4.21-sim/Regler_V4_21_SIM.js) and [identical text copy](regulator/experimental/v4.21-sim/Regler_V4_21_SIM.txt) remain unchanged. [Simulation model V4](regulator/experimental/v4.21-sim/validation-logs-3-4/Regler_Modell_V4.json) adds matching receive times, a separate standby telemetry level and PV timing uncertainty; faster ramp trials were not adopted. Night behavior, allowed discharge and sustained high-PV charging remain outside this field validation. The [original daytime analysis](regulator/experimental/v4.21-sim/Regler_Tagesanalyse_DE.md) and [previous night analysis](regulator/experimental/v4.20-sim/README.md) remain available. Regulator revisions are separate from efficiency release v5.1.0.
 
 ## Support this project
 

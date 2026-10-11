@@ -1,0 +1,365 @@
+{
+  "schema": 4,
+  "controller_version": "4.21-SIM",
+  "battery": {
+    "tau_up": 0.08000000044299771,
+    "delay_up": 3.053589395476739,
+    "tau_down": 0.23196514205644628,
+    "delay_down": 4.220467687193862,
+    "rate_up": 1162.0538344344193,
+    "rate_down": 136.10188348717952,
+    "gain": 1.0131301597195532,
+    "bias": -19.26792015472579,
+    "idle_bias": -18.0
+  },
+  "grid": {
+    "tau_up": 0.2658805165767889,
+    "delay_up": 1.1669989242975627,
+    "tau_down": 0.1284738606375642,
+    "delay_down": 2.339679604445676,
+    "rate_up": 480.63459176927466,
+    "rate_down": 80.0888033944017,
+    "gain": 1,
+    "bias": 0
+  },
+  "pv": {
+    "relative_lag_s": -0.934583350982704,
+    "tau_s": 0.020823753294588923,
+    "alternatives": [
+      {
+        "relative_lag_s": 0,
+        "tau_s": 0.02,
+        "reason": "No relative PV phase; lower checking RMSE but worse training error"
+      },
+      {
+        "relative_lag_s": -1.5207136969206538,
+        "tau_s": 0.04663515142944555,
+        "reason": "Previously calibrated phase; worse transfer to log 3"
+      }
+    ]
+  },
+  "idle_training": {
+    "points": 37,
+    "median_W": -18.0,
+    "range_W": [
+      -19.0,
+      -18.0
+    ]
+  },
+  "scope": "Charging/standby with discharge disabled, observed PV 134..2036 W and commands 0..1093 W. Not a discharge or 2400-W plant calibration.",
+  "selection": [
+    "Existing battery and grid dynamics retained: alternative joint dynamics did not improve both checking logs.",
+    "Separate idle telemetry level learned from previous-log rows and new-log prefix, never from the calm log.",
+    "PV timing learned from zero-command rows 200..379 of log 3; validation rows 380..596.",
+    "Negative relative PV lag is an offline reconstruction of reported measurements. The controller never receives future PV."
+  ],
+  "limitations": [
+    "No confirmed send/ACK/application times. Receive times do not establish internal sensor sampling times.",
+    "Derived house is not an independent sensor. A slowly changing house load is retained as an external net disturbance for counterfactual replay.",
+    "Passive PV reconstruction still has substantial residuals; no precise P/I optimum or universal physical limit is established."
+  ],
+  "battery_checks": {
+    "previous": {
+      "baseline_all": {
+        "points": 574,
+        "rmse_W": 7.489160289205795,
+        "mae_W": 3.026285250586041,
+        "max_abs_W": 59.734670698424
+      },
+      "v4_all": {
+        "points": 574,
+        "rmse_W": 7.481766323967414,
+        "mae_W": 2.968465530756615,
+        "max_abs_W": 59.734670698424
+      },
+      "baseline_active": {
+        "points": 546,
+        "rmse_W": 7.665285779681613,
+        "mae_W": 3.1053700468721352,
+        "max_abs_W": 59.734670698424
+      },
+      "v4_active": {
+        "points": 546,
+        "rmse_W": 7.664709583470588,
+        "mae_W": 3.1020664562786693,
+        "max_abs_W": 59.734670698424
+      },
+      "baseline_idle": {
+        "points": 25,
+        "rmse_W": 1.2185049421327723,
+        "mae_W": 1.1879201547250984,
+        "max_abs_W": 1.2679201547257897
+      },
+      "v4_idle": {
+        "points": 25,
+        "rmse_W": 0.282842712474619,
+        "mae_W": 0.08000000000066422,
+        "max_abs_W": 1.0
+      }
+    },
+    "new": {
+      "baseline_all": {
+        "points": 592,
+        "rmse_W": 7.991194463574144,
+        "mae_W": 3.5052456728171144,
+        "max_abs_W": 72.37804852468207
+      },
+      "v4_all": {
+        "points": 592,
+        "rmse_W": 7.903926680330852,
+        "mae_W": 2.5973693360988817,
+        "max_abs_W": 72.37804852468207
+      },
+      "baseline_active": {
+        "points": 169,
+        "rmse_W": 14.7787034725493,
+        "mae_W": 8.770330995946386,
+        "max_abs_W": 72.37804852468207
+      },
+      "v4_active": {
+        "points": 169,
+        "rmse_W": 14.778928573155294,
+        "mae_W": 8.747823531665766,
+        "max_abs_W": 72.37804852468207
+      },
+      "baseline_idle": {
+        "points": 413,
+        "rmse_W": 1.438726791145437,
+        "mae_W": 1.3986707600525918,
+        "max_abs_W": 2.2679201547257897
+      },
+      "v4_idle": {
+        "points": 413,
+        "rmse_W": 0.36159453166063854,
+        "mae_W": 0.13075060532694802,
+        "max_abs_W": 1.0
+      },
+      "baseline_dynamic_check": {
+        "points": 86,
+        "rmse_W": 15.14921691025858,
+        "mae_W": 7.841686088532711,
+        "max_abs_W": 72.37804852468207
+      },
+      "v4_dynamic_check": {
+        "points": 86,
+        "rmse_W": 15.14921691025858,
+        "mae_W": 7.841686088532711,
+        "max_abs_W": 72.37804852468207
+      },
+      "baseline_idle_check": {
+        "points": 411,
+        "rmse_W": 1.5399549751184685,
+        "mae_W": 1.4290448104113698,
+        "max_abs_W": 8.12598463675057
+      },
+      "v4_idle_check": {
+        "points": 411,
+        "rmse_W": 0.6584715434669601,
+        "mae_W": 0.17257884024369552,
+        "max_abs_W": 8.125984636755168
+      }
+    },
+    "calm": {
+      "baseline_all": {
+        "points": 586,
+        "rmse_W": 4.4250209186536535,
+        "mae_W": 1.6230221944919112,
+        "max_abs_W": 49.23020482065904
+      },
+      "v4_all": {
+        "points": 586,
+        "rmse_W": 4.363191510764773,
+        "mae_W": 1.2193572402124286,
+        "max_abs_W": 49.23020482065904
+      },
+      "baseline_active": {
+        "points": 403,
+        "rmse_W": 5.266576526325438,
+        "mae_W": 1.7833493111587304,
+        "max_abs_W": 49.23020482065904
+      },
+      "v4_active": {
+        "points": 403,
+        "rmse_W": 5.2610958586160805,
+        "mae_W": 1.7691210597178044,
+        "max_abs_W": 49.23020482065904
+      },
+      "baseline_idle": {
+        "points": 177,
+        "rmse_W": 1.2757734977978161,
+        "mae_W": 1.2735698722398938,
+        "max_abs_W": 2.2679201547257897
+      },
+      "v4_idle": {
+        "points": 177,
+        "rmse_W": 0.07516460280028288,
+        "mae_W": 0.005649717514143061,
+        "max_abs_W": 1.0
+      }
+    }
+  },
+  "pv_checks": {
+    "pv_passive": {
+      "relative_lag_s": -0.934583350982704,
+      "tau_s": 0.020823753294588923,
+      "house_intercept_W": 1969.2568394093505,
+      "cost": 31864.384921647637,
+      "training": {
+        "points": 173,
+        "rmse_W": 31.00681321542174,
+        "mae_W": 22.91751058870474,
+        "max_abs_W": 127.89353862702296
+      },
+      "following": {
+        "points": 217,
+        "rmse_W": 62.31846934127647,
+        "mae_W": 49.79183439011832,
+        "max_abs_W": 295.678569208653
+      },
+      "active_bounds": []
+    },
+    "pv_previous": {
+      "relative_lag_s": -1.5207136969206538,
+      "tau_s": 0.04663515142944555,
+      "house_intercept_W": 1969.2759809701772,
+      "training": {
+        "points": 173,
+        "rmse_W": 50.17663793555307,
+        "mae_W": 33.95531019991471,
+        "max_abs_W": 192.32296851672095
+      },
+      "following": {
+        "points": 217,
+        "rmse_W": 87.80977630729754,
+        "mae_W": 61.33038216095109,
+        "max_abs_W": 416.89506250417435
+      }
+    },
+    "pv_no_phase": {
+      "relative_lag_s": 0,
+      "tau_s": 0.02,
+      "house_intercept_W": 1965.396184896042,
+      "training": {
+        "points": 173,
+        "rmse_W": 66.84668482960578,
+        "mae_W": 45.31304551451074,
+        "max_abs_W": 255.46291324124263
+      },
+      "following": {
+        "points": 217,
+        "rmse_W": 59.85836864096726,
+        "mae_W": 50.135158351217726,
+        "max_abs_W": 269.5234425848039
+      }
+    }
+  },
+  "alternative_fits": {
+    "battery_affine": {
+      "kind": "affine",
+      "model": {
+        "tau_up": 0.1985161299821605,
+        "delay_up": 2.8742390992626166,
+        "tau_down": 0.27712662469287186,
+        "delay_down": 3.3436069788078067,
+        "rate_up": 1165.908732989673,
+        "rate_down": 60.00000000878624,
+        "gain": 1.0164419078726559,
+        "bias": -19.851050483277017
+      },
+      "cost": 7333.410178489296,
+      "training_errors": {
+        "points": 669,
+        "rmse_W": 7.988554363228116,
+        "mae_W": 3.5528818643136106,
+        "max_abs_W": 60.413316390673856
+      },
+      "nfev": 20,
+      "active_bounds": [
+        "rate_down"
+      ],
+      "new_all": {
+        "points": 592,
+        "rmse_W": 8.301563688056508,
+        "mae_W": 3.7464140406156354,
+        "max_abs_W": 89.87929451589068
+      },
+      "new_dynamic_check": {
+        "points": 86,
+        "rmse_W": 18.099519413823824,
+        "mae_W": 8.444179221115329,
+        "max_abs_W": 89.87929451589068
+      },
+      "new_idle_check": {
+        "points": 411,
+        "rmse_W": 2.0743296669736493,
+        "mae_W": 2.0080757249252947,
+        "max_abs_W": 7.641903748881958
+      }
+    },
+    "battery_fast_rate": {
+      "kind": "fast_rate",
+      "model": {
+        "tau_up": 0.1047238417834506,
+        "delay_up": 3.011126359231973,
+        "tau_down": 0.3937847590176501,
+        "delay_down": 4.4050103979109085,
+        "gain": 1.016440449524049,
+        "bias": -20.010550998562298,
+        "rate_up": 6000.0,
+        "rate_down": 6000.0
+      },
+      "cost": 8372.16692201843,
+      "training_errors": {
+        "points": 669,
+        "rmse_W": 8.719079160921652,
+        "mae_W": 3.9873259121446276,
+        "max_abs_W": 60.25326027010044
+      },
+      "nfev": 12,
+      "active_bounds": [],
+      "new_all": {
+        "points": 592,
+        "rmse_W": 8.394433579834477,
+        "mae_W": 4.0305512756153155,
+        "max_abs_W": 73.47944293767762
+      },
+      "new_dynamic_check": {
+        "points": 86,
+        "rmse_W": 16.538922211528543,
+        "mae_W": 8.539889516545779,
+        "max_abs_W": 73.47944293767762
+      },
+      "new_idle_check": {
+        "points": 411,
+        "rmse_W": 2.237429673469488,
+        "mae_W": 2.1757379651053683,
+        "max_abs_W": 7.876326332917898
+      }
+    },
+    "separate_pv_strings": {
+      "model": {
+        "s_lag_s": -0.2808942991496667,
+        "s_tau_s": 0.0645219581490749,
+        "t_lag_s": -1.9929976220688816,
+        "t_tau_s": 0.028435090099516017
+      },
+      "house_intercept_W": 1969.135083586357,
+      "cost": 25682.515383600145,
+      "training": {
+        "points": 173,
+        "rmse_W": 26.321912262709926,
+        "mae_W": 19.828409286466865,
+        "max_abs_W": 146.28017400220529
+      },
+      "following": {
+        "points": 217,
+        "rmse_W": 60.52382034960204,
+        "mae_W": 47.12324387629941,
+        "max_abs_W": 376.68472988154303
+      },
+      "active_bounds": [],
+      "jacobian_condition": null,
+      "identifiability_note": "Jacobian rank deficiency: short time constants and correlated PV strings are not uniquely identified."
+    }
+  }
+}

@@ -2,7 +2,7 @@
 
 **English** | [Deutsch](README_DE.md)
 
-The daytime log from 11 October 2026 contains almost 20 minutes of V4.19-SIM,
+The original daytime log from 11 October 2026 contains almost 20 minutes of V4.19-SIM,
 PV 134 to 846 W and discharge disabled throughout. All 579 outputs,
 directions, HOLD states, parameter labels and integrators replay exactly.
 Every discharge request is 0 W. After charging stops, the large load impulse
@@ -14,7 +14,11 @@ deviation from the effective charging midpoint is 25.01 W. The section
 contains changing PV and is not a stationary night comparison. There are
 only four points, eight seconds, above 720 W and no points above 1,050 W.
 
-**V4.21-SIM is the next test candidate. Its own installation test is pending.**
+**V4.21-SIM is field-tested for charging/standby with discharge disabled.**
+See the [new field validation and simulation model V4](validation-logs-3-4/README.md):
+1,188 actual V4.21 samples and immediate charging requests after all three
+load drops. Code and P/I values remain unchanged. Night operation, allowed
+discharge and sustained high-PV charging are outside this validation.
 Its basis is V4.20-SIM. The earlier night adjustment remains included and
 is not field-validated by this log, whose PV stays above 50 W.
 

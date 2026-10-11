@@ -1,0 +1,2283 @@
+{
+  "controller_sha256": "2d1863b93df594604811a0b9c2a9eed2d250a671db452418dad061fce35069bc",
+  "measured": {
+    "new": {
+      "log": "regler_event_log_3.jsonl",
+      "sha256": "8aa66faa960199498ea84321c8f6ca048ec8d0da314b4073853cf9d37607f8ca",
+      "rows": 597,
+      "duration_s": 1197.9130001068115,
+      "version": "4.21-SIM",
+      "local_time": [
+        "2026-10-11T12:24:02.767000+02:00",
+        "2026-10-11T12:44:00.680000+02:00"
+      ],
+      "PV_range_W": [
+        501.0,
+        2036.0
+      ],
+      "command_range_W": [
+        0.0,
+        1093.0
+      ],
+      "snapshot_time_fallback_indices": [
+        0
+      ],
+      "max_control_snapshot_age_ms": 1787,
+      "median_control_snapshot_age_ms": 830.0,
+      "time_gaps_over_3s": 1,
+      "max_gap_s": 6.108000040054321,
+      "all": {
+        "points": 597,
+        "duration_s": 1197.9130001068115,
+        "mean_W": 407.66058788995383,
+        "target_mae_W": 450.8786339851484,
+        "within_pct": 9.375806119317835,
+        "center_pct": 3.0065622486118415,
+        "import_Wh": 141.38458916525045,
+        "export_Wh": 5.734056425094605
+      },
+      "outside_large_loads": {
+        "points": 159,
+        "duration_s": 318.3659999370575,
+        "mean_W": -49.76495331989469,
+        "target_mae_W": 78.38334225075855,
+        "within_pct": 35.278264761414,
+        "center_pct": 11.312765822840838,
+        "import_Wh": 1.3008544469541974,
+        "export_Wh": 5.701818092928993
+      },
+      "segments": {
+        "before_first_load": {
+          "points": 26,
+          "duration_s": 52.17700004577637,
+          "mean_W": -4.183337462565034,
+          "target_mae_W": 9.183337462565035,
+          "within_pct": 65.77610851821964,
+          "center_pct": 3.8311901234748422,
+          "import_Wh": 0.00333222230275472,
+          "export_Wh": 0.06396388868490854
+        },
+        "first_load": {
+          "points": 21,
+          "duration_s": 42.00999999046326,
+          "mean_W": 524.587694084911,
+          "target_mae_W": 519.587694084911,
+          "within_pct": 0.0,
+          "center_pct": 0.0,
+          "import_Wh": 6.121646950973405,
+          "export_Wh": 0.0
+        },
+        "after_first_load": {
+          "points": 133,
+          "duration_s": 266.1889998912811,
+          "mean_W": -58.69962745611301,
+          "target_mae_W": 91.9475716309207,
+          "within_pct": 29.300234130002288,
+          "center_pct": 12.779265850143753,
+          "import_Wh": 1.2975222246514426,
+          "export_Wh": 5.637854204244084
+        },
+        "second_load": {
+          "points": 417,
+          "duration_s": 837.5370001792908,
+          "mean_W": 575.6730244315812,
+          "target_mae_W": 589.0258064515119,
+          "within_pct": 0.0,
+          "center_pct": 0.0,
+          "import_Wh": 133.96208776732286,
+          "export_Wh": 0.032238332165612116
+        }
+      },
+      "hold": {
+        "points": 41,
+        "duration_s": 82.33500003814697,
+        "mean_W": 2.1038076433055357,
+        "target_mae_W": 4.88873506600866,
+        "within_pct": 100.0,
+        "center_pct": 34.023197619538095,
+        "import_Wh": 0.08558277832137214,
+        "export_Wh": 0.037466944323645696
+      },
+      "max_discharge_request_W": 0,
+      "direction_changes": 0,
+      "ac_mode_changes": 0,
+      "pv_classes": {
+        "normal": {
+          "all": {
+            "points": 195,
+            "duration_s": 390.2569999694824,
+            "mean_W": 512.8806688359808,
+            "target_mae_W": 550.2601264729318,
+            "within_pct": 26.217082685542888,
+            "center_pct": 8.20356838416457,
+            "import_Wh": 57.71715921209918,
+            "export_Wh": 2.118472778134876
+          },
+          "outside_large_loads": {
+            "points": 110,
+            "duration_s": 220.2279999256134,
+            "mean_W": -27.844679136165063,
+            "target_mae_W": 42.25421838511564,
+            "within_pct": 46.45821621350463,
+            "center_pct": 14.537206838957504,
+            "import_Wh": 0.41509000182151795,
+            "export_Wh": 2.118472778134876
+          },
+          "positive_command_points": 116
+        },
+        "highpv": {
+          "all": {
+            "points": 87,
+            "duration_s": 172.70199966430664,
+            "mean_W": 649.4214071048145,
+            "target_mae_W": 681.6667201977134,
+            "within_pct": 5.79032091083932,
+            "center_pct": 2.31670749251101,
+            "import_Wh": 31.755466016928356,
+            "export_Wh": 0.6009172303146786
+          },
+          "outside_large_loads": {
+            "points": 36,
+            "duration_s": 72.1159999370575,
+            "mean_W": 11.252010289714246,
+            "target_mae_W": 70.34031327671032,
+            "within_pct": 13.866548350890168,
+            "center_pct": 5.548006225291732,
+            "import_Wh": 0.826320000688235,
+            "export_Wh": 0.6009172303146786
+          },
+          "positive_command_points": 36
+        },
+        "veryhighpv": {
+          "all": {
+            "points": 315,
+            "duration_s": 634.9540004730225,
+            "mean_W": 277.2331081296328,
+            "target_mae_W": 327.0241704495309,
+            "within_pct": 0.0,
+            "center_pct": 0.0,
+            "import_Wh": 51.911963936222925,
+            "export_Wh": 3.01466641664505
+          },
+          "outside_large_loads": {
+            "points": 13,
+            "duration_s": 26.022000074386597,
+            "mean_W": -404.37864399529724,
+            "target_mae_W": 406.4394386529766,
+            "within_pct": 0.0,
+            "center_pct": 0.0,
+            "import_Wh": 0.059444444444444446,
+            "export_Wh": 2.9824280844794377
+          },
+          "positive_command_points": 14
+        }
+      },
+      "recoveries": [
+        {
+          "index": 47,
+          "end_index": 180,
+          "charge_request_delay_s": 0.0,
+          "first_window_s": 24.007999897003174,
+          "first_three_window_s": 166.15300011634827,
+          "Z_min_W": -665.0,
+          "Z_max_W": 277.0,
+          "model_cases": [
+            {
+              "code": "actually installed code",
+              "model": "V3 baseline plant",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 24.007999897003174,
+              "first_three_window_s": 106.14000010490417
+            },
+            {
+              "code": "actually installed code",
+              "model": "V4 plant with idle telemetry",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 24.007999897003174,
+              "first_three_window_s": 106.14000010490417
+            },
+            {
+              "code": "actually installed code",
+              "model": "V4 delays-0.4s",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 24.007999897003174,
+              "first_three_window_s": 104.6159999370575
+            },
+            {
+              "code": "actually installed code",
+              "model": "V4 delays+0.5s",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 86.03200006484985,
+              "first_three_window_s": 86.03200006484985
+            },
+            {
+              "code": "actually installed code",
+              "model": "Joint affine uncertainty",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 24.007999897003174,
+              "first_three_window_s": 86.03200006484985
+            },
+            {
+              "code": "actually installed code",
+              "model": "Fast-rate uncertainty",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 24.007999897003174,
+              "first_three_window_s": 84.0329999923706
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "V3 baseline plant",
+              "charge_request_delay_s": 8.002000093460083,
+              "first_window_s": 84.0329999923706,
+              "first_three_window_s": 106.14000010490417
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "V4 plant with idle telemetry",
+              "charge_request_delay_s": 8.002000093460083,
+              "first_window_s": 84.0329999923706,
+              "first_three_window_s": 106.14000010490417
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "V4 delays-0.4s",
+              "charge_request_delay_s": 8.002000093460083,
+              "first_window_s": 84.0329999923706,
+              "first_three_window_s": 104.6159999370575
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "V4 delays+0.5s",
+              "charge_request_delay_s": 8.002000093460083,
+              "first_window_s": 86.03200006484985,
+              "first_three_window_s": 86.03200006484985
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "Joint affine uncertainty",
+              "charge_request_delay_s": 8.002000093460083,
+              "first_window_s": 86.03200006484985,
+              "first_three_window_s": 86.03200006484985
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "Fast-rate uncertainty",
+              "charge_request_delay_s": 8.002000093460083,
+              "first_window_s": 84.0329999923706,
+              "first_three_window_s": 84.0329999923706
+            }
+          ]
+        }
+      ]
+    },
+    "calm": {
+      "log": "regler_event_log_4.jsonl",
+      "sha256": "8816b495282f55377ea087d99fed005feb9ff91ec52a0693066b9f34ebd1c8fe",
+      "rows": 591,
+      "duration_s": 1198.3560001850128,
+      "version": "4.21-SIM",
+      "local_time": [
+        "2026-10-11T13:04:21.735000+02:00",
+        "2026-10-11T13:24:20.091000+02:00"
+      ],
+      "PV_range_W": [
+        288.0,
+        628.0
+      ],
+      "command_range_W": [
+        0.0,
+        537.0
+      ],
+      "snapshot_time_fallback_indices": [
+        0
+      ],
+      "max_control_snapshot_age_ms": 1793,
+      "median_control_snapshot_age_ms": 829.0,
+      "time_gaps_over_3s": 9,
+      "max_gap_s": 4.082000017166138,
+      "all": {
+        "points": 591,
+        "duration_s": 1198.3560001850128,
+        "mean_W": 497.19507699981773,
+        "target_mae_W": 511.98117065856854,
+        "within_pct": 31.299880801354547,
+        "center_pct": 4.173217286375976,
+        "import_Wh": 167.93332022554344,
+        "export_Wh": 2.428680285215378
+      },
+      "outside_large_loads": {
+        "points": 397,
+        "duration_s": 804.1110002994537,
+        "mean_W": -8.042663291406301,
+        "target_mae_W": 16.444290683053318,
+        "within_pct": 46.645798837984614,
+        "center_pct": 6.219290587172764,
+        "import_Wh": 0.6322375006808175,
+        "export_Wh": 2.428680285215378
+      },
+      "segments": {
+        "initial_solar": {
+          "points": 285,
+          "duration_s": 576.0300002098083,
+          "mean_W": -4.528620043454871,
+          "target_mae_W": 12.41175460191172,
+          "within_pct": 38.02267234654006,
+          "center_pct": 4.51417461095945,
+          "import_Wh": 0.3412627778450648,
+          "export_Wh": 1.0658797235621347
+        },
+        "first_high_load": {
+          "points": 154,
+          "duration_s": 314.2079999446869,
+          "mean_W": 1437.4861080032142,
+          "target_mae_W": 1432.4861080032142,
+          "within_pct": 0.0,
+          "center_pct": 0.0,
+          "import_Wh": 125.46378748443392,
+          "export_Wh": 0.0
+        },
+        "recovery1": {
+          "points": 27,
+          "duration_s": 56.01600003242493,
+          "mean_W": -47.12273308424204,
+          "target_mae_W": 59.40882992673111,
+          "within_pct": 49.99821513797686,
+          "center_pct": 10.713010432817526,
+          "import_Wh": 0.09780916690826416,
+          "export_Wh": 0.8310388941235013
+        },
+        "second_high_load": {
+          "points": 40,
+          "duration_s": 80.03699994087219,
+          "mean_W": 1881.807951032779,
+          "target_mae_W": 1876.807951032779,
+          "within_pct": 0.0,
+          "center_pct": 0.0,
+          "import_Wh": 41.837295240428716,
+          "export_Wh": 0.0
+        },
+        "recovery2": {
+          "points": 85,
+          "duration_s": 172.06500005722046,
+          "mean_W": -7.0842181812846885,
+          "target_mae_W": 15.957033704742548,
+          "within_pct": 74.4224565052473,
+          "center_pct": 10.464649869267527,
+          "import_Wh": 0.19316555592748855,
+          "export_Wh": 0.531761667529742
+        }
+      },
+      "hold": {
+        "points": 144,
+        "duration_s": 294.03500032424927,
+        "mean_W": 3.7650211898317876,
+        "target_mae_W": 6.170479714657116,
+        "within_pct": 100.0,
+        "center_pct": 16.32798806233996,
+        "import_Wh": 0.41777833508120643,
+        "export_Wh": 0.1102649998664856
+      },
+      "max_discharge_request_W": 0,
+      "direction_changes": 0,
+      "ac_mode_changes": 0,
+      "pv_classes": {
+        "normal": {
+          "all": {
+            "points": 591,
+            "duration_s": 1198.3560001850128,
+            "mean_W": 497.19507699981773,
+            "target_mae_W": 511.98117065856854,
+            "within_pct": 31.299880801354547,
+            "center_pct": 4.173217286375976,
+            "import_Wh": 167.93332022554344,
+            "export_Wh": 2.428680285215378
+          },
+          "outside_large_loads": {
+            "points": 397,
+            "duration_s": 804.1110002994537,
+            "mean_W": -8.042663291406301,
+            "target_mae_W": 16.444290683053318,
+            "within_pct": 46.645798837984614,
+            "center_pct": 6.219290587172764,
+            "import_Wh": 0.6322375006808175,
+            "export_Wh": 2.428680285215378
+          },
+          "positive_command_points": 402
+        }
+      },
+      "recoveries": [
+        {
+          "index": 439,
+          "end_index": 466,
+          "charge_request_delay_s": 0.0,
+          "first_window_s": 18.00600004196167,
+          "first_three_window_s": 18.00600004196167,
+          "Z_min_W": -347.0,
+          "Z_max_W": 18.0,
+          "model_cases": [
+            {
+              "code": "actually installed code",
+              "model": "V3 baseline plant",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 18.00600004196167,
+              "first_three_window_s": 18.00600004196167
+            },
+            {
+              "code": "actually installed code",
+              "model": "V4 plant with idle telemetry",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 18.00600004196167,
+              "first_three_window_s": 18.00600004196167
+            },
+            {
+              "code": "actually installed code",
+              "model": "V4 delays-0.4s",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 16.00499987602234,
+              "first_three_window_s": 16.00499987602234
+            },
+            {
+              "code": "actually installed code",
+              "model": "V4 delays+0.5s",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 18.00600004196167,
+              "first_three_window_s": null
+            },
+            {
+              "code": "actually installed code",
+              "model": "Joint affine uncertainty",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 18.00600004196167,
+              "first_three_window_s": 18.00600004196167
+            },
+            {
+              "code": "actually installed code",
+              "model": "Fast-rate uncertainty",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 18.00600004196167,
+              "first_three_window_s": 18.00600004196167
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "V3 baseline plant",
+              "charge_request_delay_s": 8.003000020980835,
+              "first_window_s": 28.007999897003174,
+              "first_three_window_s": 28.007999897003174
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "V4 plant with idle telemetry",
+              "charge_request_delay_s": 8.003000020980835,
+              "first_window_s": 28.007999897003174,
+              "first_three_window_s": 28.007999897003174
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "V4 delays-0.4s",
+              "charge_request_delay_s": 8.003000020980835,
+              "first_window_s": 28.007999897003174,
+              "first_three_window_s": 28.007999897003174
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "V4 delays+0.5s",
+              "charge_request_delay_s": 8.003000020980835,
+              "first_window_s": 28.007999897003174,
+              "first_three_window_s": null
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "Joint affine uncertainty",
+              "charge_request_delay_s": 8.003000020980835,
+              "first_window_s": 28.007999897003174,
+              "first_three_window_s": 28.007999897003174
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "Fast-rate uncertainty",
+              "charge_request_delay_s": 8.003000020980835,
+              "first_window_s": 28.007999897003174,
+              "first_three_window_s": 28.007999897003174
+            }
+          ]
+        },
+        {
+          "index": 506,
+          "end_index": 591,
+          "charge_request_delay_s": 0.0,
+          "first_window_s": 12.002000093460083,
+          "first_three_window_s": 12.002000093460083,
+          "Z_min_W": -217.0,
+          "Z_max_W": 14.0,
+          "model_cases": [
+            {
+              "code": "actually installed code",
+              "model": "V3 baseline plant",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 18.003999948501587,
+              "first_three_window_s": 18.003999948501587
+            },
+            {
+              "code": "actually installed code",
+              "model": "V4 plant with idle telemetry",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 18.003999948501587,
+              "first_three_window_s": 18.003999948501587
+            },
+            {
+              "code": "actually installed code",
+              "model": "V4 delays-0.4s",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 20.003999948501587,
+              "first_three_window_s": 20.003999948501587
+            },
+            {
+              "code": "actually installed code",
+              "model": "V4 delays+0.5s",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 16.003999948501587,
+              "first_three_window_s": 16.003999948501587
+            },
+            {
+              "code": "actually installed code",
+              "model": "Joint affine uncertainty",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 18.003999948501587,
+              "first_three_window_s": 18.003999948501587
+            },
+            {
+              "code": "actually installed code",
+              "model": "Fast-rate uncertainty",
+              "charge_request_delay_s": 0.0,
+              "first_window_s": 18.003999948501587,
+              "first_three_window_s": 18.003999948501587
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "V3 baseline plant",
+              "charge_request_delay_s": 8.002000093460083,
+              "first_window_s": 26.003999948501587,
+              "first_three_window_s": 26.003999948501587
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "V4 plant with idle telemetry",
+              "charge_request_delay_s": 8.002000093460083,
+              "first_window_s": 26.003999948501587,
+              "first_three_window_s": 26.003999948501587
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "V4 delays-0.4s",
+              "charge_request_delay_s": 8.002000093460083,
+              "first_window_s": 26.003999948501587,
+              "first_three_window_s": 26.003999948501587
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "V4 delays+0.5s",
+              "charge_request_delay_s": 8.002000093460083,
+              "first_window_s": 22.003000020980835,
+              "first_three_window_s": 22.003000020980835
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "Joint affine uncertainty",
+              "charge_request_delay_s": 8.002000093460083,
+              "first_window_s": 26.003999948501587,
+              "first_three_window_s": 26.003999948501587
+            },
+            {
+              "code": "previous 4.20 code counterfactual",
+              "model": "Fast-rate uncertainty",
+              "charge_request_delay_s": 8.002000093460083,
+              "first_window_s": 26.003999948501587,
+              "first_three_window_s": 26.003999948501587
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "model": {
+    "schema": 4,
+    "controller_version": "4.21-SIM",
+    "battery": {
+      "tau_up": 0.08000000044299771,
+      "delay_up": 3.053589395476739,
+      "tau_down": 0.23196514205644628,
+      "delay_down": 4.220467687193862,
+      "rate_up": 1162.0538344344193,
+      "rate_down": 136.10188348717952,
+      "gain": 1.0131301597195532,
+      "bias": -19.26792015472579,
+      "idle_bias": -18.0
+    },
+    "grid": {
+      "tau_up": 0.2658805165767889,
+      "delay_up": 1.1669989242975627,
+      "tau_down": 0.1284738606375642,
+      "delay_down": 2.339679604445676,
+      "rate_up": 480.63459176927466,
+      "rate_down": 80.0888033944017,
+      "gain": 1,
+      "bias": 0
+    },
+    "pv": {
+      "relative_lag_s": -0.934583350982704,
+      "tau_s": 0.020823753294588923,
+      "alternatives": [
+        {
+          "relative_lag_s": 0,
+          "tau_s": 0.02,
+          "reason": "No relative PV phase; lower checking RMSE but worse training error"
+        },
+        {
+          "relative_lag_s": -1.5207136969206538,
+          "tau_s": 0.04663515142944555,
+          "reason": "Previously calibrated phase; worse transfer to log 3"
+        }
+      ]
+    },
+    "idle_training": {
+      "points": 37,
+      "median_W": -18.0,
+      "range_W": [
+        -19.0,
+        -18.0
+      ]
+    },
+    "scope": "Charging/standby with discharge disabled, observed PV 134..2036 W and commands 0..1093 W. Not a discharge or 2400-W plant calibration.",
+    "selection": [
+      "Existing battery and grid dynamics retained: alternative joint dynamics did not improve both checking logs.",
+      "Separate idle telemetry level learned from previous-log rows and new-log prefix, never from the calm log.",
+      "PV timing learned from zero-command rows 200..379 of log 3; validation rows 380..596.",
+      "Negative relative PV lag is an offline reconstruction of reported measurements. The controller never receives future PV."
+    ],
+    "limitations": [
+      "No confirmed send/ACK/application times. Receive times do not establish internal sensor sampling times.",
+      "Derived house is not an independent sensor. A slowly changing house load is retained as an external net disturbance for counterfactual replay.",
+      "Passive PV reconstruction still has substantial residuals; no precise P/I optimum or universal physical limit is established."
+    ],
+    "battery_checks": {
+      "previous": {
+        "baseline_all": {
+          "points": 574,
+          "rmse_W": 7.489160289205795,
+          "mae_W": 3.026285250586041,
+          "max_abs_W": 59.734670698424
+        },
+        "v4_all": {
+          "points": 574,
+          "rmse_W": 7.481766323967414,
+          "mae_W": 2.968465530756615,
+          "max_abs_W": 59.734670698424
+        },
+        "baseline_active": {
+          "points": 546,
+          "rmse_W": 7.665285779681613,
+          "mae_W": 3.1053700468721352,
+          "max_abs_W": 59.734670698424
+        },
+        "v4_active": {
+          "points": 546,
+          "rmse_W": 7.664709583470588,
+          "mae_W": 3.1020664562786693,
+          "max_abs_W": 59.734670698424
+        },
+        "baseline_idle": {
+          "points": 25,
+          "rmse_W": 1.2185049421327723,
+          "mae_W": 1.1879201547250984,
+          "max_abs_W": 1.2679201547257897
+        },
+        "v4_idle": {
+          "points": 25,
+          "rmse_W": 0.282842712474619,
+          "mae_W": 0.08000000000066422,
+          "max_abs_W": 1.0
+        }
+      },
+      "new": {
+        "baseline_all": {
+          "points": 592,
+          "rmse_W": 7.991194463574144,
+          "mae_W": 3.5052456728171144,
+          "max_abs_W": 72.37804852468207
+        },
+        "v4_all": {
+          "points": 592,
+          "rmse_W": 7.903926680330852,
+          "mae_W": 2.5973693360988817,
+          "max_abs_W": 72.37804852468207
+        },
+        "baseline_active": {
+          "points": 169,
+          "rmse_W": 14.7787034725493,
+          "mae_W": 8.770330995946386,
+          "max_abs_W": 72.37804852468207
+        },
+        "v4_active": {
+          "points": 169,
+          "rmse_W": 14.778928573155294,
+          "mae_W": 8.747823531665766,
+          "max_abs_W": 72.37804852468207
+        },
+        "baseline_idle": {
+          "points": 413,
+          "rmse_W": 1.438726791145437,
+          "mae_W": 1.3986707600525918,
+          "max_abs_W": 2.2679201547257897
+        },
+        "v4_idle": {
+          "points": 413,
+          "rmse_W": 0.36159453166063854,
+          "mae_W": 0.13075060532694802,
+          "max_abs_W": 1.0
+        },
+        "baseline_dynamic_check": {
+          "points": 86,
+          "rmse_W": 15.14921691025858,
+          "mae_W": 7.841686088532711,
+          "max_abs_W": 72.37804852468207
+        },
+        "v4_dynamic_check": {
+          "points": 86,
+          "rmse_W": 15.14921691025858,
+          "mae_W": 7.841686088532711,
+          "max_abs_W": 72.37804852468207
+        },
+        "baseline_idle_check": {
+          "points": 411,
+          "rmse_W": 1.5399549751184685,
+          "mae_W": 1.4290448104113698,
+          "max_abs_W": 8.12598463675057
+        },
+        "v4_idle_check": {
+          "points": 411,
+          "rmse_W": 0.6584715434669601,
+          "mae_W": 0.17257884024369552,
+          "max_abs_W": 8.125984636755168
+        }
+      },
+      "calm": {
+        "baseline_all": {
+          "points": 586,
+          "rmse_W": 4.4250209186536535,
+          "mae_W": 1.6230221944919112,
+          "max_abs_W": 49.23020482065904
+        },
+        "v4_all": {
+          "points": 586,
+          "rmse_W": 4.363191510764773,
+          "mae_W": 1.2193572402124286,
+          "max_abs_W": 49.23020482065904
+        },
+        "baseline_active": {
+          "points": 403,
+          "rmse_W": 5.266576526325438,
+          "mae_W": 1.7833493111587304,
+          "max_abs_W": 49.23020482065904
+        },
+        "v4_active": {
+          "points": 403,
+          "rmse_W": 5.2610958586160805,
+          "mae_W": 1.7691210597178044,
+          "max_abs_W": 49.23020482065904
+        },
+        "baseline_idle": {
+          "points": 177,
+          "rmse_W": 1.2757734977978161,
+          "mae_W": 1.2735698722398938,
+          "max_abs_W": 2.2679201547257897
+        },
+        "v4_idle": {
+          "points": 177,
+          "rmse_W": 0.07516460280028288,
+          "mae_W": 0.005649717514143061,
+          "max_abs_W": 1.0
+        }
+      }
+    },
+    "pv_checks": {
+      "pv_passive": {
+        "relative_lag_s": -0.934583350982704,
+        "tau_s": 0.020823753294588923,
+        "house_intercept_W": 1969.2568394093505,
+        "cost": 31864.384921647637,
+        "training": {
+          "points": 173,
+          "rmse_W": 31.00681321542174,
+          "mae_W": 22.91751058870474,
+          "max_abs_W": 127.89353862702296
+        },
+        "following": {
+          "points": 217,
+          "rmse_W": 62.31846934127647,
+          "mae_W": 49.79183439011832,
+          "max_abs_W": 295.678569208653
+        },
+        "active_bounds": []
+      },
+      "pv_previous": {
+        "relative_lag_s": -1.5207136969206538,
+        "tau_s": 0.04663515142944555,
+        "house_intercept_W": 1969.2759809701772,
+        "training": {
+          "points": 173,
+          "rmse_W": 50.17663793555307,
+          "mae_W": 33.95531019991471,
+          "max_abs_W": 192.32296851672095
+        },
+        "following": {
+          "points": 217,
+          "rmse_W": 87.80977630729754,
+          "mae_W": 61.33038216095109,
+          "max_abs_W": 416.89506250417435
+        }
+      },
+      "pv_no_phase": {
+        "relative_lag_s": 0,
+        "tau_s": 0.02,
+        "house_intercept_W": 1965.396184896042,
+        "training": {
+          "points": 173,
+          "rmse_W": 66.84668482960578,
+          "mae_W": 45.31304551451074,
+          "max_abs_W": 255.46291324124263
+        },
+        "following": {
+          "points": 217,
+          "rmse_W": 59.85836864096726,
+          "mae_W": 50.135158351217726,
+          "max_abs_W": 269.5234425848039
+        }
+      }
+    },
+    "alternative_fits": {
+      "battery_affine": {
+        "kind": "affine",
+        "model": {
+          "tau_up": 0.1985161299821605,
+          "delay_up": 2.8742390992626166,
+          "tau_down": 0.27712662469287186,
+          "delay_down": 3.3436069788078067,
+          "rate_up": 1165.908732989673,
+          "rate_down": 60.00000000878624,
+          "gain": 1.0164419078726559,
+          "bias": -19.851050483277017
+        },
+        "cost": 7333.410178489296,
+        "training_errors": {
+          "points": 669,
+          "rmse_W": 7.988554363228116,
+          "mae_W": 3.5528818643136106,
+          "max_abs_W": 60.413316390673856
+        },
+        "nfev": 20,
+        "active_bounds": [
+          "rate_down"
+        ],
+        "new_all": {
+          "points": 592,
+          "rmse_W": 8.301563688056508,
+          "mae_W": 3.7464140406156354,
+          "max_abs_W": 89.87929451589068
+        },
+        "new_dynamic_check": {
+          "points": 86,
+          "rmse_W": 18.099519413823824,
+          "mae_W": 8.444179221115329,
+          "max_abs_W": 89.87929451589068
+        },
+        "new_idle_check": {
+          "points": 411,
+          "rmse_W": 2.0743296669736493,
+          "mae_W": 2.0080757249252947,
+          "max_abs_W": 7.641903748881958
+        }
+      },
+      "battery_fast_rate": {
+        "kind": "fast_rate",
+        "model": {
+          "tau_up": 0.1047238417834506,
+          "delay_up": 3.011126359231973,
+          "tau_down": 0.3937847590176501,
+          "delay_down": 4.4050103979109085,
+          "gain": 1.016440449524049,
+          "bias": -20.010550998562298,
+          "rate_up": 6000.0,
+          "rate_down": 6000.0
+        },
+        "cost": 8372.16692201843,
+        "training_errors": {
+          "points": 669,
+          "rmse_W": 8.719079160921652,
+          "mae_W": 3.9873259121446276,
+          "max_abs_W": 60.25326027010044
+        },
+        "nfev": 12,
+        "active_bounds": [],
+        "new_all": {
+          "points": 592,
+          "rmse_W": 8.394433579834477,
+          "mae_W": 4.0305512756153155,
+          "max_abs_W": 73.47944293767762
+        },
+        "new_dynamic_check": {
+          "points": 86,
+          "rmse_W": 16.538922211528543,
+          "mae_W": 8.539889516545779,
+          "max_abs_W": 73.47944293767762
+        },
+        "new_idle_check": {
+          "points": 411,
+          "rmse_W": 2.237429673469488,
+          "mae_W": 2.1757379651053683,
+          "max_abs_W": 7.876326332917898
+        }
+      },
+      "separate_pv_strings": {
+        "model": {
+          "s_lag_s": -0.2808942991496667,
+          "s_tau_s": 0.0645219581490749,
+          "t_lag_s": -1.9929976220688816,
+          "t_tau_s": 0.028435090099516017
+        },
+        "house_intercept_W": 1969.135083586357,
+        "cost": 25682.515383600145,
+        "training": {
+          "points": 173,
+          "rmse_W": 26.321912262709926,
+          "mae_W": 19.828409286466865,
+          "max_abs_W": 146.28017400220529
+        },
+        "following": {
+          "points": 217,
+          "rmse_W": 60.52382034960204,
+          "mae_W": 47.12324387629941,
+          "max_abs_W": 376.68472988154303
+        },
+        "active_bounds": [],
+        "jacobian_condition": null,
+        "identifiability_note": "Jacobian rank deficiency: short time constants and correlated PV strings are not uniquely identified."
+      }
+    }
+  },
+  "replay": {
+    "previous": {
+      "log": "regler_event_log_2.jsonl",
+      "rows": 579,
+      "clock_differences": 145,
+      "unlogged_changes": [],
+      "error_count": 0
+    },
+    "new": {
+      "log": "regler_event_log_3.jsonl",
+      "rows": 597,
+      "clock_differences": 125,
+      "unlogged_changes": [],
+      "error_count": 0
+    },
+    "calm": {
+      "log": "regler_event_log_4.jsonl",
+      "rows": 591,
+      "clock_differences": 117,
+      "unlogged_changes": [],
+      "error_count": 0
+    }
+  },
+  "closed_replay": {
+    "previous": [
+      {
+        "model": "V3 baseline plant",
+        "grid": {
+          "points": 574,
+          "rmse_W": 19.017825857558798,
+          "mae_W": 12.005226480836237,
+          "max_abs_W": 71.0
+        },
+        "battery": {
+          "points": 574,
+          "rmse_W": 20.421345667830447,
+          "mae_W": 13.72822299651568,
+          "max_abs_W": 73.0
+        },
+        "command": {
+          "points": 574,
+          "rmse_W": 19.718533350411466,
+          "mae_W": 12.5801393728223,
+          "max_abs_W": 72.0
+        },
+        "metrics": {
+          "duration_s": 1198.3129999637604,
+          "mean_W": 20.642585774588696,
+          "raw_target_mae_W": 56.61818063795455,
+          "feasible_target_mae_W": 30.654454002304004,
+          "import_Wh": 12.64904385811752,
+          "export_Wh": 5.777855278518469,
+          "within_pct": 18.509270992498653,
+          "center_pct": 4.674070984006324,
+          "reachable_s": 1138.2980000972748,
+          "within_reachable_pct": 19.485143651546306,
+          "command_changes": 278,
+          "direction_changes": 2
+        },
+        "first_charge_after_fall_s": 8.284000158309937,
+        "recovery_window_s": 28.004000186920166,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "V4 plant with idle telemetry",
+        "grid": {
+          "points": 574,
+          "rmse_W": 19.017825857558798,
+          "mae_W": 12.005226480836237,
+          "max_abs_W": 71.0
+        },
+        "battery": {
+          "points": 574,
+          "rmse_W": 20.41878618498888,
+          "mae_W": 13.682926829268293,
+          "max_abs_W": 73.0
+        },
+        "command": {
+          "points": 574,
+          "rmse_W": 19.718533350411466,
+          "mae_W": 12.5801393728223,
+          "max_abs_W": 72.0
+        },
+        "metrics": {
+          "duration_s": 1198.3129999637604,
+          "mean_W": 20.642585774588696,
+          "raw_target_mae_W": 56.61818063795455,
+          "feasible_target_mae_W": 30.654454002304004,
+          "import_Wh": 12.64904385811752,
+          "export_Wh": 5.777855278518469,
+          "within_pct": 18.509270992498653,
+          "center_pct": 4.674070984006324,
+          "reachable_s": 1138.2980000972748,
+          "within_reachable_pct": 19.485143651546306,
+          "command_changes": 278,
+          "direction_changes": 2
+        },
+        "first_charge_after_fall_s": 8.284000158309937,
+        "recovery_window_s": 28.004000186920166,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "V4 delays-0.4s",
+        "grid": {
+          "points": 574,
+          "rmse_W": 19.866716164223664,
+          "mae_W": 11.898954703832752,
+          "max_abs_W": 95.0
+        },
+        "battery": {
+          "points": 574,
+          "rmse_W": 19.249417385635628,
+          "mae_W": 11.54006968641115,
+          "max_abs_W": 101.0
+        },
+        "command": {
+          "points": 574,
+          "rmse_W": 20.238043314820324,
+          "mae_W": 11.37979094076655,
+          "max_abs_W": 101.0
+        },
+        "metrics": {
+          "duration_s": 1198.3129999637604,
+          "mean_W": 19.243911992367185,
+          "raw_target_mae_W": 50.842556905462075,
+          "feasible_target_mae_W": 24.878830269811523,
+          "import_Wh": 11.508169694940252,
+          "export_Wh": 5.102550275325776,
+          "within_pct": 35.5064161180676,
+          "center_pct": 8.729021575511059,
+          "reachable_s": 1138.2980000972748,
+          "within_reachable_pct": 37.37843694073715,
+          "command_changes": 235,
+          "direction_changes": 2
+        },
+        "first_charge_after_fall_s": 8.284000158309937,
+        "recovery_window_s": 28.004000186920166,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "V4 delays+0.5s",
+        "grid": {
+          "points": 574,
+          "rmse_W": 18.14219867662957,
+          "mae_W": 10.797909407665506,
+          "max_abs_W": 75.0
+        },
+        "battery": {
+          "points": 574,
+          "rmse_W": 21.94044838332444,
+          "mae_W": 13.167247386759582,
+          "max_abs_W": 88.0
+        },
+        "command": {
+          "points": 574,
+          "rmse_W": 20.64495787630204,
+          "mae_W": 11.911149825783973,
+          "max_abs_W": 84.0
+        },
+        "metrics": {
+          "duration_s": 1198.3129999637604,
+          "mean_W": 16.002107062366193,
+          "raw_target_mae_W": 54.00545925946613,
+          "feasible_target_mae_W": 28.04173262381558,
+          "import_Wh": 11.409098307821482,
+          "export_Wh": 6.082561385697788,
+          "within_pct": 31.411242303369242,
+          "center_pct": 7.657598608198464,
+          "reachable_s": 1138.2980000972748,
+          "within_reachable_pct": 33.06735142635967,
+          "command_changes": 228,
+          "direction_changes": 2
+        },
+        "first_charge_after_fall_s": 8.284000158309937,
+        "recovery_window_s": 28.004000186920166,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "Joint affine uncertainty",
+        "grid": {
+          "points": 574,
+          "rmse_W": 18.73318060952621,
+          "mae_W": 10.74390243902439,
+          "max_abs_W": 102.0
+        },
+        "battery": {
+          "points": 574,
+          "rmse_W": 20.594263603726912,
+          "mae_W": 12.79965156794425,
+          "max_abs_W": 107.0
+        },
+        "command": {
+          "points": 574,
+          "rmse_W": 19.417160770930984,
+          "mae_W": 11.266550522648084,
+          "max_abs_W": 106.0
+        },
+        "metrics": {
+          "duration_s": 1198.3129999637604,
+          "mean_W": 20.56269678490288,
+          "raw_target_mae_W": 55.35413860455172,
+          "feasible_target_mae_W": 29.39041196890117,
+          "import_Wh": 12.431732744508308,
+          "export_Wh": 5.58713639126884,
+          "within_pct": 21.537945469361663,
+          "center_pct": 4.31715255363477,
+          "reachable_s": 1138.2980000972748,
+          "within_reachable_pct": 22.673500301538873,
+          "command_changes": 272,
+          "direction_changes": 2
+        },
+        "first_charge_after_fall_s": 8.284000158309937,
+        "recovery_window_s": 28.004000186920166,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "Fast-rate uncertainty",
+        "grid": {
+          "points": 574,
+          "rmse_W": 19.01154976297945,
+          "mae_W": 11.066202090592334,
+          "max_abs_W": 103.0
+        },
+        "battery": {
+          "points": 574,
+          "rmse_W": 20.575263386276106,
+          "mae_W": 12.67247386759582,
+          "max_abs_W": 108.0
+        },
+        "command": {
+          "points": 574,
+          "rmse_W": 19.691302312431798,
+          "mae_W": 11.594076655052264,
+          "max_abs_W": 107.0
+        },
+        "metrics": {
+          "duration_s": 1198.3129999637604,
+          "mean_W": 20.767381193427646,
+          "raw_target_mae_W": 55.58715285517539,
+          "feasible_target_mae_W": 29.62342621952484,
+          "import_Wh": 12.523006076878968,
+          "export_Wh": 5.610277504854734,
+          "within_pct": 21.53502464962017,
+          "center_pct": 2.863776024305581,
+          "reachable_s": 1138.2980000972748,
+          "within_reachable_pct": 22.6704254860982,
+          "command_changes": 264,
+          "direction_changes": 2
+        },
+        "first_charge_after_fall_s": 8.284000158309937,
+        "recovery_window_s": 28.004000186920166,
+        "all_discharge_requests_zero": true
+      }
+    ],
+    "new": [
+      {
+        "model": "V3 baseline plant",
+        "grid": {
+          "points": 592,
+          "rmse_W": 8.720316446031012,
+          "mae_W": 3.081081081081081,
+          "max_abs_W": 47.0
+        },
+        "battery": {
+          "points": 592,
+          "rmse_W": 13.231054788292989,
+          "mae_W": 5.608108108108108,
+          "max_abs_W": 111.0
+        },
+        "command": {
+          "points": 592,
+          "rmse_W": 9.254472987170598,
+          "mae_W": 3.2972972972972974,
+          "max_abs_W": 47.0
+        },
+        "metrics": {
+          "duration_s": 1197.9130001068115,
+          "mean_W": 407.86182119273195,
+          "raw_target_mae_W": 451.85358457044373,
+          "feasible_target_mae_W": 27.627024206664938,
+          "import_Wh": 141.57069527096206,
+          "export_Wh": 5.853201422625122,
+          "within_pct": 7.167799377016287,
+          "center_pct": 1.0016587041789162,
+          "reachable_s": 320.36699986457825,
+          "within_reachable_pct": 26.80176191528733,
+          "command_changes": 100,
+          "direction_changes": 0
+        },
+        "first_charge_after_fall_s": 0,
+        "recovery_window_s": 106.14000010490417,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "V4 plant with idle telemetry",
+        "grid": {
+          "points": 592,
+          "rmse_W": 8.720316446031012,
+          "mae_W": 3.081081081081081,
+          "max_abs_W": 47.0
+        },
+        "battery": {
+          "points": 592,
+          "rmse_W": 13.198843110646457,
+          "mae_W": 4.89527027027027,
+          "max_abs_W": 111.0
+        },
+        "command": {
+          "points": 592,
+          "rmse_W": 9.254472987170598,
+          "mae_W": 3.2972972972972974,
+          "max_abs_W": 47.0
+        },
+        "metrics": {
+          "duration_s": 1197.9130001068115,
+          "mean_W": 407.86182119273195,
+          "raw_target_mae_W": 451.85358457044373,
+          "feasible_target_mae_W": 27.627024206664938,
+          "import_Wh": 141.57069527096206,
+          "export_Wh": 5.853201422625122,
+          "within_pct": 7.167799377016287,
+          "center_pct": 1.0016587041789162,
+          "reachable_s": 320.36699986457825,
+          "within_reachable_pct": 26.80176191528733,
+          "command_changes": 100,
+          "direction_changes": 0
+        },
+        "first_charge_after_fall_s": 0,
+        "recovery_window_s": 106.14000010490417,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "V4 delays-0.4s",
+        "grid": {
+          "points": 592,
+          "rmse_W": 12.322523872754095,
+          "mae_W": 4.675675675675675,
+          "max_abs_W": 86.0
+        },
+        "battery": {
+          "points": 592,
+          "rmse_W": 14.007237511468945,
+          "mae_W": 5.445945945945946,
+          "max_abs_W": 85.0
+        },
+        "command": {
+          "points": 592,
+          "rmse_W": 12.215547249083627,
+          "mae_W": 4.304054054054054,
+          "max_abs_W": 86.0
+        },
+        "metrics": {
+          "duration_s": 1197.9130001068115,
+          "mean_W": 407.8753372076653,
+          "raw_target_mae_W": 449.76279750110297,
+          "feasible_target_mae_W": 25.536237137324203,
+          "import_Wh": 141.2184888829124,
+          "export_Wh": 5.496497531798151,
+          "within_pct": 7.463814156608908,
+          "center_pct": 1.2960875069190791,
+          "reachable_s": 320.36699986457825,
+          "within_reachable_pct": 27.90861734311743,
+          "command_changes": 108,
+          "direction_changes": 0
+        },
+        "first_charge_after_fall_s": 0,
+        "recovery_window_s": 104.6159999370575,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "V4 delays+0.5s",
+        "grid": {
+          "points": 592,
+          "rmse_W": 12.74456693993509,
+          "mae_W": 4.589527027027027,
+          "max_abs_W": 98.0
+        },
+        "battery": {
+          "points": 592,
+          "rmse_W": 19.96555310555685,
+          "mae_W": 7.704391891891892,
+          "max_abs_W": 126.0
+        },
+        "command": {
+          "points": 592,
+          "rmse_W": 13.708290547319521,
+          "mae_W": 4.72804054054054,
+          "max_abs_W": 98.0
+        },
+        "metrics": {
+          "duration_s": 1197.9130001068115,
+          "mean_W": 406.19239697361337,
+          "raw_target_mae_W": 452.6475111764378,
+          "feasible_target_mae_W": 28.420950812658976,
+          "import_Wh": 141.42237694296557,
+          "export_Wh": 6.260390032066242,
+          "within_pct": 7.501796914998094,
+          "center_pct": 1.335238879831129,
+          "reachable_s": 320.36699986457825,
+          "within_reachable_pct": 28.05064208372291,
+          "command_changes": 96,
+          "direction_changes": 0
+        },
+        "first_charge_after_fall_s": 0,
+        "recovery_window_s": 86.03200006484985,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "Joint affine uncertainty",
+        "grid": {
+          "points": 592,
+          "rmse_W": 8.427853594849415,
+          "mae_W": 2.839527027027027,
+          "max_abs_W": 49.0
+        },
+        "battery": {
+          "points": 592,
+          "rmse_W": 13.499311794270065,
+          "mae_W": 6.10304054054054,
+          "max_abs_W": 130.0
+        },
+        "command": {
+          "points": 592,
+          "rmse_W": 8.942949812637403,
+          "mae_W": 3.0371621621621623,
+          "max_abs_W": 49.0
+        },
+        "metrics": {
+          "duration_s": 1197.9130001068115,
+          "mean_W": 408.19659842325393,
+          "raw_target_mae_W": 451.749196355798,
+          "feasible_target_mae_W": 27.522635992019243,
+          "import_Wh": 141.61615638176588,
+          "export_Wh": 5.787264201045035,
+          "within_pct": 7.493866473456581,
+          "center_pct": 1.1687827017715275,
+          "reachable_s": 320.36699986457825,
+          "within_reachable_pct": 28.02098865804804,
+          "command_changes": 101,
+          "direction_changes": 0
+        },
+        "first_charge_after_fall_s": 0,
+        "recovery_window_s": 86.03200006484985,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "Fast-rate uncertainty",
+        "grid": {
+          "points": 592,
+          "rmse_W": 8.390692237009782,
+          "mae_W": 2.8530405405405403,
+          "max_abs_W": 46.0
+        },
+        "battery": {
+          "points": 592,
+          "rmse_W": 13.455318952299425,
+          "mae_W": 6.278716216216216,
+          "max_abs_W": 114.0
+        },
+        "command": {
+          "points": 592,
+          "rmse_W": 8.879542994083861,
+          "mae_W": 3.045608108108108,
+          "max_abs_W": 46.0
+        },
+        "metrics": {
+          "duration_s": 1197.9130001068115,
+          "mean_W": 408.23341412013804,
+          "raw_target_mae_W": 451.8389457801887,
+          "feasible_target_mae_W": 27.612385416409914,
+          "import_Wh": 141.6361016601985,
+          "export_Wh": 5.7949589233928265,
+          "within_pct": 7.326658983495222,
+          "center_pct": 0.8347851637897203,
+          "reachable_s": 320.36699986457825,
+          "within_reachable_pct": 27.395768126518234,
+          "command_changes": 101,
+          "direction_changes": 0
+        },
+        "first_charge_after_fall_s": 0,
+        "recovery_window_s": 84.0329999923706,
+        "all_discharge_requests_zero": true
+      }
+    ],
+    "calm": [
+      {
+        "model": "V3 baseline plant",
+        "grid": {
+          "points": 586,
+          "rmse_W": 5.4420621969646215,
+          "mae_W": 1.7525597269624573,
+          "max_abs_W": 38.0
+        },
+        "battery": {
+          "points": 586,
+          "rmse_W": 6.148892072571815,
+          "mae_W": 2.6587030716723548,
+          "max_abs_W": 45.0
+        },
+        "command": {
+          "points": 586,
+          "rmse_W": 5.551035324519331,
+          "mae_W": 1.773037542662116,
+          "max_abs_W": 38.0
+        },
+        "metrics": {
+          "duration_s": 1198.3560001850128,
+          "mean_W": 497.000704879055,
+          "raw_target_mae_W": 512.4138192207691,
+          "feasible_target_mae_W": 15.430244601026807,
+          "import_Wh": 167.9735310590928,
+          "export_Wh": 2.53359306242731,
+          "within_pct": 30.052421852245875,
+          "center_pct": 4.673903245931587,
+          "reachable_s": 804.1110002994537,
+          "within_reachable_pct": 44.786727247007555,
+          "command_changes": 151,
+          "direction_changes": 0
+        },
+        "first_charge_after_fall_s": 0,
+        "recovery_window_s": 18.00600004196167,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "V4 plant with idle telemetry",
+        "grid": {
+          "points": 586,
+          "rmse_W": 5.4420621969646215,
+          "mae_W": 1.7525597269624573,
+          "max_abs_W": 38.0
+        },
+        "battery": {
+          "points": 586,
+          "rmse_W": 6.1188457275488375,
+          "mae_W": 2.3378839590443685,
+          "max_abs_W": 45.0
+        },
+        "command": {
+          "points": 586,
+          "rmse_W": 5.551035324519331,
+          "mae_W": 1.773037542662116,
+          "max_abs_W": 38.0
+        },
+        "metrics": {
+          "duration_s": 1198.3560001850128,
+          "mean_W": 497.000704879055,
+          "raw_target_mae_W": 512.4138192207691,
+          "feasible_target_mae_W": 15.430244601026807,
+          "import_Wh": 167.9735310590928,
+          "export_Wh": 2.53359306242731,
+          "within_pct": 30.052421852245875,
+          "center_pct": 4.673903245931587,
+          "reachable_s": 804.1110002994537,
+          "within_reachable_pct": 44.786727247007555,
+          "command_changes": 151,
+          "direction_changes": 0
+        },
+        "first_charge_after_fall_s": 0,
+        "recovery_window_s": 18.00600004196167,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "V4 delays-0.4s",
+        "grid": {
+          "points": 586,
+          "rmse_W": 8.181494977585661,
+          "mae_W": 2.848122866894198,
+          "max_abs_W": 59.0
+        },
+        "battery": {
+          "points": 586,
+          "rmse_W": 7.374200945895337,
+          "mae_W": 3.0238907849829353,
+          "max_abs_W": 61.0
+        },
+        "command": {
+          "points": 586,
+          "rmse_W": 6.959782076538103,
+          "mae_W": 2.431740614334471,
+          "max_abs_W": 61.0
+        },
+        "metrics": {
+          "duration_s": 1198.3560001850128,
+          "mean_W": 497.3349686647763,
+          "raw_target_mae_W": 511.4858186829388,
+          "feasible_target_mae_W": 14.5022440631965,
+          "import_Wh": 167.86070689274206,
+          "export_Wh": 2.3095002812809415,
+          "within_pct": 27.73624865208552,
+          "center_pct": 4.1732173062714475,
+          "reachable_s": 804.1110002994537,
+          "within_reachable_pct": 41.33496492707132,
+          "command_changes": 135,
+          "direction_changes": 0
+        },
+        "first_charge_after_fall_s": 0,
+        "recovery_window_s": 16.00499987602234,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "V4 delays+0.5s",
+        "grid": {
+          "points": 586,
+          "rmse_W": 8.01789806743608,
+          "mae_W": 2.522184300341297,
+          "max_abs_W": 72.0
+        },
+        "battery": {
+          "points": 586,
+          "rmse_W": 9.888887823667456,
+          "mae_W": 3.854948805460751,
+          "max_abs_W": 73.0
+        },
+        "command": {
+          "points": 586,
+          "rmse_W": 9.102844321640752,
+          "mae_W": 2.660409556313993,
+          "max_abs_W": 72.0
+        },
+        "metrics": {
+          "duration_s": 1198.3560001850128,
+          "mean_W": 496.89642870144905,
+          "raw_target_mae_W": 512.8541942035373,
+          "feasible_target_mae_W": 15.870619583794966,
+          "import_Wh": 168.04058384027724,
+          "export_Wh": 2.635356950031387,
+          "within_pct": 31.800149532972753,
+          "center_pct": 4.340196061099881,
+          "reachable_s": 804.1110002994537,
+          "within_reachable_pct": 47.39134271938453,
+          "command_changes": 127,
+          "direction_changes": 0
+        },
+        "first_charge_after_fall_s": 0,
+        "recovery_window_s": null,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "Joint affine uncertainty",
+        "grid": {
+          "points": 586,
+          "rmse_W": 5.484697919010548,
+          "mae_W": 1.7064846416382253,
+          "max_abs_W": 40.0
+        },
+        "battery": {
+          "points": 586,
+          "rmse_W": 6.0174660456808144,
+          "mae_W": 2.5716723549488054,
+          "max_abs_W": 47.0
+        },
+        "command": {
+          "points": 586,
+          "rmse_W": 5.569756215521582,
+          "mae_W": 1.7184300341296928,
+          "max_abs_W": 40.0
+        },
+        "metrics": {
+          "duration_s": 1198.3560001850128,
+          "mean_W": 497.13911783834527,
+          "raw_target_mae_W": 512.422304178081,
+          "feasible_target_mae_W": 15.43872955833868,
+          "import_Wh": 168.00020383682502,
+          "export_Wh": 2.5141913956403736,
+          "within_pct": 29.800159566259136,
+          "center_pct": 4.673903245931587,
+          "reachable_s": 804.1110002994537,
+          "within_reachable_pct": 44.410784094980016,
+          "command_changes": 150,
+          "direction_changes": 0
+        },
+        "first_charge_after_fall_s": 0,
+        "recovery_window_s": 18.00600004196167,
+        "all_discharge_requests_zero": true
+      },
+      {
+        "model": "Fast-rate uncertainty",
+        "grid": {
+          "points": 586,
+          "rmse_W": 5.592535249057032,
+          "mae_W": 2.0341296928327646,
+          "max_abs_W": 40.0
+        },
+        "battery": {
+          "points": 586,
+          "rmse_W": 6.112986232815665,
+          "mae_W": 3.0102389078498293,
+          "max_abs_W": 46.0
+        },
+        "command": {
+          "points": 586,
+          "rmse_W": 5.674474310724445,
+          "mae_W": 2.0494880546075085,
+          "max_abs_W": 40.0
+        },
+        "metrics": {
+          "duration_s": 1198.3560001850128,
+          "mean_W": 496.9236551531297,
+          "raw_target_mae_W": 512.4838159510379,
+          "feasible_target_mae_W": 15.500241331295559,
+          "import_Wh": 167.96770522581193,
+          "export_Wh": 2.553415285083984,
+          "within_pct": 28.070122720134,
+          "center_pct": 4.340112619491494,
+          "reachable_s": 804.1110002994537,
+          "within_reachable_pct": 41.83253303968647,
+          "command_changes": 144,
+          "direction_changes": 0
+        },
+        "first_charge_after_fall_s": 0,
+        "recovery_window_s": 18.00600004196167,
+        "all_discharge_requests_zero": true
+      }
+    ]
+  },
+  "warnings": [
+    "Measured plant behavior is distinguished from code replay, open-loop identification and closed replay.",
+    "Large imports during forbidden discharge are intentional; the window target is not reachable there.",
+    "No new controller or P/I values were introduced. V4.21 night modification and allowed-discharge operation are not validated by these daytime logs."
+  ],
+  "diagnostic_parameter_trials": {
+    "previous": [
+      {
+        "candidate": {
+          "name": "unchanged V4.21",
+          "file": "results_regler_day/Regler_V4_21_SIM.js"
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 154.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay-0.4s",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 132.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay+0.5s",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 142.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 155.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 158.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          }
+        ],
+        "all_mae_improve": false,
+        "worst_mae_change_W": 0.0,
+        "worst_positive_peak_change_W": 0.0
+      },
+      {
+        "candidate": {
+          "name": "unconfirmed PV steps 60/45W",
+          "file": "results_regler_day/Regler_V4_21_SIM.js",
+          "constants": {
+            "pvFollowUnconfirmedStepHighPVW": 60,
+            "pvFollowUnconfirmedStepVeryHighPVW": 45
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "mae_change_W": -0.6255260506469895,
+            "export_change_Wh": -0.07445555183622421,
+            "import_change_Wh": -0.04544055965212124,
+            "positive_peak_W": 154.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay-0.4s",
+            "mae_change_W": 0.40428668918545085,
+            "export_change_Wh": 0.019873054689830916,
+            "import_change_Wh": 0.1587052773767077,
+            "positive_peak_W": 132.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay+0.5s",
+            "mae_change_W": 0.9302252458378604,
+            "export_change_Wh": 0.2178830558061602,
+            "import_change_Wh": 0.040254999200508124,
+            "positive_peak_W": 144.0,
+            "positive_peak_change_W": 2.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "mae_change_W": 0.036282678574423244,
+            "export_change_Wh": -0.018889166580306593,
+            "import_change_Wh": 0.03541361232598739,
+            "positive_peak_W": 155.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "mae_change_W": 0.09164216972186878,
+            "export_change_Wh": -0.004443055589995026,
+            "import_change_Wh": 0.034948611987964284,
+            "positive_peak_W": 159.0,
+            "positive_peak_change_W": 1.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          }
+        ],
+        "all_mae_improve": false,
+        "worst_mae_change_W": 0.9302252458378604,
+        "worst_positive_peak_change_W": 2.0
+      },
+      {
+        "candidate": {
+          "name": "normal charging up step 90W",
+          "file": "results_regler_day/Regler_V4_21_SIM.js",
+          "constants": {
+            "stepUpChargeW": 90
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "mae_change_W": -0.5404522733552746,
+            "export_change_Wh": -0.49549527731206666,
+            "import_change_Wh": 0.3689333364698708,
+            "positive_peak_W": 161.0,
+            "positive_peak_change_W": 7.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay-0.4s",
+            "mae_change_W": 3.421954840473859,
+            "export_change_Wh": 0.19849610613451762,
+            "import_change_Wh": 1.1143358324633592,
+            "positive_peak_W": 162.0,
+            "positive_peak_change_W": 30.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay+0.5s",
+            "mae_change_W": 7.540307887730837,
+            "export_change_Wh": 1.8468880501058411,
+            "import_change_Wh": 0.9133744415309621,
+            "positive_peak_W": 166.0,
+            "positive_peak_change_W": 24.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "mae_change_W": -0.8368138895806823,
+            "export_change_Wh": -0.4242061075237098,
+            "import_change_Wh": 0.2850752847724518,
+            "positive_peak_W": 100.0,
+            "positive_peak_change_W": -55.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "mae_change_W": 0.38975879525654733,
+            "export_change_Wh": -0.30911000006728795,
+            "import_change_Wh": 0.4246163985464335,
+            "positive_peak_W": 99.0,
+            "positive_peak_change_W": -59.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          }
+        ],
+        "all_mae_improve": false,
+        "worst_mae_change_W": 7.540307887730837,
+        "worst_positive_peak_change_W": 30.0
+      }
+    ],
+    "new": [
+      {
+        "candidate": {
+          "name": "unchanged V4.21",
+          "file": "results_regler_day/Regler_V4_21_SIM.js"
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 271.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay-0.4s",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 261.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay+0.5s",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 256.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 273.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 273.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          }
+        ],
+        "all_mae_improve": false,
+        "worst_mae_change_W": 0.0,
+        "worst_positive_peak_change_W": 0.0
+      },
+      {
+        "candidate": {
+          "name": "unconfirmed PV steps 60/45W",
+          "file": "results_regler_day/Regler_V4_21_SIM.js",
+          "constants": {
+            "pvFollowUnconfirmedStepHighPVW": 60,
+            "pvFollowUnconfirmedStepVeryHighPVW": 45
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "mae_change_W": -0.5863330820540149,
+            "export_change_Wh": -0.47235083745585715,
+            "import_change_Wh": 0.27613416492937404,
+            "positive_peak_W": 376.0,
+            "positive_peak_change_W": 105.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay-0.4s",
+            "mae_change_W": -1.1209870936425617,
+            "export_change_Wh": -0.5680408346653003,
+            "import_change_Wh": 0.1518599962525684,
+            "positive_peak_W": 283.0,
+            "positive_peak_change_W": 22.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay+0.5s",
+            "mae_change_W": -0.3166799325923293,
+            "export_change_Wh": -0.47755027963055596,
+            "import_change_Wh": 0.3766166658533905,
+            "positive_peak_W": 361.0,
+            "positive_peak_change_W": 105.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "mae_change_W": -0.5617202749187094,
+            "export_change_Wh": -0.45526500370767486,
+            "import_change_Wh": 0.2705716649690828,
+            "positive_peak_W": 378.0,
+            "positive_peak_change_W": 105.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "mae_change_W": -0.5457057612995371,
+            "export_change_Wh": -0.4182875045140584,
+            "import_change_Wh": 0.236701941821309,
+            "positive_peak_W": 378.0,
+            "positive_peak_change_W": 105.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          }
+        ],
+        "all_mae_improve": true,
+        "worst_mae_change_W": -0.3166799325923293,
+        "worst_positive_peak_change_W": 105.0
+      },
+      {
+        "candidate": {
+          "name": "normal charging up step 90W",
+          "file": "results_regler_day/Regler_V4_21_SIM.js",
+          "constants": {
+            "stepUpChargeW": 90
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "mae_change_W": -0.6720980619292085,
+            "export_change_Wh": -0.47823638856411144,
+            "import_change_Wh": 0.2704011090596339,
+            "positive_peak_W": 302.0,
+            "positive_peak_change_W": 31.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay-0.4s",
+            "mae_change_W": -1.1747180319606052,
+            "export_change_Wh": -0.4626794434256043,
+            "import_change_Wh": 0.08529333081511936,
+            "positive_peak_W": 285.0,
+            "positive_peak_change_W": 24.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay+0.5s",
+            "mae_change_W": -0.2539466289408523,
+            "export_change_Wh": -0.3205088811450567,
+            "import_change_Wh": 0.24822888924015274,
+            "positive_peak_W": 287.0,
+            "positive_peak_change_W": 31.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "mae_change_W": -0.5821516230141945,
+            "export_change_Wh": -0.49538694328731836,
+            "import_change_Wh": 0.31551888836750663,
+            "positive_peak_W": 307.0,
+            "positive_peak_change_W": 34.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "mae_change_W": -0.6954595228590357,
+            "export_change_Wh": -0.47809111052089115,
+            "import_change_Wh": 0.2605194427569302,
+            "positive_peak_W": 307.0,
+            "positive_peak_change_W": 34.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          }
+        ],
+        "all_mae_improve": true,
+        "worst_mae_change_W": -0.2539466289408523,
+        "worst_positive_peak_change_W": 34.0
+      }
+    ],
+    "calm": [
+      {
+        "candidate": {
+          "name": "unchanged V4.21",
+          "file": "results_regler_day/Regler_V4_21_SIM.js"
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 114.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay-0.4s",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 116.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay+0.5s",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 95.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 114.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 114.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          }
+        ],
+        "all_mae_improve": false,
+        "worst_mae_change_W": 0.0,
+        "worst_positive_peak_change_W": 0.0
+      },
+      {
+        "candidate": {
+          "name": "unconfirmed PV steps 60/45W",
+          "file": "results_regler_day/Regler_V4_21_SIM.js",
+          "constants": {
+            "pvFollowUnconfirmedStepHighPVW": 60,
+            "pvFollowUnconfirmedStepVeryHighPVW": 45
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 114.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay-0.4s",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 116.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay+0.5s",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 95.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 114.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "mae_change_W": 0.0,
+            "export_change_Wh": 0.0,
+            "import_change_Wh": 0.0,
+            "positive_peak_W": 114.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          }
+        ],
+        "all_mae_improve": false,
+        "worst_mae_change_W": 0.0,
+        "worst_positive_peak_change_W": 0.0
+      },
+      {
+        "candidate": {
+          "name": "normal charging up step 90W",
+          "file": "results_regler_day/Regler_V4_21_SIM.js",
+          "constants": {
+            "stepUpChargeW": 90
+          }
+        },
+        "cases": [
+          {
+            "model": "V4 nominal",
+            "mae_change_W": 0.4671199507032391,
+            "export_change_Wh": -0.21379805737071722,
+            "import_change_Wh": 0.3825652776824029,
+            "positive_peak_W": 114.0,
+            "positive_peak_change_W": 0.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay-0.4s",
+            "mae_change_W": 0.09217627833998776,
+            "export_change_Wh": -0.12793471998638584,
+            "import_change_Wh": 0.20300193972033753,
+            "positive_peak_W": 106.0,
+            "positive_peak_change_W": -10.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "delay+0.5s",
+            "mae_change_W": 3.887334817361104,
+            "export_change_Wh": 0.796108884678945,
+            "import_change_Wh": 0.832477506134353,
+            "positive_peak_W": 84.0,
+            "positive_peak_change_W": -11.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_affine",
+            "mae_change_W": 4.619976889559316,
+            "export_change_Wh": 0.0015913831525362632,
+            "import_change_Wh": 1.8673105708757873,
+            "positive_peak_W": 111.0,
+            "positive_peak_change_W": -3.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          },
+          {
+            "model": "battery_fast_rate",
+            "mae_change_W": 0.3331255440982517,
+            "export_change_Wh": -0.2511650018559579,
+            "import_change_Wh": 0.38866583307580527,
+            "positive_peak_W": 115.0,
+            "positive_peak_change_W": 1.0,
+            "all_discharge_requests_zero": true,
+            "all_commands_bounded": true
+          }
+        ],
+        "all_mae_improve": false,
+        "worst_mae_change_W": 4.619976889559316,
+        "worst_positive_peak_change_W": 1.0
+      }
+    ]
+  },
+  "verification": {
+    "checks": 8,
+    "passed": [
+      "All 1767 comparison rows reproduce power, direction, HOLD, integrators, parameter configuration, effective windows and PV guard",
+      "Only the matching accepted snapshot supplies receive times; one logger mismatch in each new log is isolated",
+      "Standby calibration excludes log 4; it improves the log-4 check without changing log-3 dynamic-check error",
+      "Python identification and JavaScript simulation produce the same 591 unrounded battery responses",
+      "Analytic plant response remains between the initial value and fixed target",
+      "Discharge remains zero and charging commands remain within bounds in 30 closed replays and 45 diagnostic parameter trials",
+      "Actual V4.21 logs retain charging direction and resume charging in the first recorded tick at all three load drops",
+      "V4.21 source remains byte-identical; diagnostic parameter edits exist only in simulation memory"
+    ],
+    "record_comparisons": 1767,
+    "new_V4_21_rows": 1188,
+    "closed_runs": 30,
+    "diagnostic_trials": 45,
+    "controller_sha256": "2d1863b93df594604811a0b9c2a9eed2d250a671db452418dad061fce35069bc"
+  }
+}
