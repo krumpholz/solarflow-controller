@@ -1,0 +1,269 @@
+{
+  "sourceSHA256": "57a7ba1a0cd61c5e9f6699cad7978f9b69f7046467a69183983baba70205219b",
+  "audit": {
+    "rows": 110,
+    "snapshotAttachmentInvalid": 1,
+    "distinctConfigs": 1,
+    "coreCycleMismatch": 0,
+    "coreStale": 0,
+    "batteryStale": 0,
+    "httpPresent": 0,
+    "bleNotReady": 0,
+    "coverageFalseCounts": {
+      "allObserversPresent": 0,
+      "allObservedStatesValid": 0,
+      "snapshotFrozenInRegulator": 0,
+      "haCallAuditObserved": 0
+    },
+    "eventConflicts": [],
+    "stalePollRows": 0,
+    "maxPollAgeByObserver_ms": {
+      "soc": 1887,
+      "batteryPower": 1886,
+      "packState": 1886,
+      "socLimit": 1887,
+      "acMode": 1886,
+      "ready": 2063,
+      "inputLimit": 1888,
+      "outputLimit": 1888
+    },
+    "observedRequests": 19,
+    "matchedCompletions": 19,
+    "unmatchedRequestSeq": [],
+    "haErrors": 0,
+    "haDurationMedian_ms": 112.0,
+    "haDurationMax_ms": 311,
+    "missingCycles": 0,
+    "episodes": 1,
+    "wallDuration_s": 218.16400003433228,
+    "observedDuration_s": 218.16400003433228,
+    "gaps": []
+  },
+  "snapshotAttachmentInvalidRows": [
+    0
+  ],
+  "startLocal": "2026-10-12T15:20:28.214000+02:00",
+  "endLocal": "2026-10-12T15:24:06.378000+02:00",
+  "measured": {
+    "fullStandby": {
+      "points": 5,
+      "duration_s": 10.0,
+      "mean_W": -956.1998000144958,
+      "target_mae_W": 951.1998000144958,
+      "within_pct": 0.0,
+      "shifted_window_pct": 0.0,
+      "no_import_pct": 100.0,
+      "center_2W_pct": 0.0,
+      "import_Wh": 0.0,
+      "export_Wh": 2.6561105555958218,
+      "min_W": -957,
+      "max_W": -955
+    },
+    "startup": {
+      "points": 5,
+      "duration_s": 10.003000020980835,
+      "mean_W": 970.1956414519217,
+      "target_mae_W": 962.6956414519217,
+      "within_pct": 0.0,
+      "shifted_window_pct": 0.0,
+      "no_import_pct": 0.0,
+      "center_2W_pct": 0.0,
+      "import_Wh": 2.6957963949441908,
+      "export_Wh": 0.0,
+      "min_W": 962,
+      "max_W": 992
+    },
+    "dischargeAll": {
+      "points": 105,
+      "duration_s": 208.16400003433228,
+      "mean_W": 54.111186463800635,
+      "target_mae_W": 49.97567310544579,
+      "within_pct": 82.70065936703388,
+      "shifted_window_pct": 90.39074959278177,
+      "no_import_pct": 9.610211118504129,
+      "center_2W_pct": 33.21659855111406,
+      "import_Wh": 3.135001672373878,
+      "export_Wh": 0.006112499899334377,
+      "min_W": -5,
+      "max_W": 992
+    },
+    "settled": {
+      "points": 100,
+      "duration_s": 198.16100001335144,
+      "mean_W": 7.868016405873098,
+      "target_mae_W": 3.9023394933612714,
+      "within_pct": 86.87531884759682,
+      "shifted_window_pct": 94.95359833704602,
+      "no_import_pct": 10.095326464175326,
+      "center_2W_pct": 34.89334440918563,
+      "import_Wh": 0.4392052774296866,
+      "export_Wh": 0.006112499899334377,
+      "min_W": -5,
+      "max_W": 20
+    },
+    "after30s": {
+      "points": 90,
+      "duration_s": 178.08599996566772,
+      "mean_W": 8.022449815041853,
+      "target_mae_W": 4.038346625430853,
+      "within_pct": 85.39582031985672,
+      "shifted_window_pct": 94.38473546380521,
+      "no_import_pct": 10.109722242047372,
+      "center_2W_pct": 32.04743777596526,
+      "import_Wh": 0.40296972142325505,
+      "export_Wh": 0.006112499899334377,
+      "min_W": -5,
+      "max_W": 20
+    }
+  },
+  "PVrange_W": [
+    1006,
+    1070
+  ],
+  "modelComparison": {
+    "transitionBefore": {
+      "points": 10,
+      "rmse_W": 424.59899116726723,
+      "mae_W": 194.0108761537329,
+      "max_abs_W": 993.4958800903522
+    },
+    "transitionWithGate": {
+      "points": 10,
+      "rmse_W": 2.9213188047050287,
+      "mae_W": 1.9802476382849818,
+      "max_abs_W": 5.972983238312281
+    },
+    "laterBefore": {
+      "points": 90,
+      "rmse_W": 2.8720679575172543,
+      "mae_W": 2.1250441246127845,
+      "max_abs_W": 12.919623903882439
+    },
+    "laterWithGate": {
+      "points": 90,
+      "rmse_W": 2.8720679575172543,
+      "mae_W": 2.1250441246127845,
+      "max_abs_W": 12.919623903882439
+    }
+  },
+  "startup": {
+    "triggerRow": 5,
+    "firstOutput_W": 900,
+    "lastZeroBatterySample_s": 7.207000017166138,
+    "firstNonzeroBatterySample_s": 9.203999996185303,
+    "firstNonzeroRegulatorRow_s": 10.003000020980835,
+    "firstDirectionReadbackRow_s": 1.999000072479248,
+    "firstPackStateDischargeRow_s": 18.00600004196167,
+    "representativeGate_s": 8.0,
+    "requestOutput_s": 0.088,
+    "requestDirection_s": 0.508,
+    "scope": "One full-standby startup event only; observed sample onset bracket, not proven actuator latency or universal timeout."
+  },
+  "socMaxAll": true,
+  "socBlockAll": true,
+  "socValues": [
+    99,
+    100
+  ],
+  "firstRows": [
+    {
+      "row": 5,
+      "dt_s": 0.0,
+      "grid_W": 992,
+      "battery_W": 0,
+      "command_W": 900,
+      "acMode": 1,
+      "packState": 0
+    },
+    {
+      "row": 6,
+      "dt_s": 1.999000072479248,
+      "grid_W": 971,
+      "battery_W": 0,
+      "command_W": 989,
+      "acMode": 2,
+      "packState": 0
+    },
+    {
+      "row": 7,
+      "dt_s": 4.0,
+      "grid_W": 963,
+      "battery_W": 0,
+      "command_W": 981,
+      "acMode": 2,
+      "packState": 0
+    },
+    {
+      "row": 8,
+      "dt_s": 6.000999927520752,
+      "grid_W": 963,
+      "battery_W": 0,
+      "command_W": 956,
+      "acMode": 2,
+      "packState": 0
+    },
+    {
+      "row": 9,
+      "dt_s": 8.002000093460083,
+      "grid_W": 962,
+      "battery_W": 0,
+      "command_W": 955,
+      "acMode": 2,
+      "packState": 0
+    },
+    {
+      "row": 10,
+      "dt_s": 10.003000020980835,
+      "grid_W": 2,
+      "battery_W": -955,
+      "command_W": 951,
+      "acMode": 2,
+      "packState": 0
+    },
+    {
+      "row": 11,
+      "dt_s": 12.003000020980835,
+      "grid_W": 0,
+      "battery_W": -959,
+      "command_W": 951,
+      "acMode": 2,
+      "packState": 0
+    },
+    {
+      "row": 12,
+      "dt_s": 14.003999948501587,
+      "grid_W": 9,
+      "battery_W": -955,
+      "command_W": 951,
+      "acMode": 2,
+      "packState": 0
+    },
+    {
+      "row": 13,
+      "dt_s": 16.005000114440918,
+      "grid_W": 4,
+      "battery_W": -954,
+      "command_W": 951,
+      "acMode": 2,
+      "packState": 0
+    },
+    {
+      "row": 14,
+      "dt_s": 18.00600004196167,
+      "grid_W": 6,
+      "battery_W": -954,
+      "command_W": 951,
+      "acMode": 2,
+      "packState": 2
+    },
+    {
+      "row": 15,
+      "dt_s": 20.075999975204468,
+      "grid_W": 7,
+      "battery_W": -955,
+      "command_W": 951,
+      "acMode": 2,
+      "packState": 2
+    }
+  ]
+}

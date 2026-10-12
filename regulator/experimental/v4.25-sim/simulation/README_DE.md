@@ -1,0 +1,24 @@
+# Modell V13 reproduzieren
+
+[English](README.md) | **Deutsch**
+
+Dieser Ordner erhält die relativen Pfade der geprüften Analysepakete. Er enthält keine Haushalts-Rohlogs und sendet keine Anlagenbefehle. Benötigt: Node.js, Python 3 und `python3 -m pip install -r requirements.txt`.
+
+Die originalen lokalen Dateien unter `upload/regler_event_log_12.jsonl` bzw. `upload/regler_event_log_13.jsonl` ablegen. Aus diesem Ordner ausführen:
+
+```sh
+node analysis_log12/replay.cjs
+node analysis_log12/compare.cjs
+python3 analysis_log12/analyse.py
+node analysis_log13/replay.cjs
+node analysis_log13/study.cjs
+python3 analysis_log13/analyse.py
+```
+
+Optional dokumentiert `node analysis_log13/study_separate_paths.cjs` den verworfenen Fall unabhängiger Netz-/Batteriepfade. Dessen Parameterrangfolge nicht verwenden. `analysis_log12/acceptance_model.py` enthält die optionale Ladehülle; `analysis_log13/startup_model.py` getrennte SOC-Grenzen und den optionalen Anlaufzustand. Die geschlossene Simulation verwendet eine lokale Kopplung der AC-Leistung. Beide Erweiterungen benötigen szenariospezifische Aktivierung/Freigabe und sind keine allgemeine SOC-Physik.
+
+Aktuelles Gesamtmodell: `results_regler_log13/Regler_Modell_V13_Voll_Entladen.json`, identisch zu `../Regler_Modell_V13.json`. Ältere JSON-Dateien sind erhaltene Eingangsdaten. Ergebnisse werden in `results_regler_log12` und `results_regler_log13` geschrieben. Der aktuelle Regler liegt auch unter `../Regler_V4_25_SIM.txt`; verschachtelte Codekopien sind feste Replay-Referenzen.
+
+Die Berichte zu Log10/11 dokumentieren frühere Entscheidungen. Dieser Ordner reproduziert Log12/13, nicht sämtliche historischen Parametersuchen. Historische Paketnamen in den Berichten beziehen sich auf die damaligen Lieferstände. Rohlogs lokal halten und nicht öffentlich committen.
+
+Replay-Gleichheit prüft Codeausführung. Der spätere Log12-Abregelabschnitt ist eine zeitlich getrennte Prüfung desselben Ereignisses. Der Log13-Start wurde an einem Ereignis angepasst; nachfolgende Messpunkte validieren den Startzeitpunkt nicht unabhängig. Rekonstruierte externe Netzlast kann Messzeitfehler enthalten. Kein Nachweis eines universellen physikalischen Optimums.

@@ -1,0 +1,493 @@
+{
+  "schema": 6,
+  "controllerVersion": "4.23-SIM",
+  "sourceLogSha256": "4d6965324817a0070c8cda66916ca2fdc10bb6ff652609181e541c0c4c9f655d",
+  "domain": "Night discharge, PV=0; separate actuator-to-grid and actuator-to-battery-telemetry paths.",
+  "inputClock": "Observed ha_call_requested timestamp; unobserved virtual commands use the median regulator-to-request delay.",
+  "charging": {
+    "battery": {
+      "tau_up": 0.08000000044299771,
+      "delay_up": 3.053589395476739,
+      "tau_down": 0.23196514205644628,
+      "delay_down": 4.220467687193862,
+      "rate_up": 1162.0538344344193,
+      "rate_down": 136.10188348717952,
+      "gain": 1.0131301597195532,
+      "bias": -19.26792015472579,
+      "idle_bias": -18.0
+    },
+    "grid": {
+      "tau_up": 0.2658805165767889,
+      "delay_up": 1.1669989242975627,
+      "tau_down": 0.1284738606375642,
+      "delay_down": 2.339679604445676,
+      "rate_up": 480.63459176927466,
+      "rate_down": 80.0888033944017,
+      "gain": 1,
+      "bias": 0
+    }
+  },
+  "chargingModelUnchanged": true,
+  "chargingEnsemble": [
+    {
+      "name": "V4 nominal",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 1.1669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 2.339679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.08000000044299771,
+        "delay_up": 3.053589395476739,
+        "tau_down": 0.23196514205644628,
+        "delay_down": 4.220467687193862,
+        "rate_up": 1162.0538344344193,
+        "rate_down": 136.10188348717952,
+        "gain": 1.0131301597195532,
+        "bias": -19.26792015472579,
+        "idle_bias": -18.0
+      }
+    },
+    {
+      "name": "delay -0.4s",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 0.7669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 1.939679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.08000000044299771,
+        "delay_up": 2.653589395476739,
+        "tau_down": 0.23196514205644628,
+        "delay_down": 3.820467687193862,
+        "rate_up": 1162.0538344344193,
+        "rate_down": 136.10188348717952,
+        "gain": 1.0131301597195532,
+        "bias": -19.26792015472579,
+        "idle_bias": -18.0
+      }
+    },
+    {
+      "name": "delay +0.5s",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 1.6669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 2.839679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.08000000044299771,
+        "delay_up": 3.553589395476739,
+        "tau_down": 0.23196514205644628,
+        "delay_down": 4.720467687193862,
+        "rate_up": 1162.0538344344193,
+        "rate_down": 136.10188348717952,
+        "gain": 1.0131301597195532,
+        "bias": -19.26792015472579,
+        "idle_bias": -18.0
+      }
+    },
+    {
+      "name": "delay +1.5s",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 2.6669989242975625,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 3.839679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.08000000044299771,
+        "delay_up": 4.553589395476739,
+        "tau_down": 0.23196514205644628,
+        "delay_down": 5.720467687193862,
+        "rate_up": 1162.0538344344193,
+        "rate_down": 136.10188348717952,
+        "gain": 1.0131301597195532,
+        "bias": -19.26792015472579,
+        "idle_bias": -18.0
+      }
+    },
+    {
+      "name": "battery_affine",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 1.1669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 2.339679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.1985161299821605,
+        "delay_up": 2.8742390992626166,
+        "tau_down": 0.27712662469287186,
+        "delay_down": 3.3436069788078067,
+        "rate_up": 1165.908732989673,
+        "rate_down": 60.00000000878624,
+        "gain": 1.0164419078726559,
+        "bias": -19.851050483277017
+      }
+    },
+    {
+      "name": "battery_fast_rate",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 1.1669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 2.339679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.1047238417834506,
+        "delay_up": 3.011126359231973,
+        "tau_down": 0.3937847590176501,
+        "delay_down": 4.4050103979109085,
+        "gain": 1.016440449524049,
+        "bias": -20.010550998562298,
+        "rate_up": 6000.0,
+        "rate_down": 6000.0
+      }
+    },
+    {
+      "name": "cross_log_static",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 1.1669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 2.339679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.08000000044299771,
+        "delay_up": 3.053589395476739,
+        "tau_down": 0.23196514205644628,
+        "delay_down": 4.220467687193862,
+        "rate_up": 1162.0538344344193,
+        "rate_down": 136.10188348717952,
+        "gain": 1.0192748377872747,
+        "bias": -20.635177146356742,
+        "idle_bias": -18.0
+      }
+    },
+    {
+      "name": "field5_delay_only",
+      "grid": {
+        "tau_up": 0.2658805165767889,
+        "delay_up": 1.1669989242975627,
+        "tau_down": 0.1284738606375642,
+        "delay_down": 2.339679604445676,
+        "rate_up": 480.63459176927466,
+        "rate_down": 80.0888033944017,
+        "gain": 1,
+        "bias": 0
+      },
+      "battery": {
+        "tau_up": 0.08000000044299771,
+        "delay_up": 3.0354314757230743,
+        "tau_down": 0.23196514205644628,
+        "delay_down": 3.0697554536345213,
+        "rate_up": 1162.0538344344193,
+        "rate_down": 136.10188348717952,
+        "gain": 1.020315921067513,
+        "bias": -20.792997969310697,
+        "idle_bias": -18.0
+      }
+    }
+  ],
+  "discharging": {
+    "battery": {
+      "rate_up": 1000000.0,
+      "rate_down": 1000000.0,
+      "gain": 1.004217949090578,
+      "bias": 2.9088244455358767,
+      "delay_up": 3.171489137324968,
+      "delay_down": 3.099279504241724,
+      "tau_up": 0.35814046297039165,
+      "tau_down": 0.05000000000000001
+    },
+    "grid": {
+      "rate_up": 1000000.0,
+      "rate_down": 1000000.0,
+      "gain": 1.0,
+      "bias": 0.0,
+      "delay_up": 1.285879148902813,
+      "delay_down": 1.8290043378364549,
+      "tau_up": 0.07741680359850024,
+      "tau_down": 0.2393335316609426
+    }
+  },
+  "dischargeEnsemble": [
+    {
+      "name": "delay +0.0s",
+      "battery": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.004217949090578,
+        "bias": 2.9088244455358767,
+        "delay_up": 3.171489137324968,
+        "delay_down": 3.099279504241724,
+        "tau_up": 0.35814046297039165,
+        "tau_down": 0.05000000000000001
+      },
+      "grid": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.0,
+        "bias": 0.0,
+        "delay_up": 1.285879148902813,
+        "delay_down": 1.8290043378364549,
+        "tau_up": 0.07741680359850024,
+        "tau_down": 0.2393335316609426
+      }
+    },
+    {
+      "name": "delay -0.5s",
+      "battery": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.004217949090578,
+        "bias": 2.9088244455358767,
+        "delay_up": 2.671489137324968,
+        "delay_down": 2.599279504241724,
+        "tau_up": 0.35814046297039165,
+        "tau_down": 0.05000000000000001
+      },
+      "grid": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.0,
+        "bias": 0.0,
+        "delay_up": 0.785879148902813,
+        "delay_down": 1.3290043378364549,
+        "tau_up": 0.07741680359850024,
+        "tau_down": 0.2393335316609426
+      }
+    },
+    {
+      "name": "delay +0.5s",
+      "battery": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.004217949090578,
+        "bias": 2.9088244455358767,
+        "delay_up": 3.671489137324968,
+        "delay_down": 3.599279504241724,
+        "tau_up": 0.35814046297039165,
+        "tau_down": 0.05000000000000001
+      },
+      "grid": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.0,
+        "bias": 0.0,
+        "delay_up": 1.785879148902813,
+        "delay_down": 2.329004337836455,
+        "tau_up": 0.07741680359850024,
+        "tau_down": 0.2393335316609426
+      }
+    },
+    {
+      "name": "delay +1.0s",
+      "battery": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.004217949090578,
+        "bias": 2.9088244455358767,
+        "delay_up": 4.1714891373249685,
+        "delay_down": 4.099279504241724,
+        "tau_up": 0.35814046297039165,
+        "tau_down": 0.05000000000000001
+      },
+      "grid": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.0,
+        "bias": 0.0,
+        "delay_up": 2.285879148902813,
+        "delay_down": 2.829004337836455,
+        "tau_up": 0.07741680359850024,
+        "tau_down": 0.2393335316609426
+      }
+    },
+    {
+      "name": "Previous night dynamics",
+      "battery": {
+        "tau_up": 0.18805951028741416,
+        "delay_up": 3.4750135505904325,
+        "tau_down": 0.3533632998192181,
+        "delay_down": 3.906393955564676,
+        "gain": 1.0028452244287531,
+        "bias": 1.6911405765036016,
+        "train_rmse": 15.936255760491775,
+        "validation_rmse": 29.326369090632095,
+        "cost": 1964.6303304691007,
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0
+      },
+      "grid": {
+        "tau_up": 0.19038738019156048,
+        "delay_up": 1.925999294741538,
+        "tau_down": 0.27463005803527096,
+        "delay_down": 2.761643263673693,
+        "rate_up": 999.9022185447485,
+        "rate_down": 594.844361838757,
+        "gain": 1.002317734634084,
+        "bias": 0,
+        "cost": 494.2629075371924,
+        "train_change_rmse": 7.512989790928572
+      }
+    },
+    {
+      "name": "Only telemetry +0.8s",
+      "grid": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.0,
+        "bias": 0.0,
+        "delay_up": 1.285879148902813,
+        "delay_down": 1.8290043378364549,
+        "tau_up": 0.07741680359850024,
+        "tau_down": 0.2393335316609426
+      },
+      "battery": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.004217949090578,
+        "bias": 2.9088244455358767,
+        "delay_up": 3.9714891373249683,
+        "delay_down": 3.899279504241724,
+        "tau_up": 0.35814046297039165,
+        "tau_down": 0.05000000000000001
+      }
+    },
+    {
+      "name": "Only meter +0.8s",
+      "battery": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.004217949090578,
+        "bias": 2.9088244455358767,
+        "delay_up": 3.171489137324968,
+        "delay_down": 3.099279504241724,
+        "tau_up": 0.35814046297039165,
+        "tau_down": 0.05000000000000001
+      },
+      "grid": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.0,
+        "bias": 0.0,
+        "delay_up": 2.085879148902813,
+        "delay_down": 2.629004337836455,
+        "tau_up": 0.07741680359850024,
+        "tau_down": 0.2393335316609426
+      }
+    }
+  ],
+  "timing": {
+    "regulatorToRequestMedian_s": 0.074,
+    "propertyEqualityMedian_s": 0.442,
+    "propertyEqualityMeaning": "HA-reported equality is not a correlated BLE write acknowledgment."
+  },
+  "calibration": {
+    "train": "Log6 indices 27..86: first ~1 kW rise/fall; exclude 6 s after every missing-cycle restart.",
+    "heldout": "Indices >=87: subsequent ~2 kW experiment and quiet tail. Grid checking uses declared constant-load plateaus.",
+    "battery": {
+      "model": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.004217949090578,
+        "bias": 2.9088244455358767,
+        "delay_up": 3.171489137324968,
+        "delay_down": 3.099279504241724,
+        "tau_up": 0.35814046297039165,
+        "tau_down": 0.05000000000000001
+      },
+      "cost": 10796.129052684326,
+      "nfev": 16,
+      "activeBounds": [
+        "tau_down"
+      ],
+      "train": {
+        "points": 56,
+        "rmse_W": 19.636090180987374,
+        "mae_W": 5.3607987904294605,
+        "max_abs_W": 136.37942609212632
+      },
+      "heldout": {
+        "points": 223,
+        "rmse_W": 33.22639220473158,
+        "mae_W": 6.294796893992792,
+        "max_abs_W": 347.6332181867176
+      }
+    },
+    "grid": {
+      "model": {
+        "rate_up": 1000000.0,
+        "rate_down": 1000000.0,
+        "gain": 1.0,
+        "bias": 0.0,
+        "delay_up": 1.285879148902813,
+        "delay_down": 1.8290043378364549,
+        "tau_up": 0.07741680359850024,
+        "tau_down": 0.2393335316609426
+      },
+      "cost": 197.04765325603535,
+      "nfev": 30,
+      "activeBounds": [],
+      "train": {
+        "points": 37,
+        "rmse_W": 3.2636213782125885,
+        "mae_W": 2.9228719478493486,
+        "max_abs_W": 6.0
+      },
+      "heldout": {
+        "points": 39,
+        "rmse_W": 13.218396393272204,
+        "mae_W": 8.652531703290842,
+        "max_abs_W": 64.99999996024849
+      }
+    },
+    "previousNightBaselineBattery": {
+      "points": 223,
+      "rmse_W": 96.49645343142011,
+      "mae_W": 11.09102375047947,
+      "max_abs_W": 1363.341757016722
+    }
+  },
+  "limitations": [
+    "No independent house load measurement: p_haus is derived from meter, PV and battery.",
+    "Grid fits assume constant effective load on the selected plateaus; delays include reporting/filtering.",
+    "Two-second samples do not uniquely identify delay, short PT1 time constants or ramp limits.",
+    "rate_up/down=1000000 W/s leaves PT1 unbounded; no physical slew limit is identified.",
+    "All missing-cycle intervals remain unscored; counterfactual controller and plant states restart there.",
+    "No AC-mode transition, charging, zero-discharge idle, battery limits or >2 kW discharge are identified by this log.",
+    "A conditional disturbance reconstruction is not a causal forecast or proof of a physical optimum."
+  ]
+}

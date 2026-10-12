@@ -4,9 +4,9 @@
 
 Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v5.1.0** ergänzt einen zeitgewichteten gleitenden 7-Tage-Mittelwert der bisherigen SOC-korrigierten 168-Stunden-Energiebilanz. Der geglättete Wert liegt an Ausgang 1, die bisherige Bilanz an Ausgang 2 und die Diagnose an Ausgang 3. Dieses Repository enthält die Auswertung und eine gesonderte experimentelle Regler-Testvariante. Der Snapshot-Builder bleibt anlagenspezifisch.
 
-## V4.23: Feldlog geprüft, kleine Zeittoleranz und Diagnoseabdeckung
+## Aktueller Regler: V4.25-SIM und Simulationsmodell V13
 
-Die [neue Feldprüfung und Wartungsfassung](regulator/experimental/v4.23-sim/README_DE.md) bestätigt die Solar-Mittenführung von V4.22 in 583 Ladezyklen bei PV 248…624 W. Ruhiger Abschnitt: 2,04 W mittlere Zielabweichung und vollständig im effektiven Fenster. V4.23 ergänzt 2 ms Zeitrastertoleranz und sichtbare BLE-Diagnoseabdeckung; P/I, Rampen und Schutz bleiben erhalten. [Modell V5](regulator/experimental/v4.23-sim/Regler_Modell_V5.json) enthält eine zusätzliche ruhige Batterievariante. V4.23 braucht noch den Anlagentest; BLE-Rücklesedaten fehlen im Feldlog. Der Wirkungsgrad-Release v5.1.0 bleibt unverändert.
+Die [aktuelle Arbeitsbasis](regulator/experimental/v4.25-sim/README_DE.md) enthält High-PV-Regelung ohne Fensterverschiebung, gezielte schnelle Entladekorrektur bei Lastabfall und das um Ladeaufnahmebegrenzung sowie vollen Standby-Start erweiterte Modell V13. V4.25 ist in Logs12/13 mit insgesamt 795 exakt reproduzierten Entscheidungen geprüft. [Änderungen seit V4.23 und offene Feintuning-Punkte](regulator/experimental/v4.25-sim/CHANGELOG_DE.md) trennen Feldnachweis, lokale Modellanpassung und verbleibende Grenzen. Ein physikalisches Optimum ist nicht nachgewiesen. Die Wirkungsgrad-Komponente v5.1.0 bleibt eigenständig.
 
 ## V4.21-Feldvalidierung und Simulationsmodell V4
 
@@ -71,6 +71,7 @@ Das Ergebnis ist eine berechnete SOC-korrigierte Energiebilanz und keine zertifi
 Unabhängiges Community-Projekt ohne Verbindung zu oder Unterstützung durch Zendure. Siehe [Projekthinweise](NOTICE_DE.md). Der [ESPHome SolarFlow BLE Controller](https://github.com/krumpholz/esphome-solarflow-ble) wird separat gepflegt.
 
 [MIT-Lizenz](LICENSE) · [Deutsche Erläuterung](LICENSE_DE.md)
+
 
 
 
