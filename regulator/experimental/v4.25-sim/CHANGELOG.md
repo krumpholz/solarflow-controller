@@ -1,4 +1,8 @@
-# V4.23 → V4.25 / model V14
+# V4.23 → V4.25 / model V15
+
+## 2026-10-13 — model V15, daytime validation
+
+Logs17–20: 2,398 invocations, 37 snapshot skips, 2,361 exact control replay decisions. Local daytime calibration and distinct AC-mode/power/PackState clocks added. 15 variants evaluated in 2,440 runs; no controller change adopted. [Analysis](validation/log17-20/Log17_20_Analysis_EN.md).
 
 ## 2026-10-13 — model V14; controller unchanged
 

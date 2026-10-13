@@ -1,4 +1,8 @@
-# V4.23 → V4.25 / Modell V14
+# V4.23 → V4.25 / Modell V15
+
+## 13.10.2026 — Modell V15, Tagesvalidierung
+
+Logs17–20: 2.398 Aufrufe, 37 Snapshot-Abbrüche, 2.361 exakt reproduzierte Regelentscheidungen. Lokale Tageskennlinie und getrennte AC-Modus-/Leistungs-/PackState-Zeitpunkte ergänzt. 15 Varianten in 2.440 Simulationen; keine Regleränderung übernommen. [Auswertung](validation/log17-20/Log17_20_Analyse_DE.md).
 
 ## 13.10.2026 — Modell V14, Regler unverändert
 

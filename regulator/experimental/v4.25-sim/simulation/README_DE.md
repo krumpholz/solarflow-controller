@@ -1,5 +1,7 @@
 # Modell V13 reproduzieren
 
+**Neu: Tageslogs17–20, Modell V15.** [Reproduktion und Grenzen](analysis_log17_20/README.md): 2.361 genaue Replays, lokale Kalibrierung mit Prüfabschnitten, 2.440 bedingte Simulationen. Regler unverändert.
+
 **Neu: Logs 15/16, Modell V14.** [Reproduktion](analysis_log15_16/README.md), vollständiges Replay, chronologische Kalibrierprüfung und 1.001 geschlossene Simulationen. Regler bleibt DIAG1. Originale Logs werden lokal benötigt und nicht veröffentlicht.
 
 [English](README.md) | **Deutsch**

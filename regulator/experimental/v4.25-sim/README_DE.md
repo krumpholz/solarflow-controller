@@ -1,6 +1,8 @@
-# Regler V4.25-SIM und Simulationsmodell V14
+# Regler V4.25-SIM und Simulationsmodell V15
 
 [English](README.md) | **Deutsch**
+
+**Update 13.10.2026 — Modell V15 / Tageslogs 17–20:** [Analyse](validation/log17-20/Log17_20_Analyse_DE.md) · [Modell V15](Regler_Modell_V15.json) · [Reproduktion](simulation/analysis_log17_20/README.md). Die 20-W-High-PV-Rampe begrenzt schnelle PV-Anstiege, die ruhige Exportlage bleibt zu tief. Geprüfte schnellere Varianten erhöhen jedoch einzelne Importspitzen. Nach 2.440 bedingten Simulationen bleibt der Regler unverändert. Die neue Tageskennlinie verbessert die neueren Modellprüfungen; historische Kennlinien bleiben erhalten. **Kein Node-RED-Codeaustausch.**
 
 **Update 13.10.2026 — Modell V14 / Logs 15–16:** [Messauswertung und Simulation](validation/log15-16/Log15_16_Analyse_DE.md), [aktuelles Modell V14](Regler_Modell_V14.json). Log 15: +7,47 W bei Ziel +7,5 W, 99,32 % im Fenster. Log 16: vollständige DIAG1-Ausgabe einschließlich fünf Abbrüchen; verzögerter Ladebeginn und Export beim PV-Anstieg erklärt. Sechs Änderungen in 1.001 Simulationsläufen geprüft und nicht übernommen. **Regler unverändert, kein Node-Tausch.** Die folgenden V13-Angaben beschreiben die erhaltene historische Basis.
 
@@ -15,7 +17,7 @@ Stand 12.10.2026: veröffentlichte Arbeitsbasis für weiteres Feintuning. V4.25 
 - [Node-RED-Import, ein Function-Node mit vier Ausgängen](NodeRED_Regler_V4_25_SIM_DIAG1_Import.json)
 - [Einbau, Abbruchbedingungen und Diagnosefelder](DIAG1_DE.md)
 - [Ursprüngliche V4.25-Fassung für bestehende Simulationen](Regler_V4_25_SIM.txt)
-- [Aktuelles Simulationsmodell V14](Regler_Modell_V14.json)
+- [Aktuelles Simulationsmodell V15](Regler_Modell_V15.json)
 - [Änderungen und nächste Schritte](CHANGELOG_DE.md)
 - [Simulationsquellen und Reproduktion](simulation/README_DE.md)
 

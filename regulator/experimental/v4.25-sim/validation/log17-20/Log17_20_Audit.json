@@ -1,0 +1,1138 @@
+{
+  "17": {
+    "sha256": "3c6d1baf5b1ae9b4a35617b3f0bfe29bb2a6c028f3a2b96ca614e1018a24cc81",
+    "start": "2026-10-13T08:47:12.480000+02:00",
+    "end": "2026-10-13T09:07:09.009000+02:00",
+    "records": 599,
+    "executed": 589,
+    "skips": [
+      {
+        "row": 264,
+        "time": "2026-10-13T08:56:00.781000+02:00",
+        "ageMs": 2786,
+        "matchingBuilderRejection": {
+          "ts": 1791874560125,
+          "cycleId": "1791874559778-360690",
+          "cycleShort": "360690",
+          "spreadMs": 137,
+          "maxLatencyMs": 347,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 347,
+            "p_solar_s": 210,
+            "p_solar_t": 224,
+            "p_batterie": 210
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 397,
+        "time": "2026-10-13T09:00:26.831000+02:00",
+        "ageMs": 2696,
+        "matchingBuilderRejection": {
+          "ts": 1791874826217,
+          "cycleId": "1791874825831-360823",
+          "cycleShort": "360823",
+          "spreadMs": 165,
+          "maxLatencyMs": 385,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 385,
+            "p_solar_s": 220,
+            "p_solar_t": 220,
+            "p_batterie": 219
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 427,
+        "time": "2026-10-13T09:01:26.875000+02:00",
+        "ageMs": 2705,
+        "matchingBuilderRejection": {
+          "ts": 1791874886320,
+          "cycleId": "1791874885873-360853",
+          "cycleShort": "360853",
+          "spreadMs": 228,
+          "maxLatencyMs": 447,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 447,
+            "p_solar_s": 219,
+            "p_solar_t": 245,
+            "p_batterie": 218
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 456,
+        "time": "2026-10-13T09:02:24.990000+02:00",
+        "ageMs": 2869,
+        "matchingBuilderRejection": {
+          "ts": 1791874944988,
+          "cycleId": "1791874943886-360882",
+          "cycleShort": "360882",
+          "spreadMs": 232,
+          "maxLatencyMs": 1069,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread+latency",
+          "latencyByTopic": {
+            "p_zaehler": 1069,
+            "p_solar_s": 838,
+            "p_solar_t": 837,
+            "p_batterie": 837
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 464,
+        "time": "2026-10-13T09:02:40.915000+02:00",
+        "ageMs": 2790,
+        "matchingBuilderRejection": {
+          "ts": 1791874960263,
+          "cycleId": "1791874959913-360890",
+          "cycleShort": "360890",
+          "spreadMs": 138,
+          "maxLatencyMs": 350,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 350,
+            "p_solar_s": 212,
+            "p_solar_t": 216,
+            "p_batterie": 211
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 486,
+        "time": "2026-10-13T09:03:24.941000+02:00",
+        "ageMs": 1827,
+        "matchingBuilderRejection": {
+          "ts": 1791875004293,
+          "cycleId": "1791875003940-360912",
+          "cycleShort": "360912",
+          "spreadMs": 132,
+          "maxLatencyMs": 353,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 353,
+            "p_solar_s": 221,
+            "p_solar_t": 225,
+            "p_batterie": 221
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 545,
+        "time": "2026-10-13T09:05:23.136000+02:00",
+        "ageMs": 2948,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 575,
+        "time": "2026-10-13T09:06:23.171000+02:00",
+        "ageMs": 2971,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 576,
+        "time": "2026-10-13T09:06:24.991000+02:00",
+        "ageMs": 4791,
+        "matchingBuilderRejection": {
+          "ts": 1791875184328,
+          "cycleId": "1791875183990-361002",
+          "cycleShort": "361002",
+          "spreadMs": 131,
+          "maxLatencyMs": 338,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 338,
+            "p_solar_s": 207,
+            "p_solar_t": 214,
+            "p_batterie": 207
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 588,
+        "time": "2026-10-13T09:06:48.998000+02:00",
+        "ageMs": 2777,
+        "matchingBuilderRejection": {
+          "ts": 1791875208330,
+          "cycleId": "1791875207997-361014",
+          "cycleShort": "361014",
+          "spreadMs": 122,
+          "maxLatencyMs": 333,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 333,
+            "p_solar_s": 214,
+            "p_solar_t": 211,
+            "p_batterie": 207
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      }
+    ],
+    "continuousInvocationSequence": true,
+    "duplicateSnapshotCycleIds": 0,
+    "continuousLoggerInputSequence": true,
+    "pvRangeW": [
+      581,
+      686
+    ],
+    "metrics": {
+      "all": {
+        "points": 589,
+        "scoredSeconds": 1158.913999999997,
+        "meanGridW": 3.058924130694772,
+        "targetMAEW": 4.045233727437929,
+        "withinWindowPct": 95.70856853916685,
+        "importWh": 1.2863144444444448,
+        "exportWh": 0.3015838888888888,
+        "minGridW": -30.0,
+        "maxGridW": 22.0
+      },
+      "normalCharge": {
+        "points": 589,
+        "scoredSeconds": 1158.913999999997,
+        "meanGridW": 3.058924130694772,
+        "targetMAEW": 4.045233727437929,
+        "withinWindowPct": 95.70856853916685,
+        "importWh": 1.2863144444444448,
+        "exportWh": 0.3015838888888888,
+        "minGridW": -30.0,
+        "maxGridW": 22.0
+      },
+      "highCharge": {
+        "points": 0
+      },
+      "veryHighCharge": {
+        "points": 0
+      },
+      "discharge": {
+        "points": 0
+      }
+    },
+    "controlSets": {
+      "center_trim_charge": 96,
+      "center_wait_charge": 82,
+      "hold_charge_center": 169,
+      "hold_charge": 202,
+      "charge_export": 36,
+      "charge_import": 4
+    },
+    "maxControllerRuntimeMs": 6,
+    "maxInvocationGapMs": 2427,
+    "blocksActiveRows": 0,
+    "highChargeDetails": {
+      "points": 0,
+      "positiveImportPoints": 0,
+      "positiveImportAbove15Points": 0,
+      "rampLimitedPoints": 0,
+      "medianTargetW": null
+    },
+    "veryHighChargeDetails": {
+      "points": 0,
+      "positiveImportPoints": 0,
+      "positiveImportAbove15Points": 0,
+      "rampLimitedPoints": 0,
+      "medianTargetW": null
+    }
+  },
+  "18": {
+    "sha256": "88745caf0486aba02d256d2e1ccfc45c00bd0b6ebb7e1a37a3864d833f623794",
+    "start": "2026-10-13T09:14:16.658000+02:00",
+    "end": "2026-10-13T09:34:15.247000+02:00",
+    "records": 600,
+    "executed": 599,
+    "skips": [
+      {
+        "row": 305,
+        "time": "2026-10-13T09:24:26.891000+02:00",
+        "ageMs": 2772,
+        "matchingBuilderRejection": {
+          "ts": 1791876266285,
+          "cycleId": "1791876265888-361541",
+          "cycleShort": "361541",
+          "spreadMs": 170,
+          "maxLatencyMs": 396,
+          "slowestTopic": "p_solar_t",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 274,
+            "p_solar_s": 226,
+            "p_solar_t": 396,
+            "p_batterie": 226
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      }
+    ],
+    "continuousInvocationSequence": true,
+    "duplicateSnapshotCycleIds": 0,
+    "continuousLoggerInputSequence": true,
+    "pvRangeW": [
+      284,
+      717
+    ],
+    "metrics": {
+      "all": {
+        "points": 599,
+        "scoredSeconds": 1194.5879999999975,
+        "meanGridW": 2.6817245778460856,
+        "targetMAEW": 8.562515277233658,
+        "withinWindowPct": 70.39841351160399,
+        "importWh": 1.9173841666666682,
+        "exportWh": 1.0275075000000005,
+        "minGridW": -71.0,
+        "maxGridW": 52.0
+      },
+      "normalCharge": {
+        "points": 599,
+        "scoredSeconds": 1194.5879999999975,
+        "meanGridW": 2.6817245778460856,
+        "targetMAEW": 8.562515277233658,
+        "withinWindowPct": 70.39841351160399,
+        "importWh": 1.9173841666666682,
+        "exportWh": 1.0275075000000005,
+        "minGridW": -71.0,
+        "maxGridW": 52.0
+      },
+      "highCharge": {
+        "points": 0
+      },
+      "veryHighCharge": {
+        "points": 0
+      },
+      "discharge": {
+        "points": 0
+      }
+    },
+    "controlSets": {
+      "center_trim_charge": 55,
+      "center_wait_charge": 54,
+      "hold_charge_center": 70,
+      "hold_charge": 202,
+      "charge_export": 156,
+      "charge_import": 62
+    },
+    "maxControllerRuntimeMs": 15,
+    "maxInvocationGapMs": 2750,
+    "blocksActiveRows": 0,
+    "highChargeDetails": {
+      "points": 0,
+      "positiveImportPoints": 0,
+      "positiveImportAbove15Points": 0,
+      "rampLimitedPoints": 0,
+      "medianTargetW": null
+    },
+    "veryHighChargeDetails": {
+      "points": 0,
+      "positiveImportPoints": 0,
+      "positiveImportAbove15Points": 0,
+      "rampLimitedPoints": 0,
+      "medianTargetW": null
+    }
+  },
+  "19": {
+    "sha256": "7b164dfee00ea9e49f5fb9a8020b449873cfc3b6416047607b6dad7bc2c74eb2",
+    "start": "2026-10-13T10:37:21.578000+02:00",
+    "end": "2026-10-13T10:57:20.193000+02:00",
+    "records": 600,
+    "executed": 596,
+    "skips": [
+      {
+        "row": 92,
+        "time": "2026-10-13T10:40:25.713000+02:00",
+        "ageMs": 2759,
+        "matchingBuilderRejection": {
+          "ts": 1791880825491,
+          "cycleId": "1791880824712-363818",
+          "cycleShort": "363818",
+          "spreadMs": 1,
+          "maxLatencyMs": 771,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "latency",
+          "latencyByTopic": {
+            "p_zaehler": 771,
+            "p_solar_s": 771,
+            "p_solar_t": 770,
+            "p_batterie": 770
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 290,
+        "time": "2026-10-13T10:47:01.818000+02:00",
+        "ageMs": 2721,
+        "matchingBuilderRejection": {
+          "ts": 1791881221179,
+          "cycleId": "1791881220817-364016",
+          "cycleShort": "364016",
+          "spreadMs": 129,
+          "maxLatencyMs": 362,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 362,
+            "p_solar_s": 234,
+            "p_solar_t": 233,
+            "p_batterie": 233
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 508,
+        "time": "2026-10-13T10:54:18.168000+02:00",
+        "ageMs": 2754,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 509,
+        "time": "2026-10-13T10:54:20.166000+02:00",
+        "ageMs": 4753,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      }
+    ],
+    "continuousInvocationSequence": true,
+    "duplicateSnapshotCycleIds": 0,
+    "continuousLoggerInputSequence": true,
+    "pvRangeW": [
+      571,
+      1789
+    ],
+    "metrics": {
+      "all": {
+        "points": 596,
+        "scoredSeconds": 1185.281999999997,
+        "meanGridW": -55.11034504868885,
+        "targetMAEW": 70.38596215921615,
+        "withinWindowPct": 27.065879680953564,
+        "importWh": 2.739184444444444,
+        "exportWh": 20.88399000000001,
+        "minGridW": -624.0,
+        "maxGridW": 165.0
+      },
+      "normalCharge": {
+        "points": 234,
+        "scoredSeconds": 468.155,
+        "meanGridW": 0.42044408369023106,
+        "targetMAEW": 14.925983915583517,
+        "withinWindowPct": 49.581228439298954,
+        "importWh": 0.9830916666666667,
+        "exportWh": 0.9284158333333332,
+        "minGridW": -67.0,
+        "maxGridW": 83.0
+      },
+      "highCharge": {
+        "points": 195,
+        "scoredSeconds": 389.7439999999999,
+        "meanGridW": -37.51962826881235,
+        "targetMAEW": 53.054887310644936,
+        "withinWindowPct": 11.978375549078367,
+        "importWh": 0.9756205555555557,
+        "exportWh": 5.03757888888889,
+        "minGridW": -259.0,
+        "maxGridW": 165.0
+      },
+      "veryHighCharge": {
+        "points": 167,
+        "scoredSeconds": 327.3829999999999,
+        "meanGridW": -155.4603721024,
+        "targetMAEW": 170.32563083605444,
+        "withinWindowPct": 12.830537932635478,
+        "importWh": 0.7804722222222221,
+        "exportWh": 14.91799527777777,
+        "minGridW": -624.0,
+        "maxGridW": 141.0
+      },
+      "discharge": {
+        "points": 0
+      }
+    },
+    "controlSets": {
+      "charge_export_highpv": 146,
+      "charge_export_veryhighpv": 118,
+      "charge_import_veryhighpv": 44,
+      "charge_import_highpv": 46,
+      "charge_export": 99,
+      "charge_import": 36,
+      "hold_charge": 27,
+      "center_trim_charge": 19,
+      "center_wait_charge": 29,
+      "hold_charge_center": 24,
+      "export_edge_wait_charge": 7,
+      "export_edge_trim_charge": 1
+    },
+    "maxControllerRuntimeMs": 6,
+    "maxInvocationGapMs": 2797,
+    "blocksActiveRows": 0,
+    "highChargeDetails": {
+      "points": 195,
+      "positiveImportPoints": 44,
+      "positiveImportAbove15Points": 32,
+      "rampLimitedPoints": 54,
+      "medianTargetW": -5.0
+    },
+    "veryHighChargeDetails": {
+      "points": 167,
+      "positiveImportPoints": 42,
+      "positiveImportAbove15Points": 26,
+      "rampLimitedPoints": 102,
+      "medianTargetW": -5.0
+    }
+  },
+  "20": {
+    "sha256": "5c62cc39cc21210fcbe79308f8bcbfcc3a759634cc2fabbdbf59f59d3b86f9e1",
+    "start": "2026-10-13T13:44:04.567000+02:00",
+    "end": "2026-10-13T14:04:03.252000+02:00",
+    "records": 599,
+    "executed": 577,
+    "skips": [
+      {
+        "row": 13,
+        "time": "2026-10-13T13:44:30.760000+02:00",
+        "ageMs": 2978,
+        "matchingBuilderRejection": {
+          "ts": 1791891870410,
+          "cycleId": "1791891869759-369330",
+          "cycleShort": "369330",
+          "spreadMs": 8,
+          "maxLatencyMs": 649,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "latency",
+          "latencyByTopic": {
+            "p_zaehler": 649,
+            "p_solar_s": 641,
+            "p_solar_t": 648,
+            "p_batterie": 641
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 42,
+        "time": "2026-10-13T13:45:29.669000+02:00",
+        "ageMs": 1832,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 72,
+        "time": "2026-10-13T13:46:29.740000+02:00",
+        "ageMs": 1827,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 102,
+        "time": "2026-10-13T13:47:29.833000+02:00",
+        "ageMs": 1803,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 149,
+        "time": "2026-10-13T13:49:02.861000+02:00",
+        "ageMs": 2769,
+        "matchingBuilderRejection": {
+          "ts": 1791892142243,
+          "cycleId": "1791892141860-369466",
+          "cycleShort": "369466",
+          "spreadMs": 144,
+          "maxLatencyMs": 378,
+          "slowestTopic": "p_solar_t",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 290,
+            "p_solar_s": 234,
+            "p_solar_t": 378,
+            "p_batterie": 233
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 162,
+        "time": "2026-10-13T13:49:30.057000+02:00",
+        "ageMs": 1965,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 186,
+        "time": "2026-10-13T13:50:17.064000+02:00",
+        "ageMs": 2767,
+        "matchingBuilderRejection": {
+          "ts": 1791892216773,
+          "cycleId": "1791892216063-369503",
+          "cycleShort": "369503",
+          "spreadMs": 221,
+          "maxLatencyMs": 709,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread+latency",
+          "latencyByTopic": {
+            "p_zaehler": 709,
+            "p_solar_s": 489,
+            "p_solar_t": 488,
+            "p_batterie": 487
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 192,
+        "time": "2026-10-13T13:50:30.104000+02:00",
+        "ageMs": 1803,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 222,
+        "time": "2026-10-13T13:51:30.082000+02:00",
+        "ageMs": 3731,
+        "matchingBuilderRejection": {
+          "ts": 1791892290080,
+          "cycleId": "1791892288121-369539",
+          "cycleShort": "369539",
+          "spreadMs": 1702,
+          "maxLatencyMs": 1955,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread+latency",
+          "latencyByTopic": {
+            "p_zaehler": 1955,
+            "p_solar_s": 253,
+            "p_solar_t": 1954,
+            "p_batterie": 253
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 252,
+        "time": "2026-10-13T13:52:30.179000+02:00",
+        "ageMs": 3821,
+        "matchingBuilderRejection": {
+          "ts": 1791892350178,
+          "cycleId": "1791892348138-369569",
+          "cycleShort": "369569",
+          "spreadMs": 1780,
+          "maxLatencyMs": 2037,
+          "slowestTopic": "p_solar_t",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread+latency",
+          "latencyByTopic": {
+            "p_zaehler": 2036,
+            "p_solar_s": 257,
+            "p_solar_t": 2037,
+            "p_batterie": 256
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 268,
+        "time": "2026-10-13T13:53:01.187000+02:00",
+        "ageMs": 2785,
+        "matchingBuilderRejection": {
+          "ts": 1791892380549,
+          "cycleId": "1791892380186-369585",
+          "cycleShort": "369585",
+          "spreadMs": 141,
+          "maxLatencyMs": 363,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 363,
+            "p_solar_s": 222,
+            "p_solar_t": 228,
+            "p_batterie": 222
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 312,
+        "time": "2026-10-13T13:54:30.183000+02:00",
+        "ageMs": 3752,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 313,
+        "time": "2026-10-13T13:54:31.222000+02:00",
+        "ageMs": 4791,
+        "matchingBuilderRejection": {
+          "ts": 1791892470806,
+          "cycleId": "1791892470221-369630",
+          "cycleShort": "369630",
+          "spreadMs": 8,
+          "maxLatencyMs": 582,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "latency",
+          "latencyByTopic": {
+            "p_zaehler": 582,
+            "p_solar_s": 574,
+            "p_solar_t": 574,
+            "p_batterie": 573
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 342,
+        "time": "2026-10-13T13:55:29.924000+02:00",
+        "ageMs": 3465,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 402,
+        "time": "2026-10-13T13:57:30.855000+02:00",
+        "ageMs": 4375,
+        "matchingBuilderRejection": {
+          "ts": 1791892650532,
+          "cycleId": "1791892649854-369719",
+          "cycleShort": "369719",
+          "spreadMs": 12,
+          "maxLatencyMs": 677,
+          "slowestTopic": "p_solar_t",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "latency",
+          "latencyByTopic": {
+            "p_zaehler": 676,
+            "p_solar_s": 665,
+            "p_solar_t": 677,
+            "p_batterie": 664
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 417,
+        "time": "2026-10-13T13:58:00.856000+02:00",
+        "ageMs": 2782,
+        "matchingBuilderRejection": {
+          "ts": 1791892680262,
+          "cycleId": "1791892679854-369734",
+          "cycleShort": "369734",
+          "spreadMs": 194,
+          "maxLatencyMs": 408,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 408,
+            "p_solar_s": 214,
+            "p_solar_t": 214,
+            "p_batterie": 213
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 431,
+        "time": "2026-10-13T13:58:29.938000+02:00",
+        "ageMs": 1864,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 447,
+        "time": "2026-10-13T13:59:00.941000+02:00",
+        "ageMs": 2787,
+        "matchingBuilderRejection": {
+          "ts": 1791892740293,
+          "cycleId": "1791892739941-369764",
+          "cycleShort": "369764",
+          "spreadMs": 136,
+          "maxLatencyMs": 351,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 351,
+            "p_solar_s": 215,
+            "p_solar_t": 215,
+            "p_batterie": 214
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 461,
+        "time": "2026-10-13T13:59:30.012000+02:00",
+        "ageMs": 1826,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 507,
+        "time": "2026-10-13T14:01:01.089000+02:00",
+        "ageMs": 2772,
+        "matchingBuilderRejection": {
+          "ts": 1791892860451,
+          "cycleId": "1791892860087-369824",
+          "cycleShort": "369824",
+          "spreadMs": 146,
+          "maxLatencyMs": 364,
+          "slowestTopic": "p_zaehler",
+          "batterySource": "fresh",
+          "batteryHoldAgeMs": 0,
+          "reason": "spread",
+          "latencyByTopic": {
+            "p_zaehler": 364,
+            "p_solar_s": 218,
+            "p_solar_t": 218,
+            "p_batterie": 217
+          }
+        },
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 521,
+        "time": "2026-10-13T14:01:30.142000+02:00",
+        "ageMs": 1826,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "row": 551,
+        "time": "2026-10-13T14:02:30.220000+02:00",
+        "ageMs": 1831,
+        "matchingBuilderRejection": null,
+        "outputEmitted": [
+          false,
+          false,
+          false,
+          true
+        ]
+      }
+    ],
+    "continuousInvocationSequence": true,
+    "duplicateSnapshotCycleIds": 1,
+    "continuousLoggerInputSequence": true,
+    "pvRangeW": [
+      621,
+      893
+    ],
+    "metrics": {
+      "all": {
+        "points": 577,
+        "scoredSeconds": 1107.2369999999971,
+        "meanGridW": -0.9732658861652931,
+        "targetMAEW": 19.798335857634818,
+        "withinWindowPct": 32.06332519596076,
+        "importWh": 3.326324722222223,
+        "exportWh": 3.6256680555555576,
+        "minGridW": -41.0,
+        "maxGridW": 2168.0
+      },
+      "normalCharge": {
+        "points": 100,
+        "scoredSeconds": 192.9860000000001,
+        "meanGridW": -0.47221560113168826,
+        "targetMAEW": 5.658819810763473,
+        "withinWindowPct": 88.59606396318905,
+        "importWh": 0.08245000000000001,
+        "exportWh": 0.10776416666666666,
+        "minGridW": -9.0,
+        "maxGridW": 9.0
+      },
+      "highCharge": {
+        "points": 442,
+        "scoredSeconds": 846.2249999999979,
+        "meanGridW": -14.653722118821827,
+        "targetMAEW": 11.16208218854324,
+        "withinWindowPct": 18.439894827025906,
+        "importWh": 0.04779861111111112,
+        "exportWh": 3.4923391666666674,
+        "minGridW": -41.0,
+        "maxGridW": 10.0
+      },
+      "veryHighCharge": {
+        "points": 0
+      },
+      "discharge": {
+        "points": 35,
+        "scoredSeconds": 68.026,
+        "meanGridW": 167.7864492987975,
+        "targetMAEW": 167.34401552347634,
+        "withinWindowPct": 41.15485255637551,
+        "importWh": 3.1960761111111116,
+        "exportWh": 0.025564722222222218,
+        "minGridW": -16.0,
+        "maxGridW": 2168.0
+      }
+    },
+    "controlSets": {
+      "center_wait_charge": 30,
+      "center_trim_charge": 19,
+      "hold_charge_center": 25,
+      "charge_export": 18,
+      "hold_charge": 10,
+      "charge_import_highpv": 25,
+      "charge_export_highpv": 204,
+      "export_edge_trim_charge": 40,
+      "export_edge_wait_charge": 167,
+      "hold_charge_export_edge": 4,
+      "discharge_pv": 27,
+      "hold_discharge": 8
+    },
+    "maxControllerRuntimeMs": 7,
+    "maxInvocationGapMs": 3653,
+    "blocksActiveRows": 0,
+    "highChargeDetails": {
+      "points": 442,
+      "positiveImportPoints": 21,
+      "positiveImportAbove15Points": 0,
+      "rampLimitedPoints": 5,
+      "medianTargetW": -5.0
+    },
+    "veryHighChargeDetails": {
+      "points": 0,
+      "positiveImportPoints": 0,
+      "positiveImportAbove15Points": 0,
+      "rampLimitedPoints": 0,
+      "medianTargetW": null
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "log": 20,
+  "firstCommandRow": 564,
+  "firstCommandAt": "2026-10-13T14:02:55.225000+02:00",
+  "firstDischargeCommandW": 900,
+  "peakImportW": 2168,
+  "acModeFirstObservedAfter_s": 2.001,
+  "batteryDischargeFirstObservedAfter_s": 6.003,
+  "batteryDischargeReceiveAfter_s": 5.211,
+  "packStateFirstObservedAfter_s": 40.026,
+  "packStateHAUpdatedAfter_s": 37.508,
+  "controlInhibitsActive": false,
+  "interpretation": "AC-mode confirmation, measured power reversal and PackState have separate observation latencies. PackState must not be used as a physical40s startup gate. No additional gate or generic timer fitted from this single event."
+}
