@@ -1,0 +1,143 @@
+{
+  "discharge": {
+    "frozen": {
+      "rate_up": 1000000.0,
+      "rate_down": 1000000.0,
+      "gain": 1.004217949090578,
+      "bias": 2.9088244455358767,
+      "delay_up": 3.171489137324968,
+      "delay_down": 3.099279504241724,
+      "tau_up": 0.35814046297039165,
+      "tau_down": 0.05000000000000001
+    },
+    "local": {
+      "rate_up": 1000000.0,
+      "rate_down": 1000000.0,
+      "gain": 1.004217949090578,
+      "bias": 3.822943168594072,
+      "delay_up": 3.171489137324968,
+      "delay_down": 3.099279504241724,
+      "tau_up": 0.35814046297039165,
+      "tau_down": 0.05000000000000001,
+      "idle_bias": 19.0
+    },
+    "adoptActiveBias": false,
+    "fits": {
+      "V13": {
+        "trainLog15First10min": {
+          "points": 274,
+          "rmseW": 1.1237676402476797,
+          "maeW": 0.9898803211950996,
+          "p95AbsW": 2.485545364633748
+        },
+        "holdoutLog15Last10min": {
+          "points": 294,
+          "rmseW": 2.072022667882099,
+          "maeW": 1.6237579524474188,
+          "p95AbsW": 4.1408116455176724
+        },
+        "holdoutLog16Active": {
+          "points": 403,
+          "rmseW": 2.9308323110380057,
+          "maeW": 1.2708661616200876,
+          "p95AbsW": 2.8912447675707225
+        },
+        "log16IdleCalibrationOnly": {
+          "points": 21,
+          "rmseW": 15.952156880421969,
+          "maeW": 15.948318411606985,
+          "p95AbsW": 16.091175554464122
+        }
+      },
+      "localLowPower": {
+        "trainLog15First10min": {
+          "points": 274,
+          "rmseW": 0.6325351241676931,
+          "maeW": 0.32267123531950614,
+          "p95AbsW": 1.914278603064084
+        },
+        "holdoutLog15Last10min": {
+          "points": 294,
+          "rmseW": 2.409617872268631,
+          "maeW": 1.4543969821797595,
+          "p95AbsW": 5.054930368575867
+        },
+        "holdoutLog16Active": {
+          "points": 403,
+          "rmseW": 2.7967435291368385,
+          "maeW": 0.7813145430192067,
+          "p95AbsW": 2.6849530220051214
+        },
+        "log16IdleCalibrationOnly": {
+          "points": 21,
+          "rmseW": 0.37808517850602746,
+          "maeW": 0.1449417731927946,
+          "p95AbsW": 1.0
+        }
+      }
+    },
+    "fitOnly": "bias; gain, delay, time constants and slew limits retained",
+    "trainDomain": "Log15 first10min, low discharge commands; independent Log15 remainder and Log16 active discharge checks",
+    "idle": "Zero-command -19 W telemetry calibrated on one Log16 interval; physical zero-command export is not independently identifiable."
+  },
+  "charge": {
+    "frozen": {
+      "tau_up": 0.08000000044299771,
+      "delay_up": 3.053589395476739,
+      "tau_down": 0.23196514205644628,
+      "delay_down": 4.220467687193862,
+      "rate_up": 1162.0538344344193,
+      "rate_down": 136.10188348717952,
+      "gain": 1.0131301597195532,
+      "bias": -19.26792015472579,
+      "idle_bias": -18.0
+    },
+    "candidate": {
+      "tau_up": 0.08000000044299771,
+      "delay_up": 3.053589395476739,
+      "tau_down": 0.23196514205644628,
+      "delay_down": 4.220467687193862,
+      "rate_up": 1162.0538344344193,
+      "rate_down": 136.10188348717952,
+      "gain": 1.0131301597195532,
+      "bias": -20.999957054781056,
+      "idle_bias": -18.0
+    },
+    "adoptLocalBias": false,
+    "fits": {
+      "V13": {
+        "trainFirst120s": {
+          "points": 56,
+          "rmseW": 2.4348218494050116,
+          "maeW": 1.8833671842521174,
+          "p95AbsW": 4.4348394209263375
+        },
+        "holdoutRemainder": {
+          "points": 77,
+          "rmseW": 1.892035094222962,
+          "maeW": 1.2009324941226525,
+          "p95AbsW": 3.8230920555268937
+        }
+      },
+      "biasCandidate": {
+        "trainFirst120s": {
+          "points": 56,
+          "rmseW": 1.550543886040444,
+          "maeW": 1.0594715666628642,
+          "p95AbsW": 2.702802520871078
+        },
+        "holdoutRemainder": {
+          "points": 77,
+          "rmseW": 1.6547393285324732,
+          "maeW": 1.3492254449564045,
+          "p95AbsW": 2.58427775399891
+        }
+      }
+    },
+    "fitOnly": "bias; fixed V13 dynamics. First120s charging used for fit, remaining samples held out.",
+    "commandRangeObservedW": [
+      60,
+      285
+    ]
+  }
+}

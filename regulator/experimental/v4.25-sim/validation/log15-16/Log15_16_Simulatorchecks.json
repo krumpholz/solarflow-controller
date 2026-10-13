@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "actuation causality",
+    "discharge sign and steady gain/bias",
+    "physical zero-idle alternative",
+    "separate idle telemetry",
+    "all six candidate patches effective",
+    "five known skipped measurements excluded",
+    "nominal residual-enabled baseline consistency"
+  ],
+  "passed": true,
+  "maxBaselineGridErrorW": 1.4210854715202004e-14
+}

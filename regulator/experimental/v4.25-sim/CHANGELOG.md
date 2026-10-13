@@ -1,4 +1,8 @@
-# V4.23 → V4.25 / model V13
+# V4.23 → V4.25 / model V14
+
+## 2026-10-13 — model V14; controller unchanged
+
+Logs15/16 and live DIAG1 validated; 1,188 exact control decisions. Added dawn, idle telemetry and direction-transition modeling. 1,001 conditional simulations reject earlier switching and stronger trims due to disturbance regressions. No controller revision or protection-threshold change. [Analysis](validation/log15-16/Log15_16_Analysis_EN.md).
 
 ## 2026-10-13 — V4.25-SIM-DIAG1
 

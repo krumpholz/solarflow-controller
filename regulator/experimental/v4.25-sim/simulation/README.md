@@ -1,5 +1,7 @@
 # Reproduce model V13
 
+**New: Logs15/16, model V14.** [Reproduction](analysis_log15_16/README.md): full replay, chronological calibration holdouts and 1,001 closed-loop simulations. Controller remains DIAG1. Original private logs are required locally and are not published.
+
 **English** | [Deutsch](README_DE.md)
 
 This directory preserves the relative layout of the verified analysis workspaces. It contains no raw household logs and sends no installation commands. Requirements: Node.js, Python 3, and `python3 -m pip install -r requirements.txt`.

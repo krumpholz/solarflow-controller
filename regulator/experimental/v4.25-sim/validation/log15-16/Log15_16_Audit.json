@@ -1,0 +1,396 @@
+{
+  "source": {
+    "15": {
+      "filename": "regler_event_log_15.jsonl",
+      "sha256": "bfa21cacb0dd354bb70b7834a7734e35824d676cb28d2af3bf7525636c3dd036"
+    },
+    "16": {
+      "filename": "regler_event_log_16.jsonl",
+      "sha256": "abe88ce1445b5f85f1874ac49e18b75fb6656c0f0f2dc67af822c17cbbb2a85d"
+    }
+  },
+  "logs": {
+    "15": {
+      "start": "2026-10-13T07:43:37.855000+02:00",
+      "end": "2026-10-13T08:03:36.235000+02:00",
+      "rows": 594,
+      "executed": 594,
+      "diagnosticSkips": 0,
+      "missingInvocationCycles": 5,
+      "continuousLoggerInputSequence": true,
+      "duplicateCycleIds": 0,
+      "invalidExecutedSnapshots": [],
+      "modeCounts": {
+        "REGEL_ENTLADEN": 594
+      },
+      "diagnosticVersions": {
+        "None": 594
+      },
+      "pvRangeW": [
+        8,
+        22
+      ],
+      "gridTargetW": [
+        7.5
+      ],
+      "runtimeErrors": 0,
+      "executionMaxMs": null,
+      "snapshotSkips": [],
+      "HARequests": 135,
+      "HAMatchedCompletions": 135,
+      "maxLoggerDelayMs": 470,
+      "BLEUnreadyRows": 0,
+      "staleBLEPollRows": 0,
+      "separateBlocksPresent": true,
+      "chargeOrDischargeInhibitedRows": 0,
+      "metrics": {
+        "all": {
+          "points": 594,
+          "scoredSeconds": 1178.0159999999964,
+          "meanGridW": 7.465485188656181,
+          "targetMAEW": 2.1745044209925837,
+          "withinWindowPct": 99.32080718767826,
+          "importWh": 2.444016388888888,
+          "exportWh": 0.0011105555555555556,
+          "minGridW": -2.0,
+          "maxGridW": 17.0
+        },
+        "discharge_pv_le_50": {
+          "points": 594,
+          "scoredSeconds": 1178.0159999999964,
+          "meanGridW": 7.465485188656181,
+          "targetMAEW": 2.1745044209925837,
+          "withinWindowPct": 99.32080718767826,
+          "importWh": 2.444016388888888,
+          "exportWh": 0.0011105555555555556,
+          "minGridW": -2.0,
+          "maxGridW": 17.0
+        },
+        "discharge_pv_gt_50_active": {
+          "points": 0
+        },
+        "discharge_zero_command": {
+          "points": 0
+        },
+        "charge_lowpv": {
+          "points": 0
+        },
+        "charge_normalpv": {
+          "points": 0
+        },
+        "charge_all": {
+          "points": 0
+        },
+        "charge_last_120s": {
+          "points": 0
+        }
+      },
+      "metricsSemantics": "Time weighting between adjacent valid measurement/controller cycles only; missing/diagnostic intervals are not scored as zero power."
+    },
+    "16": {
+      "start": "2026-10-13T08:12:41.692000+02:00",
+      "end": "2026-10-13T08:32:40.264000+02:00",
+      "rows": 599,
+      "executed": 594,
+      "diagnosticSkips": 5,
+      "missingInvocationCycles": 0,
+      "continuousLoggerInputSequence": true,
+      "duplicateCycleIds": 0,
+      "invalidExecutedSnapshots": [],
+      "modeCounts": {
+        "REGEL_ENTLADEN": 457,
+        "SKIP_SNAPSHOT": 5,
+        "REGEL_LADEN": 137
+      },
+      "diagnosticVersions": {
+        "4.25-SIM-DIAG1": 599
+      },
+      "pvRangeW": [
+        29,
+        367
+      ],
+      "gridTargetW": [
+        5,
+        7.5
+      ],
+      "runtimeErrors": 0,
+      "executionMaxMs": 5,
+      "snapshotSkips": [
+        {
+          "row": 247,
+          "time": "2026-10-13T08:20:56.243000+02:00",
+          "cycle": "359639",
+          "reason": [
+            "snapshot_cycle_mismatch",
+            "snapshot_too_old"
+          ],
+          "cause": "builder_latency",
+          "snapshotAgeMs": 2783,
+          "controllerSinceTriggerMs": 1001,
+          "rejection": {
+            "ts": 1791872455937,
+            "cycleId": "1791872455242-359639",
+            "cycleShort": "359639",
+            "spreadMs": 16,
+            "maxLatencyMs": 694,
+            "slowestTopic": "p_zaehler",
+            "batterySource": "fresh",
+            "batteryHoldAgeMs": 0,
+            "reason": "latency",
+            "latencyByTopic": {
+              "p_zaehler": 694,
+              "p_solar_s": 678,
+              "p_solar_t": 684,
+              "p_batterie": 677
+            }
+          },
+          "outputEmitted": [
+            false,
+            false,
+            false,
+            true
+          ],
+          "nullInputs": true,
+          "nullOutputs": true
+        },
+        {
+          "row": 423,
+          "time": "2026-10-13T08:26:49.928000+02:00",
+          "cycle": "359815",
+          "reason": [
+            "snapshot_cycle_mismatch",
+            "snapshot_too_old"
+          ],
+          "cause": "builder_latency",
+          "snapshotAgeMs": 2781,
+          "controllerSinceTriggerMs": 1001,
+          "rejection": {
+            "ts": 1791872809476,
+            "cycleId": "1791872808925-359815",
+            "cycleShort": "359815",
+            "spreadMs": 1,
+            "maxLatencyMs": 546,
+            "slowestTopic": "p_solar_s",
+            "batterySource": "fresh",
+            "batteryHoldAgeMs": 0,
+            "reason": "latency",
+            "latencyByTopic": {
+              "p_zaehler": 545,
+              "p_solar_s": 546,
+              "p_solar_t": 546,
+              "p_batterie": 544
+            }
+          },
+          "outputEmitted": [
+            false,
+            false,
+            false,
+            true
+          ],
+          "nullInputs": true,
+          "nullOutputs": true
+        },
+        {
+          "row": 439,
+          "time": "2026-10-13T08:27:23.065000+02:00",
+          "cycle": "359831",
+          "reason": [
+            "snapshot_too_old"
+          ],
+          "cause": "delayed_controller_invocation",
+          "snapshotAgeMs": 1871,
+          "controllerSinceTriggerMs": 2136,
+          "rejection": null,
+          "outputEmitted": [
+            false,
+            false,
+            false,
+            true
+          ],
+          "nullInputs": true,
+          "nullOutputs": true
+        },
+        {
+          "row": 440,
+          "time": "2026-10-13T08:27:24.069000+02:00",
+          "cycle": "359832",
+          "reason": [
+            "snapshot_cycle_mismatch",
+            "snapshot_too_old"
+          ],
+          "cause": "builder_latency",
+          "snapshotAgeMs": 2875,
+          "controllerSinceTriggerMs": 1000,
+          "rejection": {
+            "ts": 1791872843624,
+            "cycleId": "1791872843068-359832",
+            "cycleShort": "359832",
+            "spreadMs": 1,
+            "maxLatencyMs": 512,
+            "slowestTopic": "p_zaehler",
+            "batterySource": "fresh",
+            "batteryHoldAgeMs": 0,
+            "reason": "latency",
+            "latencyByTopic": {
+              "p_zaehler": 512,
+              "p_solar_s": 512,
+              "p_solar_t": 511,
+              "p_batterie": 510
+            }
+          },
+          "outputEmitted": [
+            false,
+            false,
+            false,
+            true
+          ],
+          "nullInputs": true,
+          "nullOutputs": true
+        },
+        {
+          "row": 529,
+          "time": "2026-10-13T08:30:23.164000+02:00",
+          "cycle": "359921",
+          "reason": [
+            "snapshot_too_old"
+          ],
+          "cause": "delayed_controller_invocation",
+          "snapshotAgeMs": 1843,
+          "controllerSinceTriggerMs": 2062,
+          "rejection": null,
+          "outputEmitted": [
+            false,
+            false,
+            false,
+            true
+          ],
+          "nullInputs": true,
+          "nullOutputs": true
+        }
+      ],
+      "HARequests": 192,
+      "HAMatchedCompletions": 192,
+      "maxLoggerDelayMs": 681,
+      "BLEUnreadyRows": 0,
+      "staleBLEPollRows": 0,
+      "separateBlocksPresent": true,
+      "chargeOrDischargeInhibitedRows": 0,
+      "metrics": {
+        "all": {
+          "points": 594,
+          "scoredSeconds": 1180.3129999999971,
+          "meanGridW": 0.42001570769787333,
+          "targetMAEW": 8.126943869973474,
+          "withinWindowPct": 73.12136695944208,
+          "importWh": 1.4265391666666678,
+          "exportWh": 1.2888308333333327,
+          "minGridW": -67.0,
+          "maxGridW": 49.0
+        },
+        "discharge_pv_le_50": {
+          "points": 212,
+          "scoredSeconds": 424.5429999999999,
+          "meanGridW": 7.182829536701818,
+          "targetMAEW": 2.3925362095241236,
+          "withinWindowPct": 98.11444305994918,
+          "importWh": 0.8470611111111114,
+          "exportWh": 0.0,
+          "minGridW": 1.0,
+          "maxGridW": 43.0
+        },
+        "discharge_pv_gt_50_active": {
+          "points": 221,
+          "scoredSeconds": 439.6939999999998,
+          "meanGridW": 3.742655119242018,
+          "targetMAEW": 6.024573908217988,
+          "withinWindowPct": 74.46769798996573,
+          "importWh": 0.550804722222222,
+          "exportWh": 0.09368722222222223,
+          "minGridW": -14.0,
+          "maxGridW": 49.0
+        },
+        "discharge_zero_command": {
+          "points": 24,
+          "scoredSeconds": 45.954,
+          "meanGridW": -36.88027157592376,
+          "targetMAEW": 44.38027157592376,
+          "withinWindowPct": 0.0,
+          "importWh": 0.0,
+          "exportWh": 0.4707766666666666,
+          "minGridW": -64.0,
+          "maxGridW": -1.0
+        },
+        "charge_lowpv": {
+          "points": 50,
+          "scoredSeconds": 100.02,
+          "meanGridW": -16.26590681863627,
+          "targetMAEW": 21.26590681863627,
+          "withinWindowPct": 4.002199560087982,
+          "importWh": 0.0011122222222222221,
+          "exportWh": 0.45303333333333334,
+          "minGridW": -67.0,
+          "maxGridW": 2.0
+        },
+        "charge_normalpv": {
+          "points": 87,
+          "scoredSeconds": 170.10200000000006,
+          "meanGridW": -5.159145689057154,
+          "targetMAEW": 10.353593726117271,
+          "withinWindowPct": 67.65940435738555,
+          "importWh": 0.027561111111111116,
+          "exportWh": 0.27133361111111115,
+          "minGridW": -38.0,
+          "maxGridW": 10.0
+        },
+        "charge_all": {
+          "points": 137,
+          "scoredSeconds": 270.1220000000001,
+          "meanGridW": -9.27172536853718,
+          "targetMAEW": 14.394173743715802,
+          "withinWindowPct": 44.08859700431656,
+          "importWh": 0.02867333333333334,
+          "exportWh": 0.7243669444444443,
+          "minGridW": -67.0,
+          "maxGridW": 10.0
+        },
+        "charge_last_120s": {
+          "points": 60,
+          "scoredSeconds": 118.103,
+          "meanGridW": -2.0287799632524157,
+          "targetMAEW": 7.308840588300043,
+          "withinWindowPct": 85.59054384731972,
+          "importWh": 0.024781944444444447,
+          "exportWh": 0.09133888888888887,
+          "minGridW": -22.0,
+          "maxGridW": 10.0
+        }
+      },
+      "metricsSemantics": "Time weighting between adjacent valid measurement/controller cycles only; missing/diagnostic intervals are not scored as zero power.",
+      "transition": {
+        "firstChargeRow": 461,
+        "firstChargeAt": "2026-10-13T08:28:06.074000+02:00",
+        "firstZeroDischargeRow": 435,
+        "firstZeroDischargeAt": "2026-10-13T08:27:13.930000+02:00",
+        "zeroToChargeSeconds": 52.144,
+        "blockedGuardRows": 18,
+        "guardFirstRow": 441,
+        "guardLastRow": 458,
+        "guardReasons": {
+          "exportThresholdW": -35,
+          "surplusMarginW": 40
+        },
+        "idleBatteryMedianW": -19.0,
+        "gridAtFirstChargeW": -67,
+        "firstChargeW": 60,
+        "firstPositiveBatteryRow": 463
+      }
+    }
+  },
+  "interpretation": {
+    "highPVObserved": false,
+    "normalDischargeTargetW": 7.5,
+    "chargeTargetBelow720W": 5,
+    "log16Idle": "Approximately -19 W battery telemetry at zero discharge command. A measured idle operating point, not proof of real minimum AC export without independent load metering.",
+    "latency": "Three builder latency rejects are now proved. Two accepted same-cycle snapshots were skipped at ages 1871 and 1843 ms after delayed controller calls. No threshold change follows automatically."
+  }
+}

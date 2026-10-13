@@ -1,4 +1,8 @@
-# V4.23 → V4.25 / Modell V13
+# V4.23 → V4.25 / Modell V14
+
+## 13.10.2026 — Modell V14, Regler unverändert
+
+Logs 15/16 und DIAG1 live geprüft; 1.188 Entscheidungen exakt wiedergegeben. Schwache PV, Leerlauf-Telemetrie und Umschaltung ergänzt. 1.001 bedingte Simulationen: frühere Freigabe und stärkere Nachführung nicht übernommen, da Störfälle schlechter ausfallen. Keine neue Reglerrevision und keine geänderten Schutzgrenzen. [Auswertung](validation/log15-16/Log15_16_Analyse_DE.md).
 
 ## 13.10.2026 — V4.25-SIM-DIAG1
 

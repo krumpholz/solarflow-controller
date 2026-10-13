@@ -1,10 +1,12 @@
-# Regler V4.25-SIM und Simulationsmodell V13
+# Regler V4.25-SIM und Simulationsmodell V14
 
 [English](README.md) | **Deutsch**
 
+**Update 13.10.2026 — Modell V14 / Logs 15–16:** [Messauswertung und Simulation](validation/log15-16/Log15_16_Analyse_DE.md), [aktuelles Modell V14](Regler_Modell_V14.json). Log 15: +7,47 W bei Ziel +7,5 W, 99,32 % im Fenster. Log 16: vollständige DIAG1-Ausgabe einschließlich fünf Abbrüchen; verzögerter Ladebeginn und Export beim PV-Anstieg erklärt. Sechs Änderungen in 1.001 Simulationsläufen geprüft und nicht übernommen. **Regler unverändert, kein Node-Tausch.** Die folgenden V13-Angaben beschreiben die erhaltene historische Basis.
+
 Stand 12.10.2026: veröffentlichte Arbeitsbasis für weiteres Feintuning. V4.25 wurde an der Anlage aufgezeichnet; die vollständigen Replays von Log12 (685 Punkte) und Log13 (110 Punkte) stimmen mit dem hier veröffentlichten Code überein. Das bestätigt die Reglerimplementierung für diese Eingänge, nicht die allgemeine Prognosegüte des Anlagenmodells. Ein physikalisches Gesamtoptimum ist nicht nachgewiesen.
 
-**Update 13.10.2026 — DIAG1:** Nur die Diagnose wurde erweitert. Auch ausgelassene Snapshot-Zyklen erzeugen einen Status an Ausgang 4; die drei Regelausgänge und die Schutzgrenzen behalten ihr Verhalten. Zehn Testgruppen und 1.395 Datensätze im Vergleich gegen V4.25 geprüft; eine neue Live-Aufzeichnung steht aus. [Details](DIAG1_DE.md).
+**Update 13.10.2026 — DIAG1:** Nur die Diagnose wurde erweitert. Auch ausgelassene Snapshot-Zyklen erzeugen einen Status an Ausgang 4; die drei Regelausgänge und die Schutzgrenzen behalten ihr Verhalten. Zehn Testgruppen und 1.395 Datensätze im Vergleich gegen V4.25 geprüft; Log 16 bestätigt inzwischen die Live-Ausgabe einschließlich Abbruchfällen. [Details](DIAG1_DE.md).
 
 ## Direkt verwenden
 
@@ -13,7 +15,7 @@ Stand 12.10.2026: veröffentlichte Arbeitsbasis für weiteres Feintuning. V4.25 
 - [Node-RED-Import, ein Function-Node mit vier Ausgängen](NodeRED_Regler_V4_25_SIM_DIAG1_Import.json)
 - [Einbau, Abbruchbedingungen und Diagnosefelder](DIAG1_DE.md)
 - [Ursprüngliche V4.25-Fassung für bestehende Simulationen](Regler_V4_25_SIM.txt)
-- [Aktuelles Simulationsmodell V13](Regler_Modell_V13.json)
+- [Aktuelles Simulationsmodell V14](Regler_Modell_V14.json)
 - [Änderungen und nächste Schritte](CHANGELOG_DE.md)
 - [Simulationsquellen und Reproduktion](simulation/README_DE.md)
 
@@ -47,7 +49,7 @@ DIAG1-SHA256: `f1a9b4527bbb07250a492d077de893794770202ec73d65c78742bfa061fa25da`
 1. **Kleinen High-PV-Import bei aufnahmefähiger Batterie korrigieren.** Istwertbasis, Soll-/Istabweichung und nur positiver Ladeintegrator können eine kleine Importlage bestehen lassen. Gezielte Feinabsenkung oder Basiskorrektur gegen Messrauschen und PV-Abfälle prüfen. Noch nicht umgesetzt.
 2. **PV-Anstiege und -Abfälle getrennt bewerten.** Die vorsichtige 20-W-High-PV-Aufwärtsrampe kann bei steigendem PV-Angebot Export verursachen; schnellere Varianten müssen Import nach PV-Abfall zuverlässig begrenzen.
 3. **Anlauf und BLE-Befehlsfolge untersuchen.** Drei Richtungsanforderungen wurden beobachtet. Ihr Einfluss auf die Startzeit ist ungeklärt; kein universeller 8-s-Timer und keine ungeprüfte Änderung der Wiederholungen.
-4. **Abbruchdiagnose live prüfen.** Der bereits an der Anlage eingesetzte Logger V2 trennt Lade-/Entladesperren und verwirft unpassende zusätzliche Snapshots; Log14 bestätigt die normale Ausgabe. DIAG1 ergänzt jetzt übersprungene Regleraufrufe und Laufzeitfehler. Die Reglererweiterung ist offline geprüft; ein neuer Live-Log soll die Abbruchgründe und aktive Sperrfälle bestätigen. Logger V2 ist Voraussetzung dieses Einbaupfads und wird durch den DIAG1-Reglerimport nicht installiert.
+4. **Abbruchdiagnose weiter prüfen.** Der bereits an der Anlage eingesetzte Logger V2 trennt Lade-/Entladesperren und verwirft unpassende zusätzliche Snapshots; Log14 bestätigt die normale Ausgabe. DIAG1 ergänzt jetzt übersprungene Regleraufrufe und Laufzeitfehler. Log 16 bestätigt die Abbruchgründe live; aktive Sperrwechsel bleiben noch separat zu prüfen. Logger V2 ist Voraussetzung dieses Einbaupfads und wird durch den DIAG1-Reglerimport nicht installiert.
 5. **Modelle unabhängig bestätigen.** Aufnahmegrenze, Freigabe und Wiederaufnahme nach Entladung benötigen weitere Ereignisse. Ein fest wiederverwendeter Messfehler ist bei geändertem Batterieverlauf keine sichere Zukunftsprognose.
 
 Bei Entladesperre im Energiesparmodus ist Import durch Last über PV kein Regelversagen. Bei begrenzter Ladeaufnahme ist Export nicht allein über Reglerparameter vermeidbar. HA-Aufrufabschluss ist keine korrelierte BLE-Gerätebestätigung. Messlücken werden bei Energieauswertungen nicht überbrückt.

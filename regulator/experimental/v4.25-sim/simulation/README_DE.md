@@ -1,5 +1,7 @@
 # Modell V13 reproduzieren
 
+**Neu: Logs 15/16, Modell V14.** [Reproduktion](analysis_log15_16/README.md), vollständiges Replay, chronologische Kalibrierprüfung und 1.001 geschlossene Simulationen. Regler bleibt DIAG1. Originale Logs werden lokal benötigt und nicht veröffentlicht.
+
 [English](README.md) | **Deutsch**
 
 Dieser Ordner erhält die relativen Pfade der geprüften Analysepakete. Er enthält keine Haushalts-Rohlogs und sendet keine Anlagenbefehle. Benötigt: Node.js, Python 3 und `python3 -m pip install -r requirements.txt`.
