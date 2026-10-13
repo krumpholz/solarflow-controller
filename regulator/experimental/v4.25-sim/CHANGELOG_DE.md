@@ -1,5 +1,9 @@
 # V4.23 → V4.25 / Modell V13
 
+## 13.10.2026 — V4.25-SIM-DIAG1
+
+Nur Diagnose: jeder empfangene Reglertrigger erhält eine Statusausgabe, einschließlich Snapshot-Abbruch und synchronem Laufzeitfehler. Ausgänge 1–3, Schutzbedingungen und Regelzustände behalten ihr bisheriges Verhalten. Neue Ablaufzähler, Zeitstempel, beide Zyklusquellen und eingefrorene Fehlerbeobachtungen. Nur Regler-Function-Code ersetzen; bestehender Logger V2 und Zusatzdaten-Node bleiben angeschlossen. Zehn Testgruppen und 1.395 Datensätze ohne Unterschiede der Stellnachrichten/Regelzustände; vollständiger Diagnoseweg offline geprüft. Noch keine neue Live-Validierung. [Einbau und Details](DIAG1_DE.md).
+
 ## Seit V4.23 erreicht
 
 **V4.24: High-PV ohne Fensterverschiebung.** Die Ladefenster-Offsets für High/VeryHigh sind null. Das originale Ladefenster −5…+15 W bleibt bestehen. Normal-PV zielt auf +5 W; High/VeryHigh zielt auf die Exportgrenze −5 W. Die Feinführung erlaubt −7…−5 W als kleine Exportreserve. Positive Importwerte erhalten Vorrang vor HOLD/Seitenhysterese. Begrenzte PV-Trendvorsteuerung berücksichtigt kleine erkannte PV-Abfälle kausal; zukünftige Messwerte werden nicht vorausgesetzt. Ruhige Nacht- und Normal-PV-Parameter bleiben erhalten.
@@ -26,7 +30,7 @@
 1. **Kleinen High-PV-Import bei aufnahmefähiger Batterie korrigieren.** Istwertbasis, Soll-/Istabweichung und nur positiver Ladeintegrator können eine kleine Importlage bestehen lassen. Gezielte Feinabsenkung oder Basiskorrektur gegen Messrauschen und PV-Abfälle prüfen. Noch nicht umgesetzt.
 2. **PV-Anstiege und -Abfälle getrennt bewerten.** Die vorsichtige 20-W-High-PV-Aufwärtsrampe kann bei steigendem PV-Angebot Export verursachen; schnellere Varianten müssen Import nach PV-Abfall zuverlässig begrenzen.
 3. **Anlauf und BLE-Befehlsfolge untersuchen.** Drei Richtungsanforderungen wurden beobachtet. Ihr Einfluss auf die Startzeit ist ungeklärt; kein universeller 8-s-Timer und keine ungeprüfte Änderung der Wiederholungen.
-4. **Diagnose präzisieren.** Lade-/Entladesperre getrennt ausgeben. `batt_max` sperrt Laden, nicht erlaubtes Entladen. Einen zusätzlichen Snapshot nur bei passender cycleId anhängen; Log13 hat einen veralteten ersten Anhang. Diese Diagnoseverbesserungen sind offen.
+4. **Abbruchdiagnose live prüfen.** Der bereits an der Anlage eingesetzte Logger V2 trennt Lade-/Entladesperren und verwirft unpassende zusätzliche Snapshots; Log14 bestätigt die normale Ausgabe. DIAG1 ergänzt jetzt übersprungene Regleraufrufe und Laufzeitfehler. Die Reglererweiterung ist offline geprüft; ein neuer Live-Log soll die Abbruchgründe und aktive Sperrfälle bestätigen. Logger V2 ist Voraussetzung dieses Einbaupfads und wird durch den DIAG1-Reglerimport nicht installiert.
 5. **Modelle unabhängig bestätigen.** Aufnahmegrenze, Freigabe und Wiederaufnahme nach Entladung benötigen weitere Ereignisse. Ein fest wiederverwendeter Messfehler ist bei geändertem Batterieverlauf keine sichere Zukunftsprognose.
 
 Bei Entladesperre im Energiesparmodus ist Import durch Last über PV kein Regelversagen. Bei begrenzter Ladeaufnahme ist Export nicht allein über Reglerparameter vermeidbar. HA-Aufrufabschluss ist keine korrelierte BLE-Gerätebestätigung. Messlücken werden bei Energieauswertungen nicht überbrückt.

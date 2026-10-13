@@ -1,0 +1,62 @@
+{
+  "baselineSha256": "70935e53246a01031ad4d93a2959d8b7580b6b267873f43bbcbf62100aed22f0",
+  "candidateSha256": "f1a9b4527bbb07250a492d077de893794770202ec73d65c78742bfa061fa25da",
+  "replay": [
+    {
+      "log": 11,
+      "records": 581,
+      "resets": 12,
+      "controlMessageDifferences": 0,
+      "controlStateDifferences": 0
+    },
+    {
+      "log": 12,
+      "records": 685,
+      "resets": 21,
+      "controlMessageDifferences": 0,
+      "controlStateDifferences": 0
+    },
+    {
+      "log": 13,
+      "records": 110,
+      "resets": 1,
+      "controlMessageDifferences": 0,
+      "controlStateDifferences": 0
+    },
+    {
+      "log": 14,
+      "records": 19,
+      "resets": 2,
+      "controlMessageDifferences": 0,
+      "controlStateDifferences": 0
+    }
+  ],
+  "totalReplayRecords": 1395,
+  "integration": [
+    {
+      "inputSequence": 1,
+      "outcome": "executed",
+      "chargeBlocked": false,
+      "dischargeBlocked": false
+    },
+    {
+      "inputSequence": 2,
+      "outcome": "skipped_snapshot",
+      "chargeBlocked": false,
+      "dischargeBlocked": false
+    },
+    {
+      "inputSequence": 3,
+      "outcome": "skipped_snapshot",
+      "chargeBlocked": false,
+      "dischargeBlocked": false
+    },
+    {
+      "inputSequence": 4,
+      "outcome": "executed",
+      "chargeBlocked": false,
+      "dischargeBlocked": false
+    }
+  ],
+  "note": "Offline differential tests against V4.25; no new live validation or simulated physical-performance claim."
+}
