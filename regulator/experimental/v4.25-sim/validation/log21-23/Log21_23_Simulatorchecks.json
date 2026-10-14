@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "log": 21,
+      "baselineGridRMSEW": 1.5067780746499595e-15,
+      "points": 588
+    },
+    {
+      "log": 22,
+      "baselineGridRMSEW": 2.895847581737063e-14,
+      "points": 591
+    },
+    {
+      "log": 23,
+      "baselineGridRMSEW": 1.1553079063459723e-14,
+      "points": 596
+    }
+  ],
+  "allCandidatesApplied": true,
+  "causalDelayChecked": true,
+  "lowPVReferencesUnchanged": [
+    15,
+    16,
+    17,
+    18,
+    21
+  ],
+  "warning": "Residual-enabled baseline agreement is a consistency check, not predictive validation."
+}

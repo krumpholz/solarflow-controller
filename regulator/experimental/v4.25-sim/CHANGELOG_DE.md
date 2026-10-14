@@ -1,4 +1,8 @@
-# V4.23 → V4.25 / Modell V15
+# V4.23 → V4.25 / Modell V16
+
+## 14.10.2026 — Modell V16, Regler unverändert
+
+Logs 21–23: 1.799 Aufrufe, 24 Snapshot-Abbrüche, 1.775 genaue Replays. Lokaler Batterie-Telemetrieoffset separat angepasst und zeitlich geprüft. 3.048 Simulationen einschließlich ausstehender Stellreaktionen und kleiner Importkorrekturen; keine neue Reglerfassung übernommen. [Analyse](validation/log21-23/Log21_23_Analyse_DE.md).
 
 ## 13.10.2026 — Modell V15, Tagesvalidierung
 

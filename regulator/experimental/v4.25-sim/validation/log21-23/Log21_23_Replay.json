@@ -1,0 +1,26 @@
+[
+  {
+    "log": 21,
+    "records": 600,
+    "executed": 588,
+    "skips": 12,
+    "resets": 1,
+    "differences": []
+  },
+  {
+    "log": 22,
+    "records": 600,
+    "executed": 591,
+    "skips": 9,
+    "resets": 1,
+    "differences": []
+  },
+  {
+    "log": 23,
+    "records": 599,
+    "executed": 596,
+    "skips": 3,
+    "resets": 1,
+    "differences": []
+  }
+]

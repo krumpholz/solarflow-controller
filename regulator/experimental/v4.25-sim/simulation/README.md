@@ -1,5 +1,7 @@
 # Reproduce model V13
 
+**New: logs 21–23 / model V16.** [Reproduction](analysis_log21_23/README.md): independent daytime checks, local telemetry offset and 3,048 closed-loop runs. Research prototypes remain simulation-only; installation controller unchanged.
+
 **New: daytime logs17–20, model V15.** [Reproduction and limits](analysis_log17_20/README.md): 2,361 exact replays, local calibration with holdouts, 2,440 conditional runs. Controller unchanged.
 
 **New: Logs15/16, model V14.** [Reproduction](analysis_log15_16/README.md): full replay, chronological calibration holdouts and 1,001 closed-loop simulations. Controller remains DIAG1. Original private logs are required locally and are not published.

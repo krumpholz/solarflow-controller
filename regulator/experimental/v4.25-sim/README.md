@@ -1,6 +1,8 @@
-# Controller V4.25-SIM and simulation model V15
+# Controller V4.25-SIM and simulation model V16
 
 **English** | [Deutsch](README_DE.md)
+
+**2026-10-14 — model V16 / logs 21–23:** [Analysis](validation/log21-23/Log21_23_Analysis_EN.md) · [model](Regler_Modell_V16.json) · [reproduction](simulation/analysis_log21_23/README.md). Independent daytime validation and a scoped Log23 telemetry-offset hypothesis. Sixteen modifications in 3,048 conditional runs; no reliably better controller selected under import-avoidance priority. **Controller unchanged, no node replacement.**
 
 **Update 2026-10-13 — model V15 / daytime logs17–20:** [Analysis](validation/log17-20/Log17_20_Analysis_EN.md) · [model V15](Regler_Modell_V15.json) · [reproduction](simulation/analysis_log17_20/README.md). The 20 W high-PV ramp limits fast solar rises, while quiet charging remains too export-heavy. Tested faster variants increase individual import peaks. After 2,440 conditional runs the controller remains unchanged. A new local daytime calibration improves recent checks; historical models remain available. **No Node-RED code replacement.**
 
@@ -16,7 +18,7 @@ Working baseline for further tuning, 2026-10-12. V4.25 has been recorded on the 
 - [Node-RED import: one four-output Function](NodeRED_Regler_V4_25_SIM_DIAG1_Import.json)
 - [Installation, rejection conditions and diagnostic fields](DIAG1.md)
 - [Original V4.25 source for existing simulations](Regler_V4_25_SIM.txt)
-- [Current V15 model](Regler_Modell_V15.json)
+- [Current V16 model](Regler_Modell_V16.json)
 - [Changes and tuning baseline](CHANGELOG.md)
 - [Simulation sources and reproduction](simulation/README.md)
 

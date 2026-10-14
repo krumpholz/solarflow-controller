@@ -4,7 +4,9 @@
 
 Node-RED battery efficiency monitoring for SolarFlow installations. **Release v5.1.0** adds a time-weighted rolling 7-day mean of the existing SOC-adjusted 168-hour energy balance. The smoother value is available on output 1, the original balance on output 2 and diagnostics on output 3. This repository supplies the monitoring component and a separate experimental regulator candidate. The snapshot builder remains installation-specific.
 
-## Current controller: V4.25-SIM-DIAG1 and simulation model V15
+## Current controller: V4.25-SIM-DIAG1 and simulation model V16
+
+**2026-10-14 — Logs 21–23 / model V16:** [Analysis and tuning study](regulator/experimental/v4.25-sim/validation/log21-23/Log21_23_Analysis_EN.md). 1,775 exact control replays and 16 modifications evaluated in 3,048 closed-loop runs. V16 adds a locally validated telemetry-offset hypothesis. Pending-response observers and quiet-import trims are not promoted. **Controller remains V4.25-SIM-DIAG1; no code replacement needed.**
 
 **Daytime logs17–20, model V15:** [Analysis and tuning](regulator/experimental/v4.25-sim/validation/log17-20/Log17_20_Analysis_EN.md). High/very-high PV and the large load step are now checked. 2,361 exact control replay decisions; 15 modifications evaluated in 2,440 conditional runs. New local daytime model and separate transition clocks; **controller stays V4.25-SIM-DIAG1, no code replacement required**.
 

@@ -1,4 +1,8 @@
-# V4.23 → V4.25 / model V15
+# V4.23 → V4.25 / model V16
+
+## 2026-10-14 — model V16; controller unchanged
+
+Logs 21–23: 1,799 invocations, 24 skips, 1,775 exact replays. Scoped battery-telemetry offset fitted and chronologically checked. 3,048 simulations including pending-response observers and quiet-import trims; no new controller promoted. [Analysis](validation/log21-23/Log21_23_Analysis_EN.md).
 
 ## 2026-10-13 — model V15, daytime validation
 

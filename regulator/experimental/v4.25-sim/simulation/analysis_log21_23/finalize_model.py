@@ -1,0 +1,15 @@
+from common import *
+import copy
+m=json.loads(BASE_MODEL_PATH.read_text());audit=json.loads((OUT/'Log21_23_Audit.json').read_text());cal=json.loads((OUT/'Log21_23_Kalibrierung.json').read_text());tele=json.loads((OUT/'Log23_Telemetrieoffset.json').read_text());screen=json.loads((OUT/'Log21_23_Screening.json').read_text());rob=json.loads((OUT/'Log21_23_Robustheit.json').read_text())
+m['modelRevision']='V16';m['latestValidationControllerVersion']='4.25-SIM-DIAG1';m['latestValidationLogSha256'].update({n:r['sha256'] for n,r in audit.items()})
+m['newDayIndependentValidation']={'scope':'Logs21..23: PV120..1615W; three low-PV direction changes; dynamic high/very-high charging; SOC77,88..91,92..96. No active charge/discharge inhibit or hard full-battery stop.',
+ 'frozenV15DaytimeModelChecks':{n:cal['models']['affine_candidate']['validation']['log'+n] for n in ['21','22','23']},
+ 'localTelemetryOffsetHypothesis':tele,
+ 'application':'Retain V15 daytime and global historical models. Local Log23 extra offset belongs to battery telemetry only, not independently identified AC power or a universal SOC law. Use0..20W extra telemetry offset as sensitivity; do not apply it globally to logs21/22.',
+ 'sequenceSemantics':'Parse numeric counter from full cycle ID suffix, never the display-only last6characters. With five-digit counters the short label starts with a hyphen. InvocationSequence preserves controller state across known skips. Repeated snapshot observations do not become independent measurements.',
+ 'diagnostics':{'invocations':sum(r['records'] for r in audit.values()),'executed':sum(r['executed'] for r in audit.values()),'skipped':sum(len(r['skips']) for r in audit.values())},
+ 'controllerStudy':{'variantsIncludingBaseline':len(screen['candidates']),'screeningRuns':len(screen['results']),'heldOutRuns':len(rob['results']),'totalRuns':len(screen['results'])+len(rob['results']),'adoptedChange':False,'retainedController':'V4.25-SIM-DIAG1','decision':'No production modification selected. Pending-response observer improves average tracking but increases import. Small last-demand-based import trims have small mixed benefits; stricter settled variant still increases individual import peaks. No physical optimum established.'},
+ 'resultHashes':{f:hashlib.sha256((OUT/f).read_bytes()).hexdigest() for f in ['Log21_23_Audit.json','Log21_23_Replay.json','Log21_23_Kalibrierung.json','Log23_Telemetrieoffset.json','Log21_23_Screening.json','Log21_23_Robustheit.json']},
+ 'limitations':['Reconstructed net load and reused residual are conditional counterfactual assumptions, not independent predictive proof.','Grid path and telemetry path uncertain; derived house power is not an independent reference.','No general charge-acceptance or SOC law fitted from a single high-SOC charging log.','Modified controllers have not been live-validated; experimental observer remains simulation-only.']}
+(OUT/'Regler_Modell_V16.json').write_text(json.dumps(m,indent=2)+'\n')
+print({'model':'V16','study':m['newDayIndependentValidation']['controllerStudy']})
