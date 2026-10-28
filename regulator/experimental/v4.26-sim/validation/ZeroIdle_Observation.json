@@ -1,0 +1,24 @@
+{
+  "source": "User observation and attached history screenshot,2026-10-28; no new raw command/AC-mode log supplied.",
+  "reportedBehaviour": {
+    "afterDischargeZeroCommandBatteryW": -24,
+    "smallChargeRequestThatClearedResidualApproxW": 6
+  },
+  "zeroDirectionPolicy": "At final C=0,D=0 in active controller mode request acMode1. No positive pulse.",
+  "unresolvedHypotheses": [
+    {
+      "name": "direction_only_suffices",
+      "ACmode1_C0_D0_clearsResidual": true
+    },
+    {
+      "name": "positive_charge_required",
+      "ACmode1_C0_D0_clearsResidual": false,
+      "smallPositiveChargeMayClearResidual": true
+    }
+  ],
+  "hardwareValidated": false,
+  "minimumPulseWIdentified": false,
+  "timingIdentified": false,
+  "modelV16ParametersChanged": false,
+  "nextMeasurement": "Joint logging of final chargeW/dischargeW, requested/reported acMode, battery power, zeroPowerIdle fields and execution validity. Do not interpret a direction ACK as a zero-power ACK."
+}

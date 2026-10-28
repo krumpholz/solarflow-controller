@@ -4,7 +4,9 @@
 
 Batterie-Wirkungsgradüberwachung mit Node-RED für SolarFlow-Anlagen. **Release v5.1.0** ergänzt einen zeitgewichteten gleitenden 7-Tage-Mittelwert der bisherigen SOC-korrigierten 168-Stunden-Energiebilanz. Der geglättete Wert liegt an Ausgang 1, die bisherige Bilanz an Ausgang 2 und die Diagnose an Ausgang 3. Dieses Repository enthält die Auswertung und eine gesonderte experimentelle Regler-Testvariante. Der Snapshot-Builder bleibt anlagenspezifisch.
 
-## Aktueller Regler: V4.25-SIM-DIAG1 und Simulationsmodell V16
+## Aktueller Regler: V4.26-SIM-ZERO1 (Live-Test) und Simulationsmodell V16
+
+**28.10.2026 — V4.26-SIM-ZERO1:** [Code und Einbau](regulator/experimental/v4.26-sim/README_DE.md). Bei finalen 0 W Laden und 0 W Entladen wird im aktiven Betrieb die Laderichtung angefordert. Kein positiver Ladeimpuls. Zehn gezielte Testgruppen und 5.324 ausgeführte historische Aufrufe geprüft; die Hardwarewirkung bei 0 W muss noch live bestätigt werden. Nur den Regler-Function-Code ersetzen.
 
 **14.10.2026 — Logs 21–23 / Modell V16:** [Analyse und Optimierungsprüfung](regulator/experimental/v4.25-sim/validation/log21-23/Log21_23_Analyse_DE.md). 1.775 Entscheidungen exakt reproduziert, 16 Änderungen in 3.048 geschlossenen Simulationen untersucht. V16 ergänzt einen lokal validierten Telemetrieoffset als Unsicherheit. Modellgestützte Nachführung und kleine Importkorrekturen werden nicht als neuer Anlagenstand übernommen. **Regler bleibt V4.25-SIM-DIAG1; kein Codeaustausch nötig.**
 
