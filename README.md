@@ -1,3 +1,5 @@
+> 28.10.2026: [V4.35-SIM-IDLE5-NET60-HOLD60](regulator/experimental/v4.35-sim/README_DE.md): Startauftrag für reale60W berechnen und halten; bis60s auf PackState-Wechsel warten, danach weitere60s halten. Sonst laufende Nullkompensation. Normale Anforderungen behalten Vorrang; nur Regler ersetzen.
+
 > 28.10.2026: [V4.34-SIM-IDLE4-KICK60](regulator/experimental/v4.34-sim/README_DE.md): einmal60W/max60s pro Ruheepisode, PackState-Abbruch, danach bewährte Nullnachregelung. Bei bestätigtem Standby einmal Soll0; normale Anforderungen behalten Vorrang. Nur Regler ersetzen.
 
 > 28.10.2026: [Live-Validierung Logs28/29](regulator/experimental/v4.33-sim/Analyse_Logs28_29_DE.md): Ruhekompensation bestätigt, Entladeübernahme sofort;1195 ausgeführte Aufrufe exakt reproduziert. CodeV4.33-SIM-IDLE3 und ModellV16 unverändert.
