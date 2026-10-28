@@ -1,0 +1,36 @@
+{
+  "version": "4.33-SIM-IDLE3",
+  "method": "Same-source replay with recorded input and observed trim/idle clock phases. First partial sampling window seeded from recorded diagnostic fields. No fitted plant response or counterfactual actuation.",
+  "logs": [
+    {
+      "log": 28,
+      "records": 599,
+      "executed": 597,
+      "skipped": 2,
+      "powerDifferences": 0,
+      "directionDifferences": 0,
+      "modeDifferences": 0,
+      "feedbackCorrections": 0,
+      "normalDischargeInvocations": 0
+    },
+    {
+      "log": 29,
+      "records": 600,
+      "executed": 598,
+      "skipped": 2,
+      "powerDifferences": 0,
+      "directionDifferences": 0,
+      "modeDifferences": 0,
+      "feedbackCorrections": 5,
+      "normalDischargeInvocations": 88
+    }
+  ],
+  "totals": {
+    "records": 1199,
+    "executed": 1195,
+    "skipped": 4,
+    "feedbackCorrections": 5,
+    "normalDischargeInvocations": 88
+  },
+  "scope": "Idle tracking, small live corrections and permitted discharge handover validated. Ordinary positive PV charging handover is absent from these two logs."
+}

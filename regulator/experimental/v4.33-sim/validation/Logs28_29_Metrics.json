@@ -1,0 +1,149 @@
+{
+  "version": "4.33-SIM-IDLE3",
+  "logs": [
+    {
+      "log": 28,
+      "records": 599,
+      "executed": 597,
+      "skipped": 2,
+      "spanSeconds": 1197.075,
+      "idleBatteryW": {
+        "count": 597,
+        "mean": 0,
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "idleBatteryHistogram": {
+        "0": 597
+      },
+      "idleCommandW": {
+        "count": 597,
+        "mean": 18,
+        "median": 18,
+        "min": 18,
+        "max": 18
+      },
+      "idlePvW": {
+        "count": 597,
+        "mean": 17.42713567839196,
+        "median": 18,
+        "min": 8,
+        "max": 23
+      },
+      "socHistogram": {
+        "59": 597
+      },
+      "packStateHistogram": {
+        "2": 597
+      },
+      "steadyDischargeGridW": null,
+      "steadyDischargeInWindow": 0,
+      "normalDischargeInvocations": 0,
+      "skips": [
+        {
+          "reasons": [
+            "snapshot_cycle_mismatch",
+            "snapshot_too_old"
+          ],
+          "snapshotAgeMs": 2736,
+          "retainedChargeW": 18
+        },
+        {
+          "reasons": [
+            "snapshot_cycle_mismatch",
+            "snapshot_too_old"
+          ],
+          "snapshotAgeMs": 2781,
+          "retainedChargeW": 18
+        }
+      ],
+      "idleEnergyOnAdjacentValidIntervals": {
+        "seconds": 1189.0719999999965,
+        "requestedChargeWh": 5.945359999999957,
+        "measuredSignedWh": 0.0,
+        "measuredPositiveWh": 0.0,
+        "measuredNegativeWh": 0.0
+      }
+    },
+    {
+      "log": 29,
+      "records": 600,
+      "executed": 598,
+      "skipped": 2,
+      "spanSeconds": 1198.99,
+      "idleBatteryW": {
+        "count": 510,
+        "mean": 0.027450980392156862,
+        "median": 0.0,
+        "min": -3,
+        "max": 3
+      },
+      "idleBatteryHistogram": {
+        "0": 484,
+        "2": 4,
+        "3": 7,
+        "1": 6,
+        "-3": 6,
+        "-1": 3
+      },
+      "idleCommandW": {
+        "count": 510,
+        "mean": 17.81764705882353,
+        "median": 18.0,
+        "min": 15,
+        "max": 18
+      },
+      "idlePvW": {
+        "count": 510,
+        "mean": 17.890196078431373,
+        "median": 20.0,
+        "min": 6,
+        "max": 24
+      },
+      "socHistogram": {
+        "59": 598
+      },
+      "packStateHistogram": {
+        "2": 598
+      },
+      "steadyDischargeGridW": {
+        "count": 73,
+        "mean": 6.904109589041096,
+        "median": 7,
+        "min": -2,
+        "max": 15
+      },
+      "steadyDischargeInWindow": 71,
+      "normalDischargeInvocations": 88,
+      "skips": [
+        {
+          "reasons": [
+            "snapshot_cycle_mismatch",
+            "snapshot_too_old"
+          ],
+          "snapshotAgeMs": 2783,
+          "retainedChargeW": 18
+        },
+        {
+          "reasons": [
+            "snapshot_cycle_mismatch",
+            "snapshot_too_old"
+          ],
+          "snapshotAgeMs": 2816,
+          "retainedChargeW": 18
+        }
+      ],
+      "idleEnergyOnAdjacentValidIntervals": {
+        "seconds": 1014.4939999999972,
+        "requestedChargeWh": 5.0210634722221865,
+        "measuredSignedWh": 0.007780555555555555,
+        "measuredPositiveWh": 0.01944888888888888,
+        "measuredNegativeWh": 0.011668333333333333
+      }
+    }
+  ],
+  "energyMethod": "Trapezoidal integration only adjacent valid idle records at intervals\u22643s, no bridging of invalid snapshots, logger pauses or operating mode transitions. Requested charge energy is setpoint energy, not independently measured AC energy.",
+  "socLimitation": "SOC remains59% in both logs. Integer resolution and short duration do not establish zero internal battery loss or roundtrip efficiency.",
+  "conclusion": "No parameter/code change indicated; maintain IDLE3. PackState remains2, confirmed discharge handover works. Positive ordinary charging handover not present."
+}
