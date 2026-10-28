@@ -1,0 +1,14 @@
+{
+  "candidate": "V4.27-SIM-ZERO2",
+  "codeSHA256": "d243d237a9b77e72289a9011c23c6d92a60bfd6b20ed56175d4248e313a3334e",
+  "targetedTestGroups": 19,
+  "targetedTestsPassed": true,
+  "pulseRequestW": 6,
+  "confirmationMs": 6000,
+  "maximumDistinctValidTicks": 2,
+  "maximumRequestedWindowMs": 4000,
+  "settlingMs": 8000,
+  "packStateEarlyStop": "Valid transition2 at start to1 or0; never wait indefinitely; existing1/missing state not a new confirmation.",
+  "clockLimitMeaning": "No independent timer. On invalid/stalled execution, previous device demand can persist; withdraw at next valid call.",
+  "hardwareValidation": "Pending; reported user observation says ZERO1 regulator charging/battery discharge about-18W. Actual AC-mode readback was not supplied. Pulse requires acMode1."
+}
