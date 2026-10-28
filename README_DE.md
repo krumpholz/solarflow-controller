@@ -1,3 +1,5 @@
+> 28.10.2026: [V4.31-SIM-ZERO6-TEST](regulator/experimental/v4.31-sim/README_DE.md): PV-/Hausdeltas nur protokollieren. Log25 brach nach zehn Sekunden wegen +53 W Hausdelta ab, ohne regulären Leistungsbedarf. PackState-Test hält darüber hinaus; weiter ohne Timeout/Leistungsnullpunkt-Abbruch. Test beobachten, nur Regler ersetzen.
+
 > 28.10.2026: [V4.30-SIM-ZERO5-TEST](regulator/experimental/v4.30-sim/README_DE.md): gezielter PackState-Test ohne 60-s-Frist und ohne Abbruch am Leistungsnullpunkt. Log24 brach bereits nach sechs Sekunden am Leistungsnullpunkt ab. Kleinen Startauftrag halten, übrige Vorränge beibehalten; Test beobachten. Nur Regler ersetzen.
 
 > 28.10.2026: Aktuelle Testfassung [V4.29-SIM-ZERO4](regulator/experimental/v4.29-sim/README_DE.md): Restentladung + 5 W Reserve beim Start festhalten (−18 W → 23 W), PackState/Leistung als Rückmeldung, bis 60 Sekunden. Nur Regler ersetzen.

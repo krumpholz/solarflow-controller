@@ -1,0 +1,12 @@
+{
+  "log": 25,
+  "records": 32,
+  "baseline": "4.30-SIM-ZERO5-TEST",
+  "candidate": "4.31-SIM-ZERO6-TEST",
+  "baselineExactPowerReproductions": 32,
+  "changedPowerInvocations": 17,
+  "firstChangedRow": 15,
+  "candidatePulseInvocations": 22,
+  "method": "Open-loop replay of recorded inputs. Candidate keeps23W on recorded feedback; this does not predict actual battery/PackState response after altered actuation.",
+  "hardwareValidated": false
+}
