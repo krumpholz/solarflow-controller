@@ -1,0 +1,7 @@
+{
+  "version": "4.36-SIM-IDLE6-NOPULSE",
+  "tests": 27,
+  "passed": 27,
+  "failed": 0,
+  "hardwareValidation": "New version not yet live validated; enabled compensation replay matches Logs28/29."
+}

@@ -1,0 +1,94 @@
+{
+  "selection": {
+    "excludedLines": [
+      1,
+      550
+    ],
+    "includedLines": [
+      551,
+      598
+    ],
+    "version": "4.35-SIM",
+    "records": 48,
+    "durationSeconds": 94.3
+  },
+  "outcomes": {
+    "executed": 43,
+    "skipped_snapshot": 5
+  },
+  "events": [
+    {
+      "sourceLine": 551,
+      "timeBerlin": "2026-10-28T20:45:05.331+01:00",
+      "batteryW": -24,
+      "chargeRequestW": 0,
+      "packState": 2,
+      "phase": "ready"
+    },
+    {
+      "sourceLine": 556,
+      "timeBerlin": "2026-10-28T20:45:15.368+01:00",
+      "batteryW": -24,
+      "chargeRequestW": 84,
+      "packState": 2,
+      "phase": "waiting"
+    },
+    {
+      "sourceLine": 559,
+      "timeBerlin": "2026-10-28T20:45:21.621+01:00",
+      "batteryW": 60,
+      "chargeRequestW": 84,
+      "packState": 2,
+      "phase": "waiting"
+    },
+    {
+      "sourceLine": 560,
+      "timeBerlin": "2026-10-28T20:45:23.620+01:00",
+      "batteryW": 60,
+      "chargeRequestW": 84,
+      "packState": 1,
+      "phase": "holding"
+    },
+    {
+      "sourceLine": 590,
+      "timeBerlin": "2026-10-28T20:46:23.630+01:00",
+      "batteryW": 60,
+      "chargeRequestW": 0,
+      "packState": 1,
+      "phase": "done"
+    },
+    {
+      "sourceLine": 593,
+      "timeBerlin": "2026-10-28T20:46:29.631+01:00",
+      "batteryW": -24,
+      "chargeRequestW": 0,
+      "packState": 1,
+      "phase": "done"
+    },
+    {
+      "sourceLine": 596,
+      "timeBerlin": "2026-10-28T20:46:35.632+01:00",
+      "batteryW": -24,
+      "chargeRequestW": 0,
+      "packState": 2,
+      "phase": "done"
+    },
+    {
+      "sourceLine": 597,
+      "timeBerlin": "2026-10-28T20:46:37.633+01:00",
+      "batteryW": -24,
+      "chargeRequestW": 24,
+      "packState": 2,
+      "phase": "done"
+    },
+    {
+      "sourceLine": 598,
+      "timeBerlin": "2026-10-28T20:46:39.631+01:00",
+      "batteryW": -24,
+      "chargeRequestW": 24,
+      "packState": 2,
+      "phase": "done"
+    }
+  ],
+  "caveat": "Measured V4.35 experiment only; no V4.36 counterfactual plant replay. Final measured battery power is still -24W after request24W; following settling is not recorded."
+}
