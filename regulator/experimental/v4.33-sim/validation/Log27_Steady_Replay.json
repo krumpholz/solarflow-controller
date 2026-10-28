@@ -1,0 +1,12 @@
+{
+  "log": 27,
+  "candidate": "4.33-SIM-IDLE3",
+  "records": 290,
+  "executed": 289,
+  "skipped": 1,
+  "powerDifferences": 0,
+  "scope": "Recorded steady compensation section before the old periodic zero probe. Fresh IDLE2 state transferred. All measured battery feedback0W; emitted power remains identical.",
+  "excludedFromRow": 290,
+  "limitation": "The forced-zero probe and subsequent affected feedback cannot be treated as input to unchanged18W actuation. New drift correction is tested separately with synthetic plants.",
+  "hardwareValidation": "Candidate itself not yet deployed."
+}

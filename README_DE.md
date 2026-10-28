@@ -1,3 +1,5 @@
+> 28.10.2026: [V4.33-SIM-IDLE3](regulator/experimental/v4.33-sim/README_DE.md): laufende Batterienull-Nachregelung statt Zehn-Minuten-Prüfung. Neuer Zusatzauftrag = bisheriger Auftrag minus gemessene Batterieleistung, nach Einschwingen/Medianfilter. Normale Leistungsanforderungen behalten Vorrang; PackState nur Diagnose. Nur Regler ersetzen.
+
 > 28.10.2026: [V4.32-SIM-IDLE2](regulator/experimental/v4.32-sim/README_DE.md): dynamisch gemessene Ruhekompensation ohne Reserve, erneute0W-Messung alle zehn Minuten. PackState nur Diagnose; klare Anzeige für Prüfung/Kompensation/Ruhe0W. Nur Regler ersetzen.
 
 > 28.10.2026: [V4.31-SIM-ZERO6-TEST](regulator/experimental/v4.31-sim/README_DE.md): PV-/Hausdeltas nur protokollieren. Log25 brach nach zehn Sekunden wegen +53 W Hausdelta ab, ohne regulären Leistungsbedarf. PackState-Test hält darüber hinaus; weiter ohne Timeout/Leistungsnullpunkt-Abbruch. Test beobachten, nur Regler ersetzen.
