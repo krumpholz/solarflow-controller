@@ -1,0 +1,105 @@
+{
+  "baseline": "V4.26-SIM-ZERO1",
+  "candidate": "V4.30-SIM-ZERO5-TEST with pulse disabled",
+  "method": "Differential replay: same frozen measured inputs and observed trim clock phases. Not a closed-loop hardware forecast.",
+  "logs": [
+    {
+      "log": 15,
+      "records": 594,
+      "executed": 594,
+      "skips": 0,
+      "resets": 6,
+      "zeroDemandInvocations": 0,
+      "changedDirectionInvocations": 0,
+      "powerAndStateDifferences": 0
+    },
+    {
+      "log": 16,
+      "records": 599,
+      "executed": 594,
+      "skips": 5,
+      "resets": 1,
+      "zeroDemandInvocations": 24,
+      "changedDirectionInvocations": 0,
+      "powerAndStateDifferences": 0
+    },
+    {
+      "log": 17,
+      "records": 599,
+      "executed": 589,
+      "skips": 10,
+      "resets": 1,
+      "zeroDemandInvocations": 0,
+      "changedDirectionInvocations": 0,
+      "powerAndStateDifferences": 0
+    },
+    {
+      "log": 18,
+      "records": 600,
+      "executed": 599,
+      "skips": 1,
+      "resets": 1,
+      "zeroDemandInvocations": 0,
+      "changedDirectionInvocations": 0,
+      "powerAndStateDifferences": 0
+    },
+    {
+      "log": 19,
+      "records": 600,
+      "executed": 596,
+      "skips": 4,
+      "resets": 1,
+      "zeroDemandInvocations": 0,
+      "changedDirectionInvocations": 0,
+      "powerAndStateDifferences": 0
+    },
+    {
+      "log": 20,
+      "records": 599,
+      "executed": 577,
+      "skips": 22,
+      "resets": 1,
+      "zeroDemandInvocations": 0,
+      "changedDirectionInvocations": 0,
+      "powerAndStateDifferences": 0
+    },
+    {
+      "log": 21,
+      "records": 600,
+      "executed": 588,
+      "skips": 12,
+      "resets": 1,
+      "zeroDemandInvocations": 87,
+      "changedDirectionInvocations": 0,
+      "powerAndStateDifferences": 0
+    },
+    {
+      "log": 22,
+      "records": 600,
+      "executed": 591,
+      "skips": 9,
+      "resets": 1,
+      "zeroDemandInvocations": 0,
+      "changedDirectionInvocations": 0,
+      "powerAndStateDifferences": 0
+    },
+    {
+      "log": 23,
+      "records": 599,
+      "executed": 596,
+      "skips": 3,
+      "resets": 1,
+      "zeroDemandInvocations": 0,
+      "changedDirectionInvocations": 0,
+      "powerAndStateDifferences": 0
+    }
+  ],
+  "total": {
+    "records": 5390,
+    "executed": 5324,
+    "skips": 66,
+    "zeroDemandInvocations": 111,
+    "changedDirectionInvocations": 0
+  },
+  "hardwareValidation": "Pulse enabled behaviour tested separately with synthetic sequences. Real device response remains pending. Disabling the pulse reproduces ZERO1 power and direction behaviour."
+}

@@ -1,3 +1,5 @@
+> 28.10.2026: [V4.30-SIM-ZERO5-TEST](regulator/experimental/v4.30-sim/README_DE.md): gezielter PackState-Test ohne 60-s-Frist und ohne Abbruch am Leistungsnullpunkt. Log24 brach bereits nach sechs Sekunden am Leistungsnullpunkt ab. Kleinen Startauftrag halten, übrige Vorränge beibehalten; Test beobachten. Nur Regler ersetzen.
+
 > 28.10.2026: Aktuelle Testfassung [V4.29-SIM-ZERO4](regulator/experimental/v4.29-sim/README_DE.md): Restentladung + 5 W Reserve beim Start festhalten (−18 W → 23 W), PackState/Leistung als Rückmeldung, bis 60 Sekunden. Nur Regler ersetzen.
 
 > 28.10.2026: Neue Testfassung [V4.28-SIM-ZERO3](regulator/experimental/v4.28-sim/README_DE.md): 5 W, PackState/Leistung als Rückmeldung, bis 60 Sekunden; 10 W separat konfigurierbar. Nur Regler ersetzen.
