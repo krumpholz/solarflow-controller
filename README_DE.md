@@ -1,3 +1,5 @@
+> 28.10.2026: Neue Testfassung [V4.28-SIM-ZERO3](regulator/experimental/v4.28-sim/README_DE.md): 5 W, PackState/Leistung als Rückmeldung, bis 60 Sekunden; 10 W separat konfigurierbar. Nur Regler ersetzen.
+
 # SolarFlow Controller
 
 [English](README.md) | **Deutsch**
