@@ -1,0 +1,20 @@
+[
+  {
+    "id": "effv6solarrelease",
+    "type": "function",
+    "z": "577158dd0ea2615a",
+    "name": "V6 Solarvorrat + bisherige Freigabe",
+    "func": "/* V6 draft: place between the EXISTING permission decision and its consumers.\n * Input 1: msg.payload boolean = ORIGINAL decision (never this node's output).\n * Input 2: calculation output 4, every existing timer tick, same flow tab.\n * Optional msg.solar_override_allowed boolean: external hard reserve/vacation\n * interlock; defaults false until explicitly supplied. Keep this distinct from\n * the economic base permission. Existing minimum-SOC/OFF protections remain.\n * Writes b_entladen. Do not keep another writer downstream of this node.\n * No device commands. No new timer. Requires current valid source inventory.\n */\nconst now=Date.now(),FILE='file',KEY='batt_eff_release_v6';\nconst flag=v=>v===true||v===1||v==='true'||v==='1'?true:v===false||v===0||v==='false'||v==='0'?false:null;\nlet saved=flow.get(KEY,FILE)||{base:false,solarInterlock:false,solarActive:false};\nlet s={...saved};\nif(typeof msg.payload==='boolean')s.base=msg.payload;\nelse if(msg.payload?.type!=='efficiency_sources_v6'){node.warn('V6 Freigabe erwartet Boolean oder Berechnungsausgang 4');return null;}\nif(typeof msg.solar_override_allowed==='boolean')s.solarInterlock=msg.solar_override_allowed;\nconst inv=flow.get('batt_eff_sources_v6',FILE);\nconst fresh=inv?.valid===true&&Number.isFinite(inv.at)&&now>=inv.at&&now-inv.at<=6500;\nconst on=flag(flow.get('regelung'))===true;\nconst net=flag(flow.get('netz_laden'));\nconst min=flag(flow.get('regler_batt_min_confirmed'));\nconst safe=on&&net===false&&min===false;\nconst amount=fresh&&Number.isFinite(inv.solar_available_kwh)?inv.solar_available_kwh:0;\n// Start with >=2 SOC points of solar inventory; stop with 1 point reserve left.\ns.solarActive=!!(safe&&s.solarInterlock&&fresh&&(s.solarActive?amount>0:amount>=.0864));\nconst effective=safe&&(s.base||s.solarActive);\nflow.set(KEY,s,FILE);flow.set('b_entladen',effective);\nmsg.payload=effective;\nmsg.efficiency_release={base:s.base,solar:s.solarActive,hard_interlock:s.solarInterlock,source_fresh:fresh};\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 1460,
+    "y": 5360,
+    "wires": [
+      []
+    ]
+  }
+]
