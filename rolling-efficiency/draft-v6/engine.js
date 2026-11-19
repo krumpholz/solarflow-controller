@@ -231,10 +231,10 @@ try{
  flow.set('batt_eff_sources_v6',sources,FILE);
  node.status({fill:net.usable?'green':'yellow',shape:net.status==='measured'?'dot':'ring',text:`V6 Entwurf | Netz ${round(net.pct)??'?'}% | ${net.status}`});
  return [{payload:round(net.pct),result},legacy?.[1]??{payload:null},
-  {payload:round(net.pct),result},{payload:{type:'efficiency_sources_v6',...sources}}];
+  {payload:{type:'efficiency_sources_v6',...sources}},{payload:round(net.pct),result}];
 }catch(error){
  node.error(`V6 Entwurf: ${error.message}`);
  try{flow.set('la_ela_es_mean_7d',null,FILE);flow.set('batt_eff_sources_v6',{valid:false,at:NOW},FILE);}catch(_){}
  return[{payload:null,result:{valid:false,reason:error.message}},legacy?.[1]??{payload:null},
-  {payload:null,result:{valid:false,reason:error.message}},{payload:{type:'efficiency_sources_v6',valid:false,at:NOW}}];
+  {payload:{type:'efficiency_sources_v6',valid:false,at:NOW}},{payload:null,result:{valid:false,reason:error.message}}];
 }

@@ -1,6 +1,6 @@
 /* V6 draft: place between the EXISTING permission decision and its consumers.
  * Input 1: msg.payload boolean = ORIGINAL decision (never this node's output).
- * Input 2: calculation output 4, every existing timer tick, same flow tab.
+ * Input 2: calculation output 3, every existing timer tick, same flow tab.
  * Optional msg.solar_override_allowed boolean: external hard reserve/vacation
  * interlock; defaults false until explicitly supplied. Keep this distinct from
  * the economic base permission. Existing minimum-SOC/OFF protections remain.
