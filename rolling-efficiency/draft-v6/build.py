@@ -21,7 +21,7 @@ n={'id':'b84a28463be042be','type':'function','z':'577158dd0ea2615a',
 'wires':[['ea866d525e410a2f'],['619074ace164b99e'],[],['effdiagnostics03']],
 'outputLabels':['Planungswirkungsgrad Netz (initial 80 %)','Bisherige 7-Tage-Bilanz','Quellenbilanz / optionale Solarfreigabe','Diagnose']}
 (p/'calculation-import.json').write_text(json.dumps([n],ensure_ascii=False,indent=2)+'\n')
-g={'id':'effv6solarrelease','type':'function','z':n['z'],'name':'V6 Solarvorrat + bisherige Freigabe',
+g={'id':'effv6solarrelease','type':'function','z':n['z'],'name':'V6 Solarvorrat → b_entladen_solar',
 'func':(p/'solar-release.js').read_text(),'outputs':1,'timeout':0,'noerr':0,'initialize':'','finalize':'','libs':[],
 'x':1460,'y':5360,'wires':[[]]}
 (p/'solar-release-import.json').write_text(json.dumps([g],ensure_ascii=False,indent=2)+'\n')

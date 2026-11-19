@@ -63,15 +63,25 @@ test('invalid persisted state fails without destroying it or resetting 80',()=>{
 test('generated function retains original balance output and isolates old mean writer',()=>{const r=rig(fs.readFileSync(path.join(root,'battery-efficiency-v6.js'),'utf8'));const o=r.tick();assert.equal(o[0].payload,80);assert.equal(o.length,4);assert.equal(r.flow.get('la_ela_es_mean_7d','file'),80);assert.ok(r.flow.get('batt_eff_state_v4','file'));});
 test('imports contain precisely generated function and no server configuration',()=>{const nodes=JSON.parse(fs.readFileSync(path.join(root,'calculation-import.json')));assert.equal(nodes.length,1);assert.equal(nodes[0].outputs,4);assert.equal(nodes[0].func,fs.readFileSync(path.join(root,'battery-efficiency-v6.js'),'utf8'));});
 const release=fs.readFileSync(path.join(root,'solar-release.js'),'utf8');
-test('solar gate preserves base and respects all hard protections',()=>{
- const r=rig(release);r.flow.set('batt_eff_sources_v6',{valid:true,at:r.now,solar_available_kwh:.2},'file');
- let o=r.run({payload:false,solar_override_allowed:true});assert.equal(o.payload,true);assert.equal(r.flow.get('b_entladen'),true);
- r.flow.set('regler_batt_min_confirmed',true);assert.equal(r.run({payload:true}).payload,false);
- r.flow.set('regler_batt_min_confirmed',false);r.flow.set('netz_laden',true);assert.equal(r.run({payload:true}).payload,false);
+test('output 3 controls only the solar flag, with hysteresis on every invocation',()=>{
+ const r=rig(release);
+ for(const [amount,expected] of [[0,false],[.086399,false],[.0864,true],[.02,true],[0,false],[.02,false]]){
+  const msg={payload:{type:'efficiency_sources_v6',at:r.now,valid:true,solar_available_kwh:amount}};
+  assert.equal(r.run(msg).payload,expected);
+  assert.equal(r.flow.get('b_entladen_solar'),expected);
+  assert.equal(r.flow.get('b_entladen'),false);
+ }
 });
-test('solar gate requires explicit separate hard interlock',()=>{const r=rig(release);r.flow.set('batt_eff_sources_v6',{valid:true,at:r.now,solar_available_kwh:1},'file');assert.equal(r.run({payload:false}).payload,false);assert.equal(r.run({payload:true}).payload,true);});
-test('solar update cannot overwrite stored base with own effective output',()=>{const r=rig(release);r.run({payload:false,solar_override_allowed:true});r.flow.set('batt_eff_sources_v6',{valid:true,at:r.now,solar_available_kwh:.2},'file');assert.equal(r.run({payload:{type:'efficiency_sources_v6'}}).payload,true);r.flow.set('batt_eff_sources_v6',{valid:false,at:r.now},'file');assert.equal(r.run({payload:{type:'efficiency_sources_v6'}}).payload,false);});
-test('stale source inventory never overrides a blocked base',()=>{const r=rig(release);r.flow.set('batt_eff_sources_v6',{valid:true,at:r.now-7000,solar_available_kwh:1},'file');assert.equal(r.run({payload:false,solar_override_allowed:true}).payload,false);});
+test('invalid, expired or future source clears the solar flag and preserves base permission',()=>{
+ const r=rig(release);r.flow.set('b_entladen',true);
+ const src={type:'efficiency_sources_v6',at:r.now,valid:true,solar_available_kwh:1};
+ for(const payload of [null,false,{}, {...src,valid:false},{...src,at:r.now-6501},{...src,at:r.now+1},{...src,solar_available_kwh:'1'}]){
+  r.flow.set('b_entladen_solar',true);
+  assert.equal(r.run({payload}).payload,false);
+  assert.equal(r.flow.get('b_entladen_solar'),false);
+  assert.equal(r.flow.get('b_entladen'),true);
+ }
+});
 test('pending solar credit cannot cross into idle compensation',()=>{const r=rig();r.tick({flags:{p_solar:500,p_haus:300}});for(let n=0;n<1600;n++)r.tick({p:200});for(let n=0;n<40;n++)r.tick({p:0,soc:51,flags:{regler_idle_compensation_v436:{phase:'tracking',lastValidTs:r.now+2000}}});assert.equal(r.state().inventory.solar,0);});
 test('generated calculation ignores duplicate snapshots without blocking new learning',()=>{const code=fs.readFileSync(path.join(root,'battery-efficiency-v6.js'),'utf8');const r=rig(code);r.tick();r.tick();const count=r.state().records.length;assert.equal(r.fn({_eff:{ts:r.now,soc:50,socTs:r.now}},[]),null);assert.equal(r.state().records.length,count);assert.equal(r.state().blocked,false);});
 test('generated calculation pauses on bad data while seed remains available',()=>{const r=rig(fs.readFileSync(path.join(root,'battery-efficiency-v6.js'),'utf8'));r.tick();r.tick();const out=r.tick({valid:false});assert.equal(out[0].payload,80);assert.equal(out[2].payload.valid,false);assert.equal(r.state().blocked,true);});
