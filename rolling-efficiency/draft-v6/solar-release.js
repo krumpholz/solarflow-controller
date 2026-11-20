@@ -15,5 +15,15 @@ const solarFreigabe = gueltig && (bisherAktiv
     : bilanz.solar_available_kwh >= 0.0864);
 
 flow.set("b_entladen_solar", solarFreigabe);
+if (gueltig) {
+    const wh = Math.round(bilanz.solar_available_kwh * 1000);
+    node.status({
+        fill: solarFreigabe ? "green" : "grey",
+        shape: solarFreigabe ? "dot" : "ring",
+        text: `Solar ${solarFreigabe ? "EIN" : "AUS"} · ${wh} Wh verfügbar`
+    });
+} else {
+    node.status({ fill: "yellow", shape: "ring", text: "Solar AUS · Bilanz ungültig" });
+}
 msg.payload = solarFreigabe;
 return msg;
