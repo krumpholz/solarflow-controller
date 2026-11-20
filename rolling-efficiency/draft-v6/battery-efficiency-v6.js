@@ -4,9 +4,7 @@
  * Source 3 -> optional solar-release.js; no direct control write here.
  * Source provenance is estimated, SOC-confirmed; gaps invalidate provenance.
  */
-const legacyFlow={get:(...args)=>flow.get(...args),set:(key,value,...rest)=>
- flow.set(key==='la_ela_es_mean_7d'?'batt_eff_legacy_mean_7d':key,value,...rest)};
-const legacy=(function(msg,node,flow,context){
+const legacy=(function(){
 /*
  * Batterie Wirkungsgrad – gleitende 168 Stunden, Revision 5.1.
  * Deutsche Oberfläche, identischer englischer Rechenkern. MIT-Lizenz.
@@ -357,7 +355,7 @@ function fail(reason, detail, block = true, values = {}) {
         }
         mean=meanOutput(now,false,keepHistory);
         flow.set("la_ela_es",null,FILE);
-        flow.set("la_ela_es_mean_7d",mean.eta_mean_7d_pct,FILE);
+        flow.set("batt_eff_legacy_mean_7d",mean.eta_mean_7d_pct,FILE);
     } catch (error) { detail = error.message; mean=meanOutput(now,false,false); }
     node.status({fill:"yellow",shape:"ring",text:reason});
     const result={version:4,release_version:"5.1.0",calculation_revision:"5.1",valid:false,reason,
@@ -506,7 +504,7 @@ try {
     flow.set("sum_batt_la_7d",round(charge,3),FILE);
     flow.set("sum_batt_ela_7d",round(discharge,3),FILE);
     flow.set("la_ela_es",eta,FILE);
-    flow.set("la_ela_es_mean_7d",mean.eta_mean_7d_pct,FILE);
+    flow.set("batt_eff_legacy_mean_7d",mean.eta_mean_7d_pct,FILE);
     const result={version:4,release_version:"5.1.0",calculation_revision:"5.1",valid,reason:resultReason,interval_status:reason,
         timestamp:new Date(ts).toISOString(),eta_pct:eta,eta_raw_pct:round(raw,3),
         efficiency_arithmetic_tolerance_pct:PCT_ARITHMETIC_TOLERANCE,
@@ -561,7 +559,7 @@ if (Array.isArray(ausgabe)) {
 return ausgabe;
 
 
-})(msg,node,legacyFlow,context);
+})();
 if(legacy===null)return null;
 // v6.0.0-draft.1. Called by the generated Node-RED Function, after the unchanged v5 balance.
 // Units: kWh, W, milliseconds, SOC percentage points. No device commands here.
@@ -802,7 +800,11 @@ try{
  const reserve=reserveKnown?C.capacity*minSoc/100:null;
  const available=live&&i&&reserveKnown
   ? Math.min(i.solar,C.capacity*Math.max(0,i.soc-minSoc)/100) : 0;
- const sources={version:s.version,at:NOW,valid:live&&reserveKnown,solar_stored_kwh:i?.solar??0,
+ const missingControls=Object.keys(controls).filter(key=>controls[key]===null);
+ const sourceReason=!snapshotValid?(source?.grund||source?.interval_status||'Snapshot fehlt'):
+  missingControls.length?'Steuersignal fehlt: '+missingControls.join(', '):
+  !reserveKnown?'batt_min_s fehlt oder ungültig':!live?'Snapshot nicht aktuell':null;
+ const sources={reason:sourceReason,version:s.version,at:NOW,valid:live&&reserveKnown,solar_stored_kwh:i?.solar??0,
   solar_available_kwh:available,net_stored_kwh:i?.net??0,unknown_stored_kwh:i?.unknown??0,
   reserve_kwh:reserve,min_soc_pct:reserveKnown?minSoc:null,capacity_kwh:C.capacity,inventory_debit_method:e.discharge.usable?'learned':'provisional_80_percent',
   source_allocation:'virtual_solar_first',controls};
@@ -815,12 +817,14 @@ try{
  flow.set('la_ela_es_mean_7d',round(net.pct),FILE);
  flow.set('batt_eff_plan_solar_pct',round(pv.pct),FILE);
  flow.set('batt_eff_sources_v6',sources,FILE);
- node.status({fill:net.usable?'green':'yellow',shape:net.status==='measured'?'dot':'ring',text:`V6 Entwurf | Netz ${round(net.pct)??'?'}% | ${net.status}`});
+ if(sourceReason)node.status({fill:'yellow',shape:'ring',text:sourceReason});
+ else node.status({fill:net.usable?'green':'yellow',shape:net.status==='measured'?'dot':'ring',text:`V6 Entwurf | Netz ${round(net.pct)??'?'}% | ${net.status}`});
  return [{payload:round(net.pct),result},legacy?.[1]??{payload:null},
   {payload:{type:'efficiency_sources_v6',...sources}},{payload:round(net.pct),result}];
 }catch(error){
+ node.status({fill:'red',shape:'ring',text:error.message});
  node.error(`V6 Entwurf: ${error.message}`);
  try{flow.set('la_ela_es_mean_7d',null,FILE);flow.set('batt_eff_sources_v6',{valid:false,at:NOW},FILE);}catch(_){}
  return[{payload:null,result:{valid:false,reason:error.message}},legacy?.[1]??{payload:null},
-  {payload:{type:'efficiency_sources_v6',valid:false,at:NOW}},{payload:null,result:{valid:false,reason:error.message}}];
+  {payload:{type:'efficiency_sources_v6',valid:false,reason:error.message,at:NOW}},{payload:null,result:{valid:false,reason:error.message}}];
 }

@@ -1,32 +1,11 @@
 import json,pathlib
 p=pathlib.Path(__file__).resolve().parent
-legacy=(p.parent/'battery-efficiency_DE.js').read_text()
-# Configure only the embedded legacy calculation in the draft.
-for old,new in {
-    'capacityKWh: 8.640,':'capacityKWh: configuredCapacity(flow),',
-    'KEY = "batt_eff_state_v4"':'KEY = capacityStateKey("batt_eff_state_v4",CFG.capacityKWh)',
-    'importV3: true,':'importV3: configuredCapacity(flow) === 8.64,',
-}.items():
-    assert legacy.count(old)==1, old
-    legacy=legacy.replace(old,new)
-engine=(p/'engine.js').read_text()
-header='''/* V6.0.0-draft.1 – FOUR outputs: Netz-Plan / bisherige Bilanz / Quellen / Diagnose.
- * Replace the existing calculation only; do not run both writers.
- * Once-only seed 80% in la_ela_es_mean_7d. Original v4 history is retained.
- * Source 3 -> optional solar-release.js; no direct control write here.
- * Source provenance is estimated, SOC-confirmed; gaps invalidate provenance.
- */
-const legacyFlow={get:(...args)=>flow.get(...args),set:(key,value,...rest)=>
- flow.set(key==='la_ela_es_mean_7d'?'batt_eff_legacy_mean_7d':key,value,...rest)};
-const legacy=(function(msg,node,flow,context){
-'''
-body=header+legacy+'\n})(msg,node,legacyFlow,context);\nif(legacy===null)return null;\n'+engine
-(p/'battery-efficiency-v6.js').write_text(body)
+body=(p/'battery-efficiency-v6.js').read_text()
 # Match user's uploaded calculation ID/wiring, no credentials or unrelated nodes.
 n={'id':'b84a28463be042be','type':'function','z':'577158dd0ea2615a',
 'name':'Batterie Wirkungsgrad V6.0.0-draft.1','func':body,'outputs':4,'timeout':0,'noerr':0,
 'initialize':'','finalize':'','libs':[],'x':1110,'y':5240,
-'wires':[['ea866d525e410a2f'],['619074ace164b99e'],[],['effdiagnostics03']],
+'wires':[['ea866d525e410a2f'],['619074ace164b99e'],['effv6solarrelease'],['effdiagnostics03']],
 'outputLabels':['Planungswirkungsgrad Netz (initial 80 %)','Bisherige 7-Tage-Bilanz','Quellenbilanz / optionale Solarfreigabe','Diagnose']}
 (p/'calculation-import.json').write_text(json.dumps([n],ensure_ascii=False,indent=2)+'\n')
 g={'id':'effv6solarrelease','type':'function','z':n['z'],'name':'V6 Solarvorrat → b_entladen_solar',

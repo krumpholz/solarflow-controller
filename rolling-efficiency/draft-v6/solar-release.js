@@ -24,7 +24,7 @@ if (gueltig) {
         text: `Solar ${solarFreigabe ? "EIN" : "AUS"} · ${wh} Wh verfügbar`
     });
 } else {
-    node.status({ fill: "yellow", shape: "ring", text: "Solar AUS · Bilanz ungültig" });
+    node.status({ fill: "yellow", shape: "ring", text: "Solar AUS · " + (bilanz?.reason || "Bilanz ungültig oder veraltet") });
 }
 msg.payload = solarFreigabe;
 return msg;

@@ -1,7 +1,8 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const root=path.join(__dirname,'..'),body=fs.readFileSync(path.join(root,'engine.js'),'utf8');
+const root=path.join(__dirname,'..'),full=fs.readFileSync(path.join(root,'battery-efficiency-v6.js'),'utf8');
+const body=full.slice(full.indexOf('function configuredCapacity('));
 const KEY='file:batt_eff_state_v6_draft';
 function rig(code=body,initial){
  let now=Date.parse('2026-11-16T10:00:00Z');const data=initial||new Map(),ctx=new Map();
@@ -111,4 +112,12 @@ test('both calculations follow persistent capacity and release starts at one SOC
   assert.equal(g.run({payload:{...o[2].payload,at:g.now,solar_available_kwh:amount}}).payload,expected);
  }
  r.flow.set('batt_capacity_kwh','unavailable','file');assert.equal(r.tick()[2].payload.valid,false);
+});
+
+test('source output connects to the release import and reports missing minimum SOC',()=>{
+ const calc=JSON.parse(fs.readFileSync(path.join(root,'calculation-import.json')))[0];
+ const gate=JSON.parse(fs.readFileSync(path.join(root,'solar-release-import.json')))[0];
+ assert.deepEqual(calc.wires[2],[gate.id]);assert.equal(calc.z,gate.z);assert.equal(gate.func,release);
+ const r=rig();const inv=r.tick({flags:{batt_min_s:undefined}})[2].payload;
+ assert.equal(inv.valid,false);assert.match(inv.reason,/batt_min_s/);
 });
