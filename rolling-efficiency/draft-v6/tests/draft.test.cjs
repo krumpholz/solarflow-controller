@@ -2,7 +2,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const root=path.join(__dirname,'..'),full=fs.readFileSync(path.join(root,'battery-efficiency-v6.js'),'utf8');
-const body=full.slice(full.indexOf('function configuredCapacity('));
+const body=full.slice(0,full.indexOf('const legacy='))+full.slice(full.indexOf('function capacityStateKey('));
 const KEY='file:batt_eff_state_v6_draft';
 function rig(code=body,initial){
  let now=Date.parse('2026-11-16T10:00:00Z');const data=initial||new Map(),ctx=new Map();
@@ -103,15 +103,17 @@ test('reserve follows current SOC limit and caps mixed solar inventory once',()=
   assert.equal(o[2].payload.valid,false);assert.equal(o[2].payload.solar_available_kwh,0);assert.equal(o[0].payload,80);
  }
 });
-test('both calculations follow persistent capacity and release starts at one SOC point',()=>{
+test('both calculations use the configured constant and release starts at one SOC point',()=>{
  const r=rig(fs.readFileSync(path.join(root,'battery-efficiency-v6.js'),'utf8'));
  r.tick();assert.equal(r.flow.get('batt_capacity_kwh','file'),8.64);
- r.flow.set('batt_capacity_kwh',5.76,'file');r.tick();const o=r.tick();
+ r.flow.set('batt_capacity_kwh',5.76,'file');r.tick();assert.equal(r.flow.get('batt_capacity_kwh','file'),8.64);
+ const other=rig(full.replace('BATTERIE_KAPAZITAET_KWH = 8.64','BATTERIE_KAPAZITAET_KWH = 5.76'),r.data);
+ other.tick();const o=other.tick();assert.equal(other.flow.get('batt_capacity_kwh','file'),5.76);
  close(o[2].payload.reserve_kwh,1.152);assert.equal(o[1].result.capacity_kwh,5.76);
  const g=rig(release);for(const [amount,expected] of [[.0575,false],[5.76/100,true],[0,false]]){
   assert.equal(g.run({payload:{...o[2].payload,at:g.now,solar_available_kwh:amount}}).payload,expected);
  }
- r.flow.set('batt_capacity_kwh','unavailable','file');assert.equal(r.tick()[2].payload.valid,false);
+ r.flow.set('batt_capacity_kwh','unavailable','file');r.tick();assert.equal(r.flow.get('batt_capacity_kwh','file'),8.64);
 });
 
 test('source output connects to the release import and reports missing minimum SOC',()=>{

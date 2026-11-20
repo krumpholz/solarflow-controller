@@ -4,6 +4,12 @@
  * Source 3 -> optional solar-release.js; no direct control write here.
  * Source provenance is estimated, SOC-confirmed; gaps invalidate provenance.
  */
+// Nennkapazität des Batteriespeichers in kWh. Hier bei Anlagenumbau anpassen.
+/** @type {number} */
+const BATTERIE_KAPAZITAET_KWH = 8.64;
+if (flow.get("batt_capacity_kwh", "file") !== BATTERIE_KAPAZITAET_KWH) {
+    flow.set("batt_capacity_kwh", BATTERIE_KAPAZITAET_KWH, "file");
+}
 const legacy=(function(){
 /*
  * Batterie Wirkungsgrad – gleitende 168 Stunden, Revision 5.1.
@@ -77,7 +83,7 @@ const knotenDeutsch = {
 };
 const ausgabe = (function(msg, node) {
 const CFG = {
-    capacityKWh: configuredCapacity(flow),
+    capacityKWh: BATTERIE_KAPAZITAET_KWH,
     maxPowerKW: 2.4,
     powerSafetyFactor: 1.20,
     minChargeKWh: 0.1,
@@ -89,7 +95,7 @@ const CFG = {
     socRebaseConfirmations: 3,
     socConfirmationTolerancePct: 1,
     socConfirmationMaxGapMs: 15000,
-    importV3: configuredCapacity(flow) === 8.64,
+    importV3: BATTERIE_KAPAZITAET_KWH === 8.64,
     chargeEntityV3: "sensor.batterie_lade_energie_pro_tag",
     dischargeEntityV3: "sensor.batterie_entlade_energie_pro_tag"
 };
@@ -563,17 +569,10 @@ return ausgabe;
 if(legacy===null)return null;
 // v6.0.0-draft.1. Called by the generated Node-RED Function, after the unchanged v5 balance.
 // Units: kWh, W, milliseconds, SOC percentage points. No device commands here.
-function configuredCapacity(flow) {
- const key='batt_capacity_kwh';
- const raw=flow.get(key,'file');
- if(raw===undefined){flow.set(key,8.64,'file');return 8.64;}
- const value=typeof raw==='string'&&raw.trim()!==''?Number(raw):raw;
- return Number.isFinite(value)&&value>0?value:NaN;
-}
 function capacityStateKey(key,capacity) {
  return capacity===8.64?key:key+'_'+capacity+'kwh';
 }
-const C = Object.freeze({capacity:configuredCapacity(flow), seed:80, startCharge:200, holdCharge:100,
+const C = Object.freeze({capacity:BATTERIE_KAPAZITAET_KWH, seed:80, startCharge:200, holdCharge:100,
  startDischarge:30, holdDischarge:15, startMs:60000, stopMs:120000,
  minMs:600000, socHub:10, minCharge:.8, minDischarge:.1, netAverage:1800,
  maxGap:10000, sourceAge:6500, socConfirm:60000, maxReverseSoc:1,
