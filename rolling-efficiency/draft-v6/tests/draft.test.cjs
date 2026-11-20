@@ -6,7 +6,7 @@ const KEY='file:batt_eff_state_v6_draft';
 function rig(code=body,initial){
  let now=Date.parse('2026-11-16T10:00:00Z');const data=initial||new Map(),ctx=new Map();
  const flow={get:(k,s='memoryOnly')=>data.get(s+':'+k),set:(k,v,s='memoryOnly')=>data.set(s+':'+k,v)};
- for(const [k,v]of Object.entries({netz_laden:false,b_entladen:false,regelung:true,regler_batt_min_confirmed:false,batt_max:false,p_solar:0,p_haus:300}))if(flow.get(k)===undefined)flow.set(k,v);
+ for(const [k,v]of Object.entries({batt_min_s:20,netz_laden:false,b_entladen:false,regelung:true,regler_batt_min_confirmed:false,batt_max:false,p_solar:0,p_haus:300}))if(flow.get(k)===undefined)flow.set(k,v);
  class Clock extends Date{static now(){return now;}}
  const node={status(){},error(){},warn(){}};
  const fn=new vm.Script('(function(msg'+(code===body?',legacy':'')+'){'+code+'})').runInNewContext({Date:Clock,Intl,flow,context:{get:k=>ctx.get(k),set:(k,v)=>ctx.set(k,v)},node});
@@ -66,7 +66,7 @@ const release=fs.readFileSync(path.join(root,'solar-release.js'),'utf8');
 test('output 3 controls only the solar flag, with hysteresis on every invocation',()=>{
  const r=rig(release);
  for(const [amount,expected] of [[0,false],[.086399,false],[.0864,true],[.02,true],[0,false],[.02,false]]){
-  const msg={payload:{type:'efficiency_sources_v6',at:r.now,valid:true,solar_available_kwh:amount}};
+  const msg={payload:{type:'efficiency_sources_v6',at:r.now,valid:true,capacity_kwh:8.64,solar_available_kwh:amount}};
   assert.equal(r.run(msg).payload,expected);
   assert.equal(r.flow.get('b_entladen_solar'),expected);
   assert.equal(r.flow.get('b_entladen'),false);
@@ -74,7 +74,7 @@ test('output 3 controls only the solar flag, with hysteresis on every invocation
 });
 test('invalid, expired or future source clears the solar flag and preserves base permission',()=>{
  const r=rig(release);r.flow.set('b_entladen',true);
- const src={type:'efficiency_sources_v6',at:r.now,valid:true,solar_available_kwh:1};
+ const src={type:'efficiency_sources_v6',at:r.now,valid:true,capacity_kwh:8.64,solar_available_kwh:1};
  for(const payload of [null,false,{}, {...src,valid:false},{...src,at:r.now-6501},{...src,at:r.now+1},{...src,solar_available_kwh:'1'}]){
   r.flow.set('b_entladen_solar',true);
   assert.equal(r.run({payload}).payload,false);
@@ -89,3 +89,26 @@ test('no individual efficiency invented while only one direction learned',()=>{c
 test('network low-power charging cannot teach 2400W charging efficiency',()=>{const r=rig();r.tick();runSection(r,{p:1000,seconds:3600});assert.equal(r.state().estimates.net,undefined);assert.ok(r.state().rejected.some(x=>x.reason==='net_average_low'));});
 test('true >100 percent section is rejected rather than clamped',()=>{const r=rig();r.tick();runSection(r,{p:2000,seconds:1200});assert.equal(r.state().records.length,0);});
 test('hard transition interrupts an unqualified section without carrying SOC to next one',()=>{const r=rig();r.tick();runSection(r,{end:55});r.tick({p:0,soc:54,flags:{netz_laden:false}});r.tick({p:2400,soc:54,flags:{netz_laden:true}});assert.equal(r.state().segment.soc,54);assert.equal(r.state().segment.input,0);});
+
+test('reserve follows current SOC limit and caps mixed solar inventory once',()=>{
+ const r=rig();r.tick({soc:21});
+ Object.assign(r.state().inventory,{solar:.4,net:.5,unknown:.9});
+ for(const [limit,expected] of [[20,.0864],[21,0],[22,0],['10',.4],[0,.4],[100,0]]){
+  const out=r.tick({soc:21,flags:{batt_min_s:limit}})[2].payload;
+  close(out.reserve_kwh,8.64*Number(limit)/100);close(out.solar_available_kwh,expected);
+ }
+ for(const limit of [undefined,null,'',false,101,-1]){
+  const o=r.tick({soc:21,flags:{batt_min_s:limit}});
+  assert.equal(o[2].payload.valid,false);assert.equal(o[2].payload.solar_available_kwh,0);assert.equal(o[0].payload,80);
+ }
+});
+test('both calculations follow persistent capacity and release starts at one SOC point',()=>{
+ const r=rig(fs.readFileSync(path.join(root,'battery-efficiency-v6.js'),'utf8'));
+ r.tick();assert.equal(r.flow.get('batt_capacity_kwh','file'),8.64);
+ r.flow.set('batt_capacity_kwh',5.76,'file');r.tick();const o=r.tick();
+ close(o[2].payload.reserve_kwh,1.152);assert.equal(o[1].result.capacity_kwh,5.76);
+ const g=rig(release);for(const [amount,expected] of [[.0575,false],[5.76/100,true],[0,false]]){
+  assert.equal(g.run({payload:{...o[2].payload,at:g.now,solar_available_kwh:amount}}).payload,expected);
+ }
+ r.flow.set('batt_capacity_kwh','unavailable','file');assert.equal(r.tick()[2].payload.valid,false);
+});

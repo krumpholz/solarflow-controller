@@ -1,6 +1,14 @@
 import json,pathlib
 p=pathlib.Path(__file__).resolve().parent
 legacy=(p.parent/'battery-efficiency_DE.js').read_text()
+# Configure only the embedded legacy calculation in the draft.
+for old,new in {
+    'capacityKWh: 8.640,':'capacityKWh: configuredCapacity(flow),',
+    'KEY = "batt_eff_state_v4"':'KEY = capacityStateKey("batt_eff_state_v4",CFG.capacityKWh)',
+    'importV3: true,':'importV3: configuredCapacity(flow) === 8.64,',
+}.items():
+    assert legacy.count(old)==1, old
+    legacy=legacy.replace(old,new)
 engine=(p/'engine.js').read_text()
 header='''/* V6.0.0-draft.1 – FOUR outputs: Netz-Plan / bisherige Bilanz / Quellen / Diagnose.
  * Replace the existing calculation only; do not run both writers.

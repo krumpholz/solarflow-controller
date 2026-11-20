@@ -79,7 +79,7 @@ const knotenDeutsch = {
 };
 const ausgabe = (function(msg, node) {
 const CFG = {
-    capacityKWh: 8.640,
+    capacityKWh: configuredCapacity(flow),
     maxPowerKW: 2.4,
     powerSafetyFactor: 1.20,
     minChargeKWh: 0.1,
@@ -91,11 +91,11 @@ const CFG = {
     socRebaseConfirmations: 3,
     socConfirmationTolerancePct: 1,
     socConfirmationMaxGapMs: 15000,
-    importV3: true,
+    importV3: configuredCapacity(flow) === 8.64,
     chargeEntityV3: "sensor.batterie_lade_energie_pro_tag",
     dischargeEntityV3: "sensor.batterie_entlade_energie_pro_tag"
 };
-const MEM = "memoryOnly", FILE = "file", KEY = "batt_eff_state_v4";
+const MEM = "memoryOnly", FILE = "file", KEY = capacityStateKey("batt_eff_state_v4",CFG.capacityKWh);
 const HOUR = 3600000, WINDOW = 168 * HOUR, BUCKET = 60000;
 const PCT_ARITHMETIC_TOLERANCE = 1e-9;
 const now = Date.now();
@@ -565,14 +565,24 @@ return ausgabe;
 if(legacy===null)return null;
 // v6.0.0-draft.1. Called by the generated Node-RED Function, after the unchanged v5 balance.
 // Units: kWh, W, milliseconds, SOC percentage points. No device commands here.
-const C = Object.freeze({capacity:8.64, seed:80, startCharge:200, holdCharge:100,
+function configuredCapacity(flow) {
+ const key='batt_capacity_kwh';
+ const raw=flow.get(key,'file');
+ if(raw===undefined){flow.set(key,8.64,'file');return 8.64;}
+ const value=typeof raw==='string'&&raw.trim()!==''?Number(raw):raw;
+ return Number.isFinite(value)&&value>0?value:NaN;
+}
+function capacityStateKey(key,capacity) {
+ return capacity===8.64?key:key+'_'+capacity+'kwh';
+}
+const C = Object.freeze({capacity:configuredCapacity(flow), seed:80, startCharge:200, holdCharge:100,
  startDischarge:30, holdDischarge:15, startMs:60000, stopMs:120000,
  minMs:600000, socHub:10, minCharge:.8, minDischarge:.1, netAverage:1800,
  maxGap:10000, sourceAge:6500, socConfirm:60000, maxReverseSoc:1,
- learnDays:30, archiveDays:90, maxRecords:2048, inventoryReserve:.0864,
+ learnDays:30, archiveDays:90, maxRecords:2048,
  // Provisional inventory debit only; NOT a learned discharge efficiency.
  provisionalDebit:.8});
-const KEY='batt_eff_state_v6_draft', FILE='file', NOW=Date.now(), DAY=86400000;
+const KEY=capacityStateKey('batt_eff_state_v6_draft',C.capacity), FILE='file', NOW=Date.now(), DAY=86400000;
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
 const num=x=>typeof x==='number'?x:typeof x==='string'&&x.trim()!==''?Number(x):NaN;
 const flag=x=>x===true||x===1||x==='true'||x==='1'?true:
@@ -602,7 +612,14 @@ function sane(s){
 }
 let s;
 try{
+ if(!finite(C.capacity))throw Error('invalid_batt_capacity_kwh');
  s=flow.get(KEY,FILE);
+ // The former reserve affected output only. Preserve existing learned sections.
+ if(s && C.capacity===8.64){
+  const {provisionalDebit,...settings}=C;
+  const previous=JSON.stringify({...settings,inventoryReserve:.0864,provisionalDebit});
+  if(s.signature===previous)s={...s,signature};
+ }
  if(s!=null&&!sane(s))throw Error('invalid_draft_state_or_configuration');
  if(!s)s={schema:1,version:'6.0.0-draft.1',signature,created:NOW,seed:C.seed,
   last:null,segment:null,records:[],estimates:{},rejected:[],inventory:null,phase:0};
@@ -780,10 +797,14 @@ try{
  }
  const net=plan('net'),pv=plan('solar');
  const i=s.inventory;
- const available=live&&i?Math.max(0,i.solar-C.inventoryReserve):0;
- const sources={version:s.version,at:NOW,valid:live,solar_stored_kwh:i?.solar??0,
+ const minSoc=num(read('batt_min_s'));
+ const reserveKnown=finite(minSoc)&&minSoc>=0&&minSoc<=100;
+ const reserve=reserveKnown?C.capacity*minSoc/100:null;
+ const available=live&&i&&reserveKnown
+  ? Math.min(i.solar,C.capacity*Math.max(0,i.soc-minSoc)/100) : 0;
+ const sources={version:s.version,at:NOW,valid:live&&reserveKnown,solar_stored_kwh:i?.solar??0,
   solar_available_kwh:available,net_stored_kwh:i?.net??0,unknown_stored_kwh:i?.unknown??0,
-  reserve_kwh:C.inventoryReserve,inventory_debit_method:e.discharge.usable?'learned':'provisional_80_percent',
+  reserve_kwh:reserve,min_soc_pct:reserveKnown?minSoc:null,capacity_kwh:C.capacity,inventory_debit_method:e.discharge.usable?'learned':'provisional_80_percent',
   source_allocation:'virtual_solar_first',controls};
  const result={version:s.version,valid:net.usable,reason:net.status,eta_plan_net_pct:round(net.pct),
   eta_plan_solar_pct:round(pv.pct),solar_plan_status:pv.status,source_valid:snapshotValid,
