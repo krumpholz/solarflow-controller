@@ -43,7 +43,26 @@ test('discharge starts with fresh SOC after idle drift',()=>{const r=rig();r.tic
 test('200W start must hold for 60 seconds',()=>{const r=rig();r.tick();r.tick({p:200,flags:{netz_laden:true}});for(let n=0;n<20;n++)r.tick({p:200});assert.equal(r.state().segment.confirmed,false);r.tick({p:199});assert.equal(r.state().segment,null);});
 test('low-power timeout excludes tail from the learning section',()=>{const r=rig();r.tick();runSection(r,{end:59});for(let n=0;n<61;n++)r.tick({p:0,soc:59});assert.equal(r.state().segment,null);assert.equal(r.state().records.length,0);});
 test('large SOC reversal discards open section',()=>{const r=rig();r.tick();runSection(r,{end:55});r.tick({p:2400,soc:53});assert.equal(r.state().segment,null);assert.equal(r.state().rejected.at(-1).reason,'soc_reversal');});
-test('source failure ends section and invalidates provenance on recovery',()=>{const r=rig();r.tick();runSection(r,{end:55});r.state().inventory.solar=.5;r.tick({valid:false});assert.equal(r.state().segment,null);const out=r.tick({soc:55});assert.equal(out[2].payload.solar_stored_kwh,0);});
+test('short data outage suspends release and retains solar inventory on recovery',()=>{
+ const r=rig(full);
+ r.tick();r.tick();
+ const inventory=r.state().inventory;
+ inventory.solar=2.2;
+ inventory.unknown-=2.2;
+ inventory.pending.solar=.2;
+ assert.equal(r.tick({valid:false})[2].payload.valid,false);
+ assert.equal(r.tick()[2].payload.valid,false);
+ const recovered=r.tick()[2].payload;
+ assert.equal(recovered.valid,true);
+ close(recovered.solar_stored_kwh,2.2);
+ assert.equal(r.state().inventory.pending.solar,0);
+ assert.equal(r.state().records.length,0);
+ assert.equal(r.tick({dt:61000})[2].payload.valid,false);
+ const afterLongGap=r.tick()[2].payload;
+ assert.equal(afterLongGap.valid,true);
+ assert.equal(afterLongGap.solar_stored_kwh,0);
+ close(afterLongGap.unknown_stored_kwh,4.32);
+});
 test('long gap never integrates across unknown interval',()=>{const r=rig();r.tick();r.tick({p:2400,flags:{netz_laden:true}});r.tick({p:2400,soc:60,dt:20000});assert.equal(r.state().records.length,0);assert.equal(r.state().segment,null);});
 test('sub-200W solar charges can build provenance without teaching efficiency',()=>{
  const r=rig();r.tick({flags:{p_solar:450,p_haus:300}});

@@ -2,7 +2,7 @@
  * Replace the existing calculation only; do not run both writers.
  * Once-only seed 80% in la_ela_es_mean_7d. Original v4 history is retained.
  * Source 3 -> optional solar-release.js; no direct control write here.
- * Source provenance is estimated, SOC-confirmed; gaps invalidate provenance.
+ * Source provenance is estimated and SOC-confirmed.
  */
 // Nennkapazität des Batteriespeichers in kWh. Hier bei Anlagenumbau anpassen.
 /** @type {number} */
@@ -711,7 +711,7 @@ try{
   return result;
  }
  let e=estimates();
- function inventory(q,ch,dis,continuity){
+ function inventory(q,ch,dis,continuity,previous){
   if(!s.inventory){s.inventory={net:0,solar:0,unknown:C.capacity*q.soc/100,soc:q.soc,anchor:q.soc,
     pending:{net:0,solar:0,unknown:0},candidate:null};return;}
   const i=s.inventory;
@@ -719,8 +719,20 @@ try{
   const total=()=>i.net+i.solar+i.unknown;
   const cap=()=>{const target=C.capacity*q.soc/100,n=total();if(n>target&&n>0){const f=target/n;i.net*=f;i.solar*=f;i.unknown*=f;}};
   if(!continuity){
-   // A gap may hide a whole discharge/recharge cycle: provenance is unknowable.
-   i.net=0;i.solar=0;i.unknown=C.capacity*q.soc/100;clear();i.soc=q.soc;return;
+   // After a short gap, retain the known inventory within the measured SOC.
+   // Never carry pending charge evidence across a gap.
+   const target=C.capacity*q.soc/100;
+   if(previous && q.t-previous.t<=60000){
+    cap();
+    i.unknown+=Math.max(0,target-total());
+   }else{
+    i.net=0;
+    i.solar=0;
+    i.unknown=target;
+   }
+   clear();
+   i.soc=q.soc;
+   return;
   }
   const debitEfficiency=e.discharge.usable?e.discharge.eta:C.provisionalDebit;
   // Pending evidence must never survive a mode change into a later SOC correction.
@@ -775,7 +787,7 @@ try{
    if(!continuity){if(s.segment)reject('measurement_gap',s.segment);s.segment=null;s.phase++;}
    if(continuity&&controlsKnown)updateLearning(q,prev,ch,dis);
    else if(!controlsKnown){s.segment=null;s.phase++;}
-   e=estimates();inventory(q,ch,dis,continuity);
+   e=estimates();inventory(q,ch,dis,continuity,prev);
    s.last=q;s.blocked=false;live=controlsKnown;
   }else live=controlsKnown&&!s.blocked&&t===prev.t;
  }else{
