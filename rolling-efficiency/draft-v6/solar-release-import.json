@@ -1,0 +1,20 @@
+[
+  {
+    "id": "effv6solarrelease",
+    "type": "function",
+    "z": "577158dd0ea2615a",
+    "name": "V6 Solarvorrat → b_entladen_solar",
+    "func": "// Eingang: msg.payload von Ausgang 3 der V6-Wirkungsgradberechnung.\nconst bilanz = msg.payload;\nconst jetzt = Date.now();\nconst gueltig = bilanz?.type === \"efficiency_sources_v6\"\n    && bilanz.valid === true\n    && Number.isFinite(bilanz.at)\n    && bilanz.at <= jetzt\n    && jetzt - bilanz.at <= 6500\n    && Number.isFinite(bilanz.capacity_kwh) && bilanz.capacity_kwh > 0\n    && Number.isFinite(bilanz.solar_available_kwh);\n\n// solar_available_kwh enthält bereits den Abzug der Reserve.\nconst bisherAktiv = flow.get(\"b_entladen_solar\") === true;\nconst solarFreigabe = gueltig && (bisherAktiv\n    ? bilanz.solar_available_kwh > 0\n    : bilanz.solar_available_kwh >= bilanz.capacity_kwh / 100);\n\nflow.set(\"b_entladen_solar\", solarFreigabe);\nif (gueltig) {\n    const wh = Math.round(bilanz.solar_available_kwh * 1000);\n    node.status({\n        fill: solarFreigabe ? \"green\" : \"grey\",\n        shape: solarFreigabe ? \"dot\" : \"ring\",\n        text: `Solar ${solarFreigabe ? \"EIN\" : \"AUS\"} · ${wh} Wh verfügbar`\n    });\n} else {\n    node.status({ fill: \"yellow\", shape: \"ring\", text: \"Solar AUS · \" + (bilanz?.reason || \"Bilanz ungültig oder veraltet\") });\n}\nmsg.payload = solarFreigabe;\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 1460,
+    "y": 5360,
+    "wires": [
+      []
+    ]
+  }
+]

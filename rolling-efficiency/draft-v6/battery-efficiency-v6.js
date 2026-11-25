@@ -1,0 +1,841 @@
+/* V6.0.0-draft.1 – FOUR outputs: Netz-Plan / bisherige Bilanz / Quellen / Diagnose.
+ * Replace the existing calculation only; do not run both writers.
+ * Once-only seed 80% in la_ela_es_mean_7d. Original v4 history is retained.
+ * Source 3 -> optional solar-release.js; no direct control write here.
+ * Source provenance is estimated and SOC-confirmed.
+ */
+// Nennkapazität des Batteriespeichers in kWh. Hier bei Anlagenumbau anpassen.
+/** @type {number} */
+const BATTERIE_KAPAZITAET_KWH = 8.64;
+if (flow.get("batt_capacity_kwh", "file") !== BATTERIE_KAPAZITAET_KWH) {
+    flow.set("batt_capacity_kwh", BATTERIE_KAPAZITAET_KWH, "file");
+}
+const legacy=(function(){
+/*
+ * Batterie Wirkungsgrad – gleitende 168 Stunden, Revision 5.1.
+ * Deutsche Oberfläche, identischer englischer Rechenkern. MIT-Lizenz.
+ * Kapazität und Leistung oben im CFG des Rechenkerns prüfen.
+ * Snapshot-Werte aus dem Standard-Flow-Speicher, SOC aus memoryOnly.
+ * Neuer Puffer: batt_eff_state_v4 im Dateispeicher file mit Cache.
+ * Vorhandener V3-Puffer wird einmal übernommen und nicht verändert.
+ * Alte Tageswerte: gleichmäßige zeitliche Gewichtung als Übergangsnäherung.
+ * Minutenpuffer: älteste angeschnittene Minute anteilig gewichten.
+ * Drei Ausgänge: 7-Tage-Mittelwert / bisheriger Wirkungsgrad / Diagnose.
+ * Mittelwerthistorie bleibt bei kurzen SOC-Ausfällen verfügbar.
+ * Ein vorhandener V5-Mittelwertpuffer wird weiterverwendet.
+ * Anleitung: README_DE.md.
+ */
+const DE_TEXTE = {
+    "invalid_soc": "Ladezustand fehlt oder ist ungültig",
+    "soc_timestamp_required": "Zeitstempel des Ladezustands erforderlich",
+    "stale_or_future_soc": "SOC-Zeitstempel veraltet oder in der Zukunft",
+    "baseline_initialized": "Ausgangspunkt für neue Messintervalle gesetzt",
+    "measurement_gap_excluded": "Messlücke ausgeschlossen",
+    "interval_accepted": "Messintervall übernommen",
+    "legacy_soc_boundaries_missing": "SOC-Grenzen der übernommenen Historie fehlen",
+    "insufficient_charge_energy": "Ladeenergie für Berechnung noch zu gering",
+    "efficiency_out_of_range": "Wirkungsgrad außerhalb des gültigen Bereichs",
+    "context_or_runtime_error": "Kontext- oder Ausführungsfehler",
+    "measurement_timeout": "Zeitüberschreitung bei der Messung",
+    "context_configuration_error": "Fehler in der Kontextkonfiguration",
+    "imported": "Übernommen",
+    "No completed measurement cycle": "Kein abgeschlossener Messzyklus",
+    "valid_measurement_resumed": "Gültige Messung wieder aufgenommen",
+    "invalid_configuration": "Ungültige Konfiguration",
+    "invalid_v4_state_or_configuration": "V4-Puffer oder Konfiguration ungültig – bitte prüfen",
+    "expired_soc_capture": "SOC-Aufnahme abgelaufen",
+    "missing_or_stale_snapshot": "Snapshot fehlt oder ist veraltet",
+    "battery_fallback_excluded": "ESP-Ersatzwert ausgeschlossen",
+    "invalid_battery_power": "Batterieleistung ungültig oder zu hoch",
+    "soc_jump_pending": "SOC-Sprung wird geprüft",
+    "confirmed_soc_jump_excluded": "Bestätigter SOC-Sprung ausgeschlossen",
+    "migration_baseline_initialized": "Puffer übernommen, neuer Messausgangspunkt gesetzt",
+    "calculation_available": "Wirkungsgrad berechnet",
+    "no_v3_data": "Kein V3-Puffer vorhanden – Neustart",
+    "disabled": "Übernahme deaktiviert",
+    "invalid_v3_state": "V3-Puffer ungültig",
+    "invalid_v3_cutover": "V3-Messzeitpunkt ungültig oder neuer als Snapshot",
+    "v3_configuration_mismatch": "V3-Kapazität, Entitäten oder Zeitzone stimmen nicht überein",
+    "mean_baseline_initialized": "Mittelwert-Ausgangspunkt gesetzt – nächstes gültiges Intervall abwarten",
+    "mean_available": "Gleitender 7-Tage-Mittelwert berechnet",
+    "mean_history_expired": "Keine gültigen Mittelwertintervalle mehr im 7-Tage-Fenster",
+    "mean_history_unavailable": "Mittelwerthistorie nicht sicher verfügbar",
+    "invalid_mean_history": "Mittelwerthistorie ungültig",
+    "Invalid sensor entity ID": "Ungültige Sensor-Entitäts-ID"
+};
+
+function deutsch(text) {
+    if (typeof text !== "string") return text;
+    if (DE_TEXTE[text]) return DE_TEXTE[text];
+    for (const [en, de] of [
+        ["Efficiency calculation stopped: ", "Wirkungsgradberechnung angehalten: "],
+        ["Context configuration error: ", "Fehler in der Kontextkonfiguration: "]
+    ]) {
+        if (text.startsWith(en)) return de + deutsch(text.slice(en.length));
+    }
+    return text.replace(/(\d+)d \|/, "$1 Tage |")
+        .replace(/([\d.]+)h$/, "$1 Std.");
+}
+// Nur die Anzeige übersetzen; Speicherwerte und Berechnungen unverändert lassen.
+const knotenDeutsch = {
+    status: status => node.status({...status, text: deutsch(status.text)}),
+    error: (...args) => node.error(deutsch(args[0]), ...args.slice(1))
+};
+const ausgabe = (function(msg, node) {
+const CFG = {
+    capacityKWh: BATTERIE_KAPAZITAET_KWH,
+    maxPowerKW: 2.4,
+    powerSafetyFactor: 1.20,
+    minChargeKWh: 0.1,
+    maxSnapshotAgeMs: 6500,
+    maxIntervalMs: 10000,
+    maxSocAgeMs: 120000,
+    requireSocTimestamp: true,
+    socStepTolerancePct: 2,
+    socRebaseConfirmations: 3,
+    socConfirmationTolerancePct: 1,
+    socConfirmationMaxGapMs: 15000,
+    importV3: BATTERIE_KAPAZITAET_KWH === 8.64,
+    chargeEntityV3: "sensor.batterie_lade_energie_pro_tag",
+    dischargeEntityV3: "sensor.batterie_entlade_energie_pro_tag"
+};
+const MEM = "memoryOnly", FILE = "file", KEY = capacityStateKey("batt_eff_state_v4",CFG.capacityKWh);
+const HOUR = 3600000, WINDOW = 168 * HOUR, BUCKET = 60000;
+const PCT_ARITHMETIC_TOLERANCE = 1e-9;
+const now = Date.now();
+const finite = v => typeof v === "number" && Number.isFinite(v);
+const copy = x => JSON.parse(JSON.stringify(x));
+const round = (x, n = 6) => finite(x) ? Number(x.toFixed(n)) : null;
+
+
+function stablePercent(x) {
+    if (finite(x) && x<0 && x>=-PCT_ARITHMETIC_TOLERANCE) return 0;
+    if (finite(x) && x>100 && x<=100+PCT_ARITHMETIC_TOLERANCE) return 100;
+    return x;
+}
+function number(x) {
+    if (finite(x)) return x;
+    if (typeof x !== "string" || !/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(x.trim())) return null;
+    const v = Number(x); return finite(v) ? v : null;
+}
+function diagnosticValue(v) {
+    if (v===undefined) return "undefined";
+    if (v===null || typeof v==="boolean" || finite(v)) return v;
+    return typeof v==="string" ? v.slice(0,120) : String(v).slice(0,120);
+}
+function localDate(ts) {
+    const d = new Date(ts);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function dayStart(s) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) throw Error("invalid_v3_state");
+    const [y,m,d] = s.split("-").map(Number), ts = new Date(y,m-1,d).getTime();
+    if (localDate(ts) !== s) throw Error("invalid_v3_state");
+    return ts;
+}
+function overlap(start, end, from, to) {
+    return Math.max(0, Math.min(end,to)-Math.max(start,from));
+}
+
+function energy(p0, p1, ms) {
+    const scale = ms / 3600000000;
+    if (p0 >= 0 && p1 >= 0) return [(p0+p1)*0.5*scale, 0];
+    if (p0 <= 0 && p1 <= 0) return [0, -(p0+p1)*0.5*scale];
+    const f = Math.abs(p0)/(Math.abs(p0)+Math.abs(p1));
+    const a = Math.abs(p0)*f*0.5*scale, b = Math.abs(p1)*(1-f)*0.5*scale;
+    return p0 > 0 ? [a,b] : [b,a];
+}
+function migrate(old, timestamp) {
+    const empty = {at:timestamp, status:CFG.importV3 ? "no_v3_data" : "disabled", records:[], source_last_ts:null};
+    if (!CFG.importV3 || old == null) return empty;
+    if (old.version !== 3 || old.unit !== "kWh" || !Array.isArray(old.days) || old.days.length > 7 ||
+        new Set(old.days.map(d=>d.date)).size !== old.days.length) throw Error("invalid_v3_state");
+    const fp = JSON.parse(old.fingerprint);
+    if (!Array.isArray(fp) || fp[0] !== CFG.capacityKWh || fp[1] !== CFG.chargeEntityV3 || fp[2] !== CFG.dischargeEntityV3 ||
+        fp[3] !== Intl.DateTimeFormat().resolvedOptions().timeZone) throw Error("v3_configuration_mismatch");
+    if (!old.last) {
+        if (old.days.length) throw Error("invalid_v3_state");
+        return empty;
+    }
+    const cut = old.last.ts;
+    if (!finite(cut) || cut <= 0 || cut > timestamp || old.last.date !== localDate(cut) ||
+        !finite(old.last.soc) || old.last.soc < 0 || old.last.soc > 100 ||
+        ![old.last.charge,old.last.discharge].every(v=>finite(v)&&v>=0)) throw Error("invalid_v3_cutover");
+    const sorted = copy(old.days).sort((a,b)=>a.date.localeCompare(b.date));
+    let previousLegacy = null;
+    const records = [];
+    for (const d of sorted) {
+        const start = dayStart(d.date), next = new Date(start); next.setDate(next.getDate()+1);
+        const end = Math.min(next.getTime(),cut);
+        if (start > cut || ![d.charge,d.discharge,d.coveredMs,d.gaps,d.gapMs,d.intervals].every(v=>finite(v)&&v>=0) || !finite(d.delta)) throw Error("invalid_v3_state");
+        let delta = d.delta, known = true;
+        if (d.legacy) {
+            known = d.legacySocKnown === true && [d.legacySocStart,d.legacySocEnd].every(v=>finite(v)&&v>=0&&v<=100);
+            if (previousLegacy) {
+                known = known && previousLegacy.known;
+                if (known) delta += CFG.capacityKWh*(d.legacySocStart-previousLegacy.end)/100;
+            }
+            previousLegacy = {end:d.legacySocEnd, known};
+        }
+        if (end <= start) {
+            if (d.charge || d.discharge || d.delta) throw Error("invalid_v3_state");
+            continue;
+        }
+        records.push({date:d.date,start,end,charge:d.charge,discharge:d.discharge,delta,known});
+    }
+
+    return {at:timestamp,status:"imported",source_last_ts:cut,records,
+        original_dates:sorted.map(d=>d.date),coverage_known:false,
+        distribution:"uniform_within_each_local_day",source_legacy_migration:old.legacyMigration || null};
+}
+function validState(s, signature) {
+    if (!s || s.version!==4 || s.unit!=="kWh" || s.signature!==signature || !finite(s.created) ||
+        !Array.isArray(s.buckets) || s.buckets.length>10082 || !s.migration || !Array.isArray(s.migration.records) ||
+        s.migration.records.length>7 || !finite(s.excludedMs) || s.excludedMs<0 || !Number.isInteger(s.excludedIntervals) || s.excludedIntervals<0 || typeof s.blocked!=="boolean") return false;
+    if (s.candidate && (![s.candidate.ts,s.candidate.soc].every(finite) ||
+        !Number.isInteger(s.candidate.count) || s.candidate.count<1)) return false;
+    if (s.exclusionLog) {
+        const a=s.exclusionLog;
+        if (!finite(a.since) || !Number.isInteger(a.next_id) || a.next_id<1 ||
+            !Number.isInteger(a.previous_intervals) || a.previous_intervals<0 || !finite(a.previous_ms) || a.previous_ms<0 ||
+            !a.counts || !Object.values(a.counts).every(v=>Number.isInteger(v)&&v>=0) ||
+            !Array.isArray(a.events) || a.events.length>10) return false;
+        if (a.events.some((e,i)=>!Number.isInteger(e.id) || !finite(e.start_ts) ||
+            !finite(e.first_seen) || !finite(e.last_seen) || typeof e.open!=="boolean" ||
+            (e.open && i!==a.events.length-1) || !finite(e.excluded_ms) || e.excluded_ms<0 ||
+            !Number.isInteger(e.excluded_intervals) || e.excluded_intervals<0 ||
+            (e.end_ts!==null && !finite(e.end_ts)) || !e.causes ||
+            !Object.values(e.causes).every(c=>Number.isInteger(c.observations)&&c.observations>0 &&
+                finite(c.first_seen)&&finite(c.last_seen)&&c.first_values&&c.last_values))) return false;
+    }
+    let lastEnd = 0;
+    for (const b of s.buckets) {
+        if (!Array.isArray(b) || b.length!==7 || !b.every(finite) || b[0]<lastEnd || b[1]<=b[0] || b[1]-b[0]>BUCKET ||
+            b[2]<0 || b[3]<0 || b[5]<0 || b[5]>b[1]-b[0]+0.001 || b[6]<0) return false;
+        lastEnd=b[1];
+    }
+    for (const d of s.migration.records) if (![d.start,d.end,d.charge,d.discharge,d.delta].every(finite) ||
+        d.end<=d.start || d.charge<0 || d.discharge<0 || typeof d.known!=="boolean") return false;
+    const p=s.last;
+    if (p && (![p.ts,p.power,p.soc].every(finite) || p.soc<0 || p.soc>100 || typeof p.id!=="string")) return false;
+    if (s.mean!==undefined && !validMean(s.mean, p)) return false;
+    return true;
+}
+function validMean(m, sample) {
+    if (!m || m.version!==1 || !finite(m.created) || !sample || m.created>sample.ts ||
+        !Array.isArray(m.buckets) || m.buckets.length>10082) return false;
+    let lastEnd=0;
+    for (const b of m.buckets) {
+        if (!Array.isArray(b) || b.length!==4 || !b.every(finite) || b[0]<lastEnd ||
+            b[1]<=b[0] || b[1]-b[0]>BUCKET || b[3]<=0 || b[3]>b[1]-b[0]+0.001 ||
+            b[2]<0 || b[2]>100*b[3]+0.001 || b[0]<m.created || b[1]>sample.ts) return false;
+        lastEnd=b[1];
+    }
+
+
+    return m.last===null || (m.last && finite(m.last.ts) && m.last.ts>=m.created &&
+        m.last.ts<=sample.ts && m.last.ts>=lastEnd && finite(m.last.eta) &&
+        m.last.eta>=0 && m.last.eta<=100);
+}
+let state;
+
+function pruneMean(ts) {
+    const m=state && state.mean;
+    if (m) while (m.buckets.length && m.buckets[0][1]<=ts-WINDOW) m.buckets.shift();
+}
+function updateMean(ts, raw, valid, accepted, previousSample) {
+    if (!state.mean) state.mean={version:1,created:ts,last:null,buckets:[]};
+    const m=state.mean, last=m.last;
+    if (valid && accepted && last && previousSample && last.ts===previousSample.ts &&
+        ts>last.ts && ts-last.ts<=CFG.maxIntervalMs) {
+        const dt=ts-last.ts;
+        for (let a=last.ts;a<ts;) {
+            const end=Math.min(ts,(Math.floor(a/BUCKET)+1)*BUCKET);
+            const v0=last.eta+(raw-last.eta)*(a-last.ts)/dt;
+            const v1=last.eta+(raw-last.eta)*(end-last.ts)/dt;
+            let b=m.buckets[m.buckets.length-1];
+            if (!b || Math.floor(b[0]/BUCKET)!==Math.floor(a/BUCKET)) {
+                b=[a,end,0,0];m.buckets.push(b);
+            }
+            b[1]=end;b[2]+=(v0+v1)*0.5*(end-a);b[3]+=end-a;
+            a=end;
+        }
+    }
+    m.last=valid ? {ts,eta:raw} : null;
+    pruneMean(ts);
+}
+function meanOutput(ts, sourceValid, historyTrusted = true) {
+    const m=historyTrusted && state && state.mean, from=ts-WINDOW;
+    let weighted=0,covered=0,partial=false;
+    for (const b of m ? m.buckets : []) {
+        const f=overlap(b[0],b[1],from,ts)/(b[1]-b[0]);
+        weighted+=b[2]*f;covered+=b[3]*f;
+        if (f>0 && f<1) partial=true;
+    }
+    const raw=covered>0 ? stablePercent(weighted/covered) : null;
+
+    const valid=finite(raw) && raw>=0 && raw<=100;
+    const complete=!!m && covered>=WINDOW-1;
+    const lastSample=covered>0 ? m.buckets[m.buckets.length-1][1] : null;
+    return {eta_mean_7d_pct:valid ? round(raw,1) : null,eta_mean_7d_raw_pct:round(raw,3),
+        mean_valid:valid,mean_reason:!historyTrusted ? "mean_history_unavailable" :
+            covered<=0 ? (m && ts-m.created>=WINDOW ? "mean_history_expired" : "mean_baseline_initialized") :
+            valid ? "mean_available" : "invalid_mean_history",
+        mean_collection_paused:!sourceValid,
+        mean_last_sample_at:lastSample===null ? null : new Date(lastSample).toISOString(),
+        mean_sample_age_seconds:lastSample===null ? null : round(Math.max(0,ts-lastSample)/1000,3),
+        mean_window_start:new Date(from).toISOString(),mean_window_end:new Date(ts).toISOString(),
+        mean_window_complete:complete,mean_covered_hours:round(covered/HOUR),
+        mean_coverage_pct:round(100*covered/WINDOW,3),
+        mean_history_hours:m ? round(Math.max(0,ts-m.created)/HOUR) : 0,
+        mean_started_at:m ? new Date(m.created).toISOString() : null,
+        mean_method:"time_weighted_linear_eta",mean_source:"rolling_168_hour_soc_adjusted_energy_balance",
+        mean_bucket_seconds:BUCKET/1000,mean_buffer_buckets:m ? m.buckets.length : 0,
+        mean_boundary_weighting:"uniform_within_oldest_partial_minute",mean_partial_boundary_bucket:partial};
+}
+function outputs(result) {
+    const mean={payload:result.eta_mean_7d_pct,result:{...copy(result),
+        valid:result.mean_valid,reason:result.mean_reason,
+        source_valid:result.valid,source_reason:result.reason,output:"mean_7d"}};
+    const original={payload:result.eta_pct,result};
+    return [mean,original,copy(original)];
+}
+
+function audit() {
+    if (!state) return null;
+    if (!state.exclusionLog) state.exclusionLog={since:now,previous_intervals:state.excludedIntervals,
+        previous_ms:state.excludedMs,next_id:1,counts:{},events:[]};
+    return state.exclusionLog;
+}
+function currentEvent() {
+    const a=audit(), e=a && a.events[a.events.length-1];
+    return e && e.open ? e : null;
+}
+function note(reason, details={}, start=state && state.last ? state.last.ts : now) {
+    const a=audit(); if (!a) return null;
+    let e=currentEvent();
+    if (!e) {
+        e={id:a.next_id++,start_ts:start,first_seen:now,last_seen:now,end_ts:null,
+            open:true,excluded_ms:0,excluded_intervals:0,causes:{}};
+        a.events.push(e); if(a.events.length>10) a.events.shift();
+    }
+    e.last_seen=now;
+    if (!Object.prototype.hasOwnProperty.call(e.causes,reason)) {
+        e.causes[reason]={observations:0,first_seen:now,last_seen:now,first_values:details,last_values:details};
+        a.counts[reason]=(a.counts[reason]||0)+1;
+    }
+    const c=e.causes[reason]; c.observations++;c.last_seen=now;c.last_values=details;
+    return e;
+}
+function accountExclusion(start,end) {
+    const e=currentEvent(); if(!e) return;
+    e.excluded_ms+=end-start;e.excluded_intervals++;e.end_ts=end;
+}
+function closeEvent(resolution) {
+    const e=currentEvent();if(e){e.open=false;e.resolution=resolution;e.closed_at=now;}
+}
+function auditOutput() {
+    const a=audit();
+    return {exclusion_log_since:a ? new Date(a.since).toISOString():null,
+        exclusions_before_logging:a ? {intervals:a.previous_intervals,duration_ms:a.previous_ms}:null,
+        exclusion_counts_by_reason:a ? copy(a.counts):{},
+        exclusion_counts_scope:"events_per_cause_since_logging_started",
+        recent_exclusions:a ? copy(a.events).reverse().map(e=>({...e,
+            started_at:new Date(e.start_ts).toISOString(),
+            last_seen_at:new Date(e.last_seen).toISOString(),
+            ended_at:e.end_ts===null?null:new Date(e.end_ts).toISOString()})):[]};
+}
+function save() { flow.set(KEY,state,FILE); }
+function fail(reason, detail, block = true, values = {}) {
+
+
+    const keepHistory=["expired_soc_capture","invalid_soc","soc_timestamp_required",
+        "stale_or_future_soc","missing_or_stale_snapshot","battery_fallback_excluded",
+        "invalid_battery_power","soc_jump_pending"].includes(reason);
+    let mean=meanOutput(now,false,false);
+    try {
+        if (state) {
+            if (state.last && block) { note(reason,{...values,...(detail ? {error_message:String(detail).slice(0,500)} : {})}); state.blocked=true; }
+            if (state.mean) state.mean.last=null;
+            pruneMean(now);save();
+        }
+        mean=meanOutput(now,false,keepHistory);
+        flow.set("la_ela_es",null,FILE);
+        flow.set("batt_eff_legacy_mean_7d",mean.eta_mean_7d_pct,FILE);
+    } catch (error) { detail = error.message; mean=meanOutput(now,false,false); }
+    node.status({fill:"yellow",shape:"ring",text:reason});
+    const result={version:4,release_version:"5.1.0",calculation_revision:"5.1",valid:false,reason,
+        eta_pct:null,timestamp:new Date(now).toISOString(),detail,covered_hours:null,
+        soc_freshness_verified:false,...mean,...auditOutput()};
+    return outputs(result);
+}
+try {
+    if (![CFG.capacityKWh,CFG.maxPowerKW,CFG.minChargeKWh].every(v=>finite(v)&&v>0) ||
+        !finite(CFG.powerSafetyFactor) || CFG.powerSafetyFactor<1) return fail("invalid_configuration");
+    const signature=JSON.stringify([CFG.capacityKWh,"snapshot-p_batterie-positive-charge",BUCKET,WINDOW]);
+    const saved=flow.get(KEY,FILE);
+
+
+    if (saved != null) {
+        if (saved.signature!==signature || context.get("validatedState",MEM)!==saved) {
+            if (!validState(saved,signature)) return fail("invalid_v4_state_or_configuration");
+            context.set("validatedState",saved,MEM);
+        }
+        state=saved;
+        audit();
+    }
+    const cycle=msg._eff;
+    if (cycle && (!finite(cycle.ts) || cycle.ts>now || now-cycle.ts>CFG.maxSnapshotAgeMs)) return fail("expired_soc_capture",undefined,true,{capture_ts:cycle.ts,age_ms:finite(cycle.ts)?now-cycle.ts:null,max_age_ms:CFG.maxSnapshotAgeMs});
+    const rawSoc=cycle ? cycle.soc : flow.get("batt_level",MEM);
+    const soc=number(rawSoc);
+    const socTs=number(cycle ? cycle.socTs : flow.get("batt_level_ts",MEM));
+    const captureTs=cycle ? cycle.ts : now;
+    if (soc===null || soc<0 || soc>100) return fail("invalid_soc",undefined,true,{raw_soc:diagnosticValue(rawSoc),soc_pct:soc,min_pct:0,max_pct:100});
+    if (socTs===null && CFG.requireSocTimestamp) return fail("soc_timestamp_required",undefined,true,{soc_timestamp_required:true});
+    if (socTs!==null && (socTs>captureTs || captureTs-socTs>CFG.maxSocAgeMs)) return fail("stale_or_future_soc",undefined,true,{soc_ts:socTs,capture_ts:captureTs,age_ms:captureTs-socTs,max_age_ms:CFG.maxSocAgeMs});
+
+    const id=flow.get("snapshot_last_ok_cycleId");
+    const ts=number(flow.get("snapshot_last_ok_ts"));
+    const trigger=number(flow.get("snapshot_last_ok_triggerTs"));
+    const source=flow.get("snapshot_last_battery_source");
+    const fresh=flow.get("snapshot_last_battery_fresh");
+    const rawPower=flow.get("p_batterie");
+    const power=number(rawPower);
+    const quality=flow.get("snapshot_last_ok_quality");
+    if (typeof id!=="string" || !id || ts===null || trigger===null || trigger>ts || ts>now ||
+        now-ts>CFG.maxSnapshotAgeMs || ts-trigger>CFG.maxSnapshotAgeMs ||
+        !["excellent","good","borderline"].includes(quality)) return fail("missing_or_stale_snapshot",undefined,true,{snapshot_ts:ts,trigger_ts:trigger,age_ms:ts===null?null:now-ts,latency_ms:ts===null||trigger===null?null:ts-trigger,max_age_ms:CFG.maxSnapshotAgeMs,cycle_id:typeof id==="string"?id:null,quality:typeof quality==="string"?quality:null});
+    if (source!=="fresh" || fresh!==true) return fail("battery_fallback_excluded",undefined,true,{battery_source:typeof source==="string"?source:null,battery_fresh:fresh===true,power_w:power,required_source:"fresh",cycle_id:id});
+    if (power===null || Math.abs(power)>CFG.maxPowerKW*1000*CFG.powerSafetyFactor) return fail("invalid_battery_power",undefined,true,{raw_power:diagnosticValue(rawPower),power_w:power,max_absolute_power_w:CFG.maxPowerKW*1000*CFG.powerSafetyFactor,cycle_id:id});
+    if (!state) {
+        const migration=migrate(flow.get("batt_eff_state_v3",FILE),ts);
+        state={version:4,unit:"kWh",signature,created:ts,last:null,blocked:false,buckets:[],migration,
+            excludedIntervals:0,excludedMs:0,candidate:null};
+
+
+        context.set("validatedState",state,MEM);
+    }
+    audit();
+    const prev=state.last;
+    if (prev && (id===prev.id || ts<=prev.ts)) return null;
+    const sample={id,ts,power,soc};
+    let reason="baseline_initialized",accepted=false;
+    if (prev) {
+        const dt=ts-prev.ts;
+        if (state.blocked || dt>CFG.maxIntervalMs) {
+            reason="measurement_gap_excluded";
+
+            if (!currentEvent()) note(reason,{interval_ms:dt,max_interval_ms:CFG.maxIntervalMs,
+                previous_failure_cause_unavailable:state.blocked},prev.ts);
+        }
+        else {
+            const allowed=CFG.socStepTolerancePct + CFG.maxPowerKW*CFG.powerSafetyFactor*dt/HOUR/CFG.capacityKWh*100;
+            if (Math.abs(soc-prev.soc)>allowed) {
+                note("soc_jump_pending",{previous_soc_pct:prev.soc,current_soc_pct:soc,
+                    change_pct_points:soc-prev.soc,allowed_change_pct_points:allowed,
+                    interval_ms:dt,required_confirmations:CFG.socRebaseConfirmations},prev.ts);
+                const c=state.candidate;
+                state.candidate=c && ts>c.ts && ts-c.ts<=CFG.socConfirmationMaxGapMs && Math.abs(soc-c.soc)<=CFG.socConfirmationTolerancePct ?
+                    {ts,soc,count:c.count+1} : {ts,soc,count:1};
+
+
+                state.last={id,ts,power,soc:prev.soc};
+                state.excludedIntervals++; state.excludedMs+=dt;
+                if (state.candidate.count<CFG.socRebaseConfirmations) {
+                    accountExclusion(prev.ts,ts);
+                    save(); return fail("soc_jump_pending", undefined, false);
+                }
+                reason="confirmed_soc_jump_excluded";
+
+                state.excludedIntervals--; state.excludedMs-=dt;
+            } else {
+                accepted=true; reason="interval_accepted";
+                const ds=CFG.capacityKWh*(soc-prev.soc)/100;
+                for (let a=prev.ts;a<ts;) {
+                    const end=Math.min(ts,(Math.floor(a/BUCKET)+1)*BUCKET);
+                    const f0=(a-prev.ts)/dt,f1=(end-prev.ts)/dt;
+                    const [ch,dis]=energy(prev.power+(power-prev.power)*f0,prev.power+(power-prev.power)*f1,end-a);
+                    let b=state.buckets[state.buckets.length-1];
+                    if (!b || Math.floor(b[0]/BUCKET)!==Math.floor(a/BUCKET)) {
+                        b=[a,end,0,0,0,0,0]; state.buckets.push(b);
+                    }
+                    b[1]=end;b[2]+=ch;b[3]+=dis;b[4]+=ds*(end-a)/dt;b[5]+=end-a;b[6]++;
+                    a=end;
+                }
+            }
+        }
+        if (!accepted) {
+            state.excludedIntervals++;state.excludedMs+=dt;accountExclusion(prev.ts,ts);
+            closeEvent(reason);
+        } else closeEvent("valid_measurement_resumed");
+    } else if (state.migration.source_last_ts!==null && ts>state.migration.source_last_ts) {
+        note("migration_baseline_initialized",{previous_v3_ts:state.migration.source_last_ts,
+            first_v4_ts:ts},state.migration.source_last_ts);
+        accountExclusion(state.migration.source_last_ts,ts);closeEvent("migration_baseline_initialized");
+        state.excludedIntervals++;state.excludedMs+=ts-state.migration.source_last_ts;
+        reason="migration_baseline_initialized";
+    }
+    state.last=sample;state.blocked=false;state.candidate=null;
+    const from=ts-WINDOW;
+    while (state.buckets.length && state.buckets[0][1]<=from) state.buckets.shift();
+    state.migration.records=state.migration.records.filter(d=>d.end>from);
+    let charge=0,discharge=0,delta=0,covered=0,partial=false;
+    for (const b of state.buckets) {
+        const f=overlap(b[0],b[1],from,ts)/(b[1]-b[0]);
+        charge+=b[2]*f;discharge+=b[3]*f;delta+=b[4]*f;covered+=b[5]*f;
+        if (f>0 && f<1) partial=true;
+    }
+    let importedCharge=0,importedDischarge=0,importedDelta=0,legacyMissing=false;
+    for (const d of state.migration.records) {
+        const f=overlap(d.start,d.end,from,ts)/(d.end-d.start);
+        importedCharge+=d.charge*f;importedDischarge+=d.discharge*f;importedDelta+=d.delta*f;
+        if (f>0 && !d.known) legacyMissing=true;
+    }
+    charge+=importedCharge;discharge+=importedDischarge;delta+=importedDelta;
+    const raw=charge>0 ? stablePercent(100*(discharge+delta)/charge) : null;
+    const enough=charge+1e-12>=CFG.minChargeKWh;
+    const plausible=finite(raw) && raw>=0 && raw<=100;
+    const hasImported=state.migration.records.length>0;
+    const valid=enough && plausible && !legacyMissing && (accepted || (hasImported && !prev));
+    const resultReason=legacyMissing ? "legacy_soc_boundaries_missing" : !enough ? "insufficient_charge_energy" :
+        !plausible ? "efficiency_out_of_range" : valid ? "calculation_available" : reason;
+    const eta=valid ? round(raw,1) : null;
+    updateMean(ts,raw,valid,accepted,prev);
+    pruneMean(now);
+    const mean=meanOutput(now,valid);
+    save();
+
+    flow.set("batt_eff_last_completed_v3",now,MEM);
+    flow.set("batt_eff_last_completed_v4",now,MEM);
+    flow.set("sum_batt_la_7d",round(charge,3),FILE);
+    flow.set("sum_batt_ela_7d",round(discharge,3),FILE);
+    flow.set("la_ela_es",eta,FILE);
+    flow.set("batt_eff_legacy_mean_7d",mean.eta_mean_7d_pct,FILE);
+    const result={version:4,release_version:"5.1.0",calculation_revision:"5.1",valid,reason:resultReason,interval_status:reason,
+        timestamp:new Date(ts).toISOString(),eta_pct:eta,eta_raw_pct:round(raw,3),
+        efficiency_arithmetic_tolerance_pct:PCT_ARITHMETIC_TOLERANCE,
+        window:"rolling_168_hours",window_start:new Date(from).toISOString(),window_end:new Date(ts).toISOString(),
+        window_complete:!hasImported && covered>=WINDOW-1,days_used:round(covered/86400000,3),
+        sum_charge_kwh_7d:round(charge),sum_discharge_kwh_7d:round(discharge),delta_stored_energy_kwh:round(delta),
+        losses_kwh:round(charge-discharge-delta),capacity_kwh:CFG.capacityKWh,
+        soc_now_raw_pct:soc,soc_now_eff_pct:soc,soc_freshness_verified:socTs!==null,
+        power_w:power,battery_source:source,snapshot_cycle_id:id,snapshot_age_ms:now-ts,
+        integration_interval_ms:prev ? ts-prev.ts : null,integration_method:"linear_signed_power_zero_crossing",
+        power_time_basis:"snapshot_completion",soc_time_basis:"latest_at_capture",
+        covered_hours:round(covered/HOUR),interval_accepted:accepted,
+        excluded_intervals:state.excludedIntervals,excluded_gap_hours:round(state.excludedMs/HOUR),
+        exclusion_scope:"since_v4_start",bucket_seconds:BUCKET/1000,buffer_buckets:state.buckets.length,
+        boundary_weighting:"uniform_within_oldest_partial_minute",partial_boundary_bucket:partial,
+        legacy_days_in_window:state.migration.records.length,legacy_soc_boundaries_missing:legacyMissing,
+        legacy_migration:{status:state.migration.status,at:state.migration.at,source:"batt_eff_state_v3",
+            source_last_ts:state.migration.source_last_ts,distribution:state.migration.distribution || null},
+        imported_charge_kwh:round(importedCharge),imported_discharge_kwh:round(importedDischarge),
+        imported_delta_kwh:round(importedDelta),historical_accuracy_verified:false,...mean,...auditOutput()};
+    node.status({fill:valid && !hasImported ? "green":"yellow",shape:valid?"dot":"ring",
+        text:valid?`${eta}% | 168h | ${round(covered/HOUR,2)}h`:resultReason});
+    return outputs(result);
+} catch(err) {
+    node.error(`Efficiency calculation stopped: ${err.message}`);
+    return fail("context_or_runtime_error",err.message);
+}
+
+})(msg, knotenDeutsch);
+// Bestehende maschinenlesbare Diagnosefelder erhalten; deutsche Texte ergänzen.
+if (Array.isArray(ausgabe)) {
+    for (const nachricht of ausgabe) {
+        if (!nachricht || !nachricht.result) continue;
+        const r = nachricht.result;
+        r.grund = deutsch(r.reason);
+        if (r.mean_reason) r.mittelwertgrund = deutsch(r.mean_reason);
+        if (r.source_reason) r.quellgrund = deutsch(r.source_reason);
+        if (r.interval_status) r.intervallstatus = deutsch(r.interval_status);
+        if (r.legacy_migration) r.pufferuebernahme = deutsch(r.legacy_migration.status);
+        if (r.detail) r.detail = deutsch(r.detail);
+    }
+}
+
+if (Array.isArray(ausgabe)) {
+    for (const nachricht of ausgabe) {
+        for (const ereignis of nachricht?.result?.recent_exclusions || []) {
+            ereignis.ursachen = Object.keys(ereignis.causes).map(code => ({code, grund:deutsch(code)}));
+            if (ereignis.resolution) ereignis.abschluss = deutsch(ereignis.resolution);
+        }
+    }
+}
+return ausgabe;
+
+
+})();
+if(legacy===null)return null;
+// v6.0.0-draft.1. Called by the generated Node-RED Function, after the unchanged v5 balance.
+// Units: kWh, W, milliseconds, SOC percentage points. No device commands here.
+function capacityStateKey(key,capacity) {
+ return capacity===8.64?key:key+'_'+capacity+'kwh';
+}
+const C = Object.freeze({capacity:BATTERIE_KAPAZITAET_KWH, seed:80, startCharge:200, holdCharge:100,
+ startDischarge:30, holdDischarge:15, startMs:60000, stopMs:120000,
+ minMs:600000, socHub:10, minCharge:.8, minDischarge:.1, netAverage:1800,
+ maxGap:10000, sourceAge:6500, socConfirm:60000, maxReverseSoc:1,
+ learnDays:30, archiveDays:90, maxRecords:2048,
+ // Provisional inventory debit only; NOT a learned discharge efficiency.
+ provisionalDebit:.8});
+const KEY=capacityStateKey('batt_eff_state_v6_draft',C.capacity), FILE='file', NOW=Date.now(), DAY=86400000;
+const finite=x=>typeof x==='number'&&Number.isFinite(x);
+const num=x=>typeof x==='number'?x:typeof x==='string'&&x.trim()!==''?Number(x):NaN;
+const flag=x=>x===true||x===1||x==='true'||x==='1'?true:
+ x===false||x===0||x==='false'||x==='0'?false:null;
+const clone=x=>JSON.parse(JSON.stringify(x));
+const round=x=>finite(x)?Math.round(x*10)/10:null;
+const signature=JSON.stringify(C);
+function energy(a,b,dt){
+ const scale=dt/3600000000;
+ if(a>=0&&b>=0)return[(a+b)/2*scale,0];
+ if(a<=0&&b<=0)return[0,-(a+b)/2*scale];
+ const f=Math.abs(a)/(Math.abs(a)+Math.abs(b));
+ const x=Math.abs(a)*f/2*scale,y=Math.abs(b)*(1-f)/2*scale;
+ return a>0?[x,y]:[y,x];
+}
+function sane(s){
+ if(!s||s.schema!==1||s.signature!==signature||!finite(s.created)||!Array.isArray(s.records)||s.records.length>C.maxRecords)return false;
+ if(!s.records.every(r=>['net','solar','discharge'].includes(r.kind)&&[r.start,r.end,r.input,r.output,r.stored,r.hub].every(finite)&&r.end>=r.start&&r.input>=0&&r.output>=0&&r.stored>0&&r.hub>=C.socHub))return false;
+ if(!s.estimates||!s.rejected||!Array.isArray(s.rejected))return false;
+ for(const v of Object.values(s.estimates))if(!v||!finite(v.eta)||v.eta<=0||v.eta>1||!finite(v.at))return false;
+ if(s.last&&![s.last.t,s.last.p,s.last.soc].every(finite))return false;
+ if(s.segment&&![s.segment.start,s.segment.soc,s.segment.extreme,s.segment.input,s.segment.output,s.segment.end,s.segment.endSoc].every(finite))return false;
+ if(s.inventory){const i=s.inventory;
+  if(![i.net,i.solar,i.unknown,i.anchor,i.soc].every(finite)||[i.net,i.solar,i.unknown].some(v=>v<0)||i.soc<0||i.soc>100||!i.pending||!Object.values(i.pending).every(v=>finite(v)&&v>=0))return false;
+ }
+ return true;
+}
+let s;
+try{
+ if(!finite(C.capacity))throw Error('invalid_batt_capacity_kwh');
+ s=flow.get(KEY,FILE);
+ // The former reserve affected output only. Preserve existing learned sections.
+ if(s && C.capacity===8.64){
+  const {provisionalDebit,...settings}=C;
+  const previous=JSON.stringify({...settings,inventoryReserve:.0864,provisionalDebit});
+  if(s.signature===previous)s={...s,signature};
+ }
+ if(s!=null&&!sane(s))throw Error('invalid_draft_state_or_configuration');
+ if(!s)s={schema:1,version:'6.0.0-draft.1',signature,created:NOW,seed:C.seed,
+  last:null,segment:null,records:[],estimates:{},rejected:[],inventory:null,phase:0};
+ // Clone: only a completed update is committed to persistent state.
+ s=clone(s);
+ const source=legacy?.[1]?.result;
+ const t=source?Date.parse(source.timestamp):NaN;
+ const p=source?.power_w,soc=source?.soc_now_raw_pct;
+ const snapshotValid=!!source&&source.interval_accepted===true&&finite(t)&&NOW>=t&&NOW-t<=C.sourceAge&&finite(p)&&finite(soc);
+ const read=k=>flow.get(k);
+ const controls={net:flag(read('netz_laden')),allow:flag(read('b_entladen')),
+  on:flag(read('regelung')),min:flag(read('regler_batt_min_confirmed')),max:flag(read('batt_max'))};
+ const idle=read('regler_idle_compensation_v436');
+ controls.idle=!!(idle&&idle.phase==='tracking'&&finite(idle.lastValidTs)&&NOW-idle.lastValidTs>=0&&NOW-idle.lastValidTs<=C.sourceAge);
+ const controlsKnown=Object.values(controls).every(v=>typeof v==='boolean');
+ const solar=num(read('p_solar')),house=num(read('p_haus'));
+ function classify(power){
+  if(!controlsKnown||controls.idle||controls.max||!(controls.on||controls.net))return 'unknown';
+  if(controls.net)return 'net';
+  return finite(solar)&&finite(house)&&solar>=0&&solar-house>0&&power>0?'solar':'unknown';
+ }
+ function reject(reason,seg){s.rejected.push({at:NOW,reason,kind:seg?.kind||null});s.rejected=s.rejected.slice(-20);}
+ function finish(seg,reason){
+  if(!seg)return;
+  const hub=seg.kind==='discharge'?seg.soc-seg.endSoc:seg.endSoc-seg.soc;
+  const stored=C.capacity*hub/100,ms=seg.end-seg.start;
+  const input=seg.input,output=seg.output;
+  // Never use a mixed-direction energy balance to infer a directional efficiency.
+  const opposite=seg.kind==='discharge'?input:output;
+  if(!seg.confirmed||ms<C.minMs||hub+1e-9<C.socHub||
+   (seg.kind==='discharge'?output<C.minDischarge:input<C.minCharge))return reject('section_too_small',seg);
+  if(opposite>1e-9)return reject('mixed_direction',seg);
+  if(seg.kind!=='discharge'&&input*3600000000/ms<C.startCharge)return reject('charge_average_low',seg);
+  if(seg.kind==='net'&&input*3600000000/ms<C.netAverage)return reject('net_average_low',seg);
+  const eta=seg.kind==='discharge'?output/stored:stored/input;
+  if(!finite(eta)||eta<=0||eta>1+1e-11)return reject('section_efficiency_out_of_range',seg);
+  s.records.push({kind:seg.kind,start:seg.start,end:seg.end,input,output,stored,hub,phase:seg.phase,reason});
+  if(s.records.length>C.maxRecords)s.records.shift();
+ }
+ function begin(kind,q){return{kind,start:q.t,soc:q.soc,extreme:q.soc,input:0,output:0,end:q.t,endSoc:q.soc,
+  confirmed:false,low:null,phase:s.phase};}
+ function updateLearning(q,prev,ch,dis){
+  const canDis=controlsKnown&&controls.on&&!controls.net&&controls.allow&&!controls.min&&!controls.idle;
+  const kind=classify(q.p);
+  let a=s.segment;
+  if(a){
+   const denied=a.kind==='discharge'?!canDis:kind!==a.kind;
+   const reverse=a.kind==='discharge'?q.p>0:q.p<0;
+   if(denied||reverse){finish(a,'mode_change');s.segment=null;s.phase++;a=null;}
+  }
+  if(a){
+   const reversal=a.kind==='discharge'?q.soc-a.extreme:a.extreme-q.soc;
+   if(reversal>C.maxReverseSoc){reject('soc_reversal',a);s.segment=null;s.phase++;return;}
+   a.extreme=a.kind==='discharge'?Math.min(a.extreme,q.soc):Math.max(a.extreme,q.soc);
+   const magnitude=a.kind==='discharge'?-q.p:q.p;
+   const start=a.kind==='discharge'?C.startDischarge:C.startCharge;
+   const hold=a.kind==='discharge'?C.holdDischarge:C.holdCharge;
+   if(!a.confirmed&&magnitude<start){s.segment=null;return;}
+   if(a.confirmed&&magnitude<hold){
+    if(!a.low)a.low={since:prev.t,section:clone({...a,low:null})};
+    if(q.t-a.low.since>=C.stopMs){finish(a.low.section,'low_power');s.segment=null;s.phase++;return;}
+   }else a.low=null;
+   a.input+=ch;a.output+=dis;a.end=q.t;a.endSoc=q.soc;
+   if(q.t-a.start>=C.startMs)a.confirmed=true;
+   const hub=a.kind==='discharge'?a.soc-q.soc:q.soc-a.soc;
+   if(!a.low&&hub>=C.socHub&&q.t-a.start>=C.minMs&&
+    (a.kind==='discharge'?a.output>=C.minDischarge:a.input>=C.minCharge)){
+    finish(a,'completed_hub');s.segment=begin(a.kind,q);s.segment.confirmed=true;
+   }
+   return;
+  }
+  if(canDis&&q.p<=-C.startDischarge)s.segment=begin('discharge',q);
+  else if(kind!=='unknown'&&q.p>=C.startCharge)s.segment=begin(kind,q);
+ }
+ function estimates(){
+  s.records=s.records.filter(r=>r.end>=NOW-C.archiveDays*DAY);
+  const result={};
+  for(const kind of ['net','solar','discharge']){
+   const rows=s.records.filter(r=>r.kind===kind&&r.end>=NOW-C.learnDays*DAY);
+   if(rows.length){
+    const numerator=rows.reduce((a,r)=>a+(kind==='discharge'?r.output:r.stored),0);
+    const denominator=rows.reduce((a,r)=>a+(kind==='discharge'?r.stored:r.input),0);
+    s.estimates[kind]={eta:numerator/denominator,at:Math.max(...rows.map(r=>r.end)),count:rows.length,
+     hub:rows.reduce((a,r)=>a+r.hub,0),phases:new Set(rows.map(r=>r.phase)).size};
+   }
+   const v=s.estimates[kind];
+   if(v){const age=NOW-v.at;result[kind]={...v,age_days:age/DAY,
+    status:age>C.archiveDays*DAY?'expired':age>C.learnDays*DAY?'stale':v.count>=3&&v.phases>=2&&v.hub>=30?'confirmed':'provisional',
+    usable:age<=C.learnDays*DAY};}
+   else result[kind]={eta:null,status:'unlearned',usable:false};
+  }
+  return result;
+ }
+ let e=estimates();
+ function inventory(q,ch,dis,continuity,previous){
+  if(!s.inventory){s.inventory={net:0,solar:0,unknown:C.capacity*q.soc/100,soc:q.soc,anchor:q.soc,
+    pending:{net:0,solar:0,unknown:0},candidate:null};return;}
+  const i=s.inventory;
+  const clear=()=>{i.pending={net:0,solar:0,unknown:0};i.anchor=q.soc;i.candidate=null;};
+  const total=()=>i.net+i.solar+i.unknown;
+  const cap=()=>{const target=C.capacity*q.soc/100,n=total();if(n>target&&n>0){const f=target/n;i.net*=f;i.solar*=f;i.unknown*=f;}};
+  if(!continuity){
+   // After a short gap, retain the known inventory within the measured SOC.
+   // Never carry pending charge evidence across a gap.
+   const target=C.capacity*q.soc/100;
+   if(previous && q.t-previous.t<=60000){
+    cap();
+    i.unknown+=Math.max(0,target-total());
+   }else{
+    i.net=0;
+    i.solar=0;
+    i.unknown=target;
+   }
+   clear();
+   i.soc=q.soc;
+   return;
+  }
+  const debitEfficiency=e.discharge.usable?e.discharge.eta:C.provisionalDebit;
+  // Pending evidence must never survive a mode change into a later SOC correction.
+  const mode=controls.idle?'idle':controls.net?'net':controls.on?'solar':'off';
+  if(i.mode!==undefined&&i.mode!==mode)clear();
+  i.mode=mode;
+  if(controls.idle||!controlsKnown)clear();
+  if(Math.abs(q.p)<5){
+   if(!i.quietSince)i.quietSince=q.t;
+   if(q.t-i.quietSince>=C.stopMs)clear();
+  }else i.quietSince=null;
+  let debit=dis/debitEfficiency;
+  for(const k of ['solar','unknown','net']){const used=Math.min(i[k],debit);i[k]-=used;debit-=used;}
+  if(dis>0){clear();}
+  else{
+   let pv=0;
+   // Synchronized snapshot-derived PV surplus; mode alone cannot establish origin.
+   const provenance=controlsKnown&&!controls.idle&&(controls.on||controls.net)&&finite(solar)&&finite(house)&&solar>=0;
+   if(provenance&&q.p>0)pv=Math.max(0,Math.min(1,(solar-house)/q.p));
+   const pvEnergy=provenance?ch*pv:0;
+   i.pending.solar+=pvEnergy;
+   if(provenance)i.pending.net+=ch-pvEnergy;else i.pending.unknown+=ch;
+   if(q.soc<i.anchor){clear();}
+   else if(q.soc>i.anchor){
+    if(!i.candidate)i.candidate={soc:q.soc,since:q.t};
+    if(q.soc<i.candidate.soc)i.candidate={soc:q.soc,since:q.t};
+    if(q.t-i.candidate.since>=C.socConfirm){
+     // Only the level held for 60s is confirmed. A newer higher step waits again.
+     const delta=C.capacity*(i.candidate.soc-i.anchor)/100;
+     const measured=i.pending.net+i.pending.solar+i.pending.unknown;
+     const credit=Math.min(delta,measured); // no gain > measured AC input
+     const weights={net:i.pending.net*(e.net.usable?e.net.eta:1),
+      solar:i.pending.solar*(e.solar.usable?e.solar.eta:1),unknown:i.pending.unknown};
+     const sum=weights.net+weights.solar+weights.unknown;
+     if(sum>0)for(const k of ['net','solar','unknown'])i[k]+=credit*weights[k]/sum;
+     i.unknown+=Math.max(0,delta-credit);
+     // Do not reuse AC evidence for a later SOC increase.
+     const confirmed=i.candidate.soc;
+     i.pending={net:0,solar:0,unknown:0};i.anchor=confirmed;i.candidate=null;
+    }
+   }else i.candidate=null;
+  }
+  cap();i.soc=q.soc;
+ }
+ let live=false;
+ if(snapshotValid){
+  const q={t,p,soc};const prev=s.last;
+  if(!prev||t>prev.t){
+   const continuity=!!prev&&t-prev.t<=C.maxGap&&!s.blocked;
+   let ch=0,dis=0;
+   if(continuity)[ch,dis]=energy(prev.p,p,t-prev.t);
+   if(!continuity){if(s.segment)reject('measurement_gap',s.segment);s.segment=null;s.phase++;}
+   if(continuity&&controlsKnown)updateLearning(q,prev,ch,dis);
+   else if(!controlsKnown){s.segment=null;s.phase++;}
+   e=estimates();inventory(q,ch,dis,continuity,prev);
+   s.last=q;s.blocked=false;live=controlsKnown;
+  }else live=controlsKnown&&!s.blocked&&t===prev.t;
+ }else{
+  if(s.segment)reject('invalid_measurement',s.segment);
+  s.segment=null;s.blocked=true;
+ }
+ e=estimates();
+ function plan(kind){
+  if(e[kind].usable&&e.discharge.usable)return{pct:100*e[kind].eta*e.discharge.eta,status:'measured',usable:true};
+  if(e[kind].eta===null||e.discharge.eta===null){
+   // Initial seed remains until both directions have actually been learned.
+   const expired=[e[kind],e.discharge].some(v=>v.status==='expired'||v.status==='stale');
+   return{pct:expired?null:s.seed,status:expired?'stale':'initialized_80',usable:!expired};
+  }
+  return{pct:null,status:'stale',usable:false};
+ }
+ const net=plan('net'),pv=plan('solar');
+ const i=s.inventory;
+ const minSoc=num(read('batt_min_s'));
+ const reserveKnown=finite(minSoc)&&minSoc>=0&&minSoc<=100;
+ const reserve=reserveKnown?C.capacity*minSoc/100:null;
+ const available=live&&i&&reserveKnown
+  ? Math.min(i.solar,C.capacity*Math.max(0,i.soc-minSoc)/100) : 0;
+ const missingControls=Object.keys(controls).filter(key=>controls[key]===null);
+ const sourceReason=!snapshotValid?(source?.grund||source?.interval_status||'Snapshot fehlt'):
+  missingControls.length?'Steuersignal fehlt: '+missingControls.join(', '):
+  !reserveKnown?'batt_min_s fehlt oder ungültig':!live?'Snapshot nicht aktuell':null;
+ const sources={reason:sourceReason,version:s.version,at:NOW,valid:live&&reserveKnown,solar_stored_kwh:i?.solar??0,
+  solar_available_kwh:available,net_stored_kwh:i?.net??0,unknown_stored_kwh:i?.unknown??0,
+  reserve_kwh:reserve,min_soc_pct:reserveKnown?minSoc:null,capacity_kwh:C.capacity,inventory_debit_method:e.discharge.usable?'learned':'provisional_80_percent',
+  source_allocation:'virtual_solar_first',controls};
+ const result={version:s.version,valid:net.usable,reason:net.status,eta_plan_net_pct:round(net.pct),
+  eta_plan_solar_pct:round(pv.pct),solar_plan_status:pv.status,source_valid:snapshotValid,
+  learning_controls_valid:controlsKnown,estimates:e,active_section:s.segment?{kind:s.segment.kind,
+   soc_start:s.segment.soc,soc_now:s.segment.endSoc,confirmed:s.segment.confirmed}:null,
+  recent_rejections:s.rejected,source_inventory:sources};
+ flow.set(KEY,s,FILE);
+ flow.set('la_ela_es_mean_7d',round(net.pct),FILE);
+ flow.set('batt_eff_plan_solar_pct',round(pv.pct),FILE);
+ flow.set('batt_eff_sources_v6',sources,FILE);
+ if(sourceReason)node.status({fill:'yellow',shape:'ring',text:sourceReason});
+ else node.status({fill:net.usable?'green':'yellow',shape:net.status==='measured'?'dot':'ring',text:`V6 Entwurf | Netz ${round(net.pct)??'?'}% | ${net.status}`});
+ return [{payload:round(net.pct),result},legacy?.[1]??{payload:null},
+  {payload:{type:'efficiency_sources_v6',...sources}},{payload:round(net.pct),result}];
+}catch(error){
+ node.status({fill:'red',shape:'ring',text:error.message});
+ node.error(`V6 Entwurf: ${error.message}`);
+ try{flow.set('la_ela_es_mean_7d',null,FILE);flow.set('batt_eff_sources_v6',{valid:false,at:NOW},FILE);}catch(_){}
+ return[{payload:null,result:{valid:false,reason:error.message}},legacy?.[1]??{payload:null},
+  {payload:{type:'efficiency_sources_v6',valid:false,reason:error.message,at:NOW}},{payload:null,result:{valid:false,reason:error.message}}];
+}
